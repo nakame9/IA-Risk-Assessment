@@ -17,7 +17,7 @@
 |---|---|
 | 1. Frame | Xong |
 | 2. Identify | Xong ([data/assets.csv](data/assets.csv), [data/risk_register.csv](data/risk_register.csv)) |
-| 3. Assess | Chưa làm |
+| 3. Assess | Xong: 1 rủi ro High, 8 Moderate, 4 Low ([report.md §3](report.md)) |
 | 4. Treat | Chưa làm |
 | 5. Package & review | Chưa làm |
 

@@ -1,6 +1,6 @@
 # Báo cáo đánh giá rủi ro IA: Cổng hồ sơ sinh viên (hệ thống hư cấu)
 
-> **Trạng thái:** Giai đoạn 1 (Frame) và 2 (Identify) đã xong. Các giai đoạn 3–5 chưa thực hiện.
+> **Trạng thái:** Giai đoạn 1 (Frame), 2 (Identify) và 3 (Assess) đã xong. Giai đoạn 4–5 chưa thực hiện.
 > **Phương pháp:** NIST SP 800-30 Rev.1 (Sep 2012). Xem [PLAN.md](PLAN.md).
 > **Lưu ý:** toàn bộ tổ chức, hệ thống, con số và phê duyệt trong báo cáo đều **hư cấu**, dùng cho mục đích học tập.
 
@@ -385,6 +385,149 @@ SSO/IdP gặp sự cố trong kỳ đăng ký (PC-01, PC-05).
 
 ---
 
-## 3–5. Assess / Treat / Package
+## 3. Assess (Phân tích)
+
+Giai đoạn này tương ứng với Task 2-4 đến 2-6 của SP 800-30 Rev.1:
+- **Task 2-4:** đánh giá likelihood, gồm hai thành phần:
+  - Khả năng sự kiện được khởi phát hoặc xảy ra: G-2 cho nguồn có chủ đích, G-3 cho nguồn không chủ đích.
+  - Khả năng sự kiện gây tác động bất lợi: G-4.
+- **Task 2-5:** đánh giá impact theo H-3.
+- **Task 2-6:** xác định mức rủi ro theo I-2.
+
+Overall likelihood được tra theo bảng G-5. Mức rủi ro hiện tại (current risk) được đánh giá với các control **hiện có** ghi trong cột `existing_controls`.
+
+**Lưu ý về dữ liệu:**
+- Ba cột đầu vào `initiation_likelihood`, `adverse_impact_likelihood`, `impact` và cột `confidence` đã được ghi vào [data/risk_register.csv](data/risk_register.csv).
+- Overall likelihood và mức rủi ro là **giá trị suy ra** nên không lưu trong CSV. Chúng được tra tay theo G-5 và I-2 rồi trình bày ở §3.3. Đến giai đoạn 5, `risk.py` sẽ tính lại và phải ra cùng kết quả.
+
+### 3.1 Ví dụ tính tay 1: R-01 (nguồn có chủ đích)
+
+| Bước | Rating | Căn cứ |
+|---|---|---|
+| Khởi phát (G-2) | **Moderate** | **[ĐG]** TS-01 nhắm vào một *nhóm* mục tiêu (targeting Low) chứ không nhắm riêng trường. Nhưng trường đại học thuộc nhóm thường bị ransomware nhắm tới, và kẻ tấn công có năng lực High. Không có dấu hiệu kiểu tấn công này đang được khai thác tự động trên diện rộng, nên chưa tới mức VH theo anchor ở §1.5d. Mức hợp lý nhất là "somewhat likely" trong 12 tháng. |
+| Gây tác động bất lợi (G-4) | **High** | Nếu chuỗi tấn công bắt đầu, phần lớn rào chắn đều yếu: không có MFA (V-01), backup cùng thông tin xác thực và không immutable (V-02, Very High), chưa thử khôi phục (V-07), tài khoản admin dùng chung (PC-02), không trực 24/7 (PC-04). Chỉ có antivirus và spam filter có thể chặn ở bước đầu, nên chưa tới VH. |
+| Overall likelihood (G-5) | **Moderate** | Tra G-5: hàng Moderate, cột High → Moderate |
+| Impact (H-3, anchor §1.5e) | **Very High** | Cùng lúc xảy ra lộ dữ liệu (C), mã hóa C-03 (I/A) và mất C-05 nên không khôi phục được. Đây đúng là trường hợp "multiple severe" |
+| Mức rủi ro (I-2) | **High** | Tra I-2: hàng Moderate, cột Very High → High |
+| Cờ chính sách (§1.6) | **Phải xử lý hoặc cần ngoại lệ; escalate** | Mức rủi ro là High. Ngoài ra Impact là Very High nên phải escalate lên Risk executive |
+| Confidence | **Low** | Mức khởi phát hoàn toàn dựa vào giả định, vì hệ thống hư cấu không có dữ liệu threat intelligence thật |
+
+### 3.2 Ví dụ tính tay 2: R-10 (nguồn không chủ đích)
+
+| Bước | Rating | Căn cứ |
+|---|---|---|
+| Xảy ra (G-3) | **High** | **[GĐ]** Khoảng 12.000 sinh viên và hàng trăm học phần mỗi kỳ. Lỗi nhập điểm ước tính xảy ra 10–100 lần/năm, ứng với mức High của G-3 |
+| Gây tác động bất lợi (G-4) | **Low** | Phần lớn lỗi được sinh viên phát hiện trong thời gian phúc khảo, và giảng viên sửa được trong thời hạn nhập điểm. Chỉ một số ít lỗi lọt tới lúc cấp bảng điểm (V-05) |
+| Overall likelihood (G-5) | **Moderate** | Tra G-5: hàng High, cột Low → Moderate |
+| Impact | **Low** | Sai lệch thường chỉ ở vài sinh viên và sửa được. Ứng với mức "sai lệch nhỏ, sửa được" ở anchor I mức Low |
+| Mức rủi ro (I-2) | **Low** | Tra I-2: hàng Moderate, cột Low → Low |
+| Cờ chính sách | **Được chấp nhận, có ghi lại** | Risk owner (Trưởng phòng Đào tạo) được chấp nhận |
+| Confidence | **Medium** | Tần suất là suy luận từ quy mô đào tạo |
+
+**Nhận xét:** hai ví dụ này cho thấy một sự kiện **xảy ra thường xuyên** chưa chắc là rủi ro cao (R-10), còn một sự kiện **chỉ ở mức "có thể"** vẫn có thể là rủi ro cao nhất (R-01). Lý do là bảng G-5 và I-2 kết hợp nhiều yếu tố: mức khởi phát, khả năng gây tác động và mức tác động. Đây là lý do dự án dùng bảng tra thay cho việc nhân điểm.
+
+### 3.3 Kết quả của toàn bộ kịch bản
+
+**Ký hiệu:**
+- Khởi phát/Xảy ra là G-2 nếu nguồn có chủ đích (ký hiệu "adv") và G-3 nếu nguồn không chủ đích (ký hiệu "non").
+- Các rating đầu vào đều là **[ĐG]**.
+
+| Risk | Nguồn | Khởi phát/Xảy ra | Gây tác động (G-4) | Overall likelihood (G-5) | Impact (H-3) | **Mức rủi ro (I-2)** | Confidence | Cờ |
+|---|---|---|---|---|---|---|---|---|
+| R-01 | TS-01 adv | Moderate | High | Moderate | Very High | **High** | Low | Phải xử lý/ngoại lệ; **escalate** |
+| R-02 | TS-02 adv | Very High | Moderate | High | Moderate | **Moderate** | Medium | Xử lý hoặc chấp nhận theo ủy quyền |
+| R-03 | TS-03 adv | High | Moderate | Moderate | High | **Moderate** | Low | Xử lý hoặc chấp nhận theo ủy quyền |
+| R-04 | TS-04 adv | Low | High | Moderate | High | **Moderate** | Low | Xử lý hoặc chấp nhận theo ủy quyền |
+| R-05 | TS-02 adv | Moderate | Moderate | Moderate | High | **Moderate** | Low | Xử lý hoặc chấp nhận theo ủy quyền |
+| R-06 | TS-01 adv | Low | Moderate | Low | Moderate | **Low** | Low | Được chấp nhận, có ghi lại |
+| R-07 | TS-05 non | Low | High | Moderate | High | **Moderate** | Medium | Xử lý hoặc chấp nhận theo ủy quyền |
+| R-08 | TS-05 non | Low | High | Moderate | High | **Moderate** | Medium | Xử lý hoặc chấp nhận theo ủy quyền |
+| R-09 | TS-07 non | Low | Low | Low | Moderate | **Low** | Medium | Được chấp nhận, có ghi lại |
+| R-10 | TS-06 non | High | Low | Moderate | Low | **Low** | Medium | Được chấp nhận, có ghi lại |
+| R-11 | TS-01 adv | High | Moderate | Moderate | High | **Moderate** | Medium | Xử lý hoặc chấp nhận theo ủy quyền |
+| R-12 | TS-04 adv | Low | High | Moderate | High | **Moderate** | Low | Xử lý hoặc chấp nhận theo ủy quyền |
+| R-13 | TS-08 non | Moderate | Low | Low | Moderate | **Low** | Medium | Được chấp nhận, có ghi lại |
+
+**Lý do chấm ngắn cho các kịch bản còn lại:**
+
+- **R-02:**
+  - Khởi phát = Very High: dò mật khẩu tự động vào trang đăng nhập công khai khớp với anchor VH (A-01).
+  - Gây tác động = Moderate: lockout chặn được một phần, nhưng thiếu MFA (V-01).
+  - Impact = Moderate: tài khoản cán bộ chỉ đọc được hồ sơ trong phạm vi được phân quyền.
+- **R-03:**
+  - Khởi phát = High: sinh viên có động cơ rõ ràng và lặp lại mỗi kỳ.
+  - Impact = High: lấy hậu quả **nặng nhất mà vẫn hợp lý**. Vì không có đối soát (V-05), điểm bị sửa có thể được dùng để cấp văn bằng.
+- **R-04, R-12:**
+  - Khởi phát = Low: số người bên trong vừa có quyền vừa có động cơ là rất ít.
+  - Gây tác động = High: không có người thứ hai duyệt, không ai xem log, không có giới hạn xuất dữ liệu.
+- **R-05:**
+  - Khởi phát = Moderate: còn tùy việc trong 12 tháng tới có lỗ hổng mới nào ảnh hưởng đúng framework đang dùng hay không. Chưa có CVE cụ thể nên CVSS ghi `unknown`.
+  - Impact = High: kẻ tấn công có thể lấy được toàn bộ CSDL.
+- **R-06:**
+  - Khởi phát = Low: chưa thấy động cơ rõ ràng để DDoS cổng sinh viên.
+  - Impact = Moderate: portal gián đoạn vài giờ trong kỳ đăng ký.
+- **R-07, R-08:**
+  - Xảy ra = Low: dưới 1 lần/năm.
+  - Gây tác động = High: một kho dữ liệu bị mở ra Internet sẽ bị scanner tìm thấy rất nhanh (R-07); backup chưa từng thử khôi phục nên dễ khôi phục thất bại (R-08).
+- **R-09:**
+  - Gây tác động = Low: chỉ gây hại khi sự cố rơi đúng vào khoảng 10 ngày đăng ký mỗi năm (A-02).
+- **R-11:**
+  - Khởi phát = High: email chứa malware gửi tới cán bộ là chuyện thường xuyên.
+  - Impact = High: kẻ tấn công lấy được thông tin xác thực admin (AS-04, C = High).
+- **R-13:**
+  - Xảy ra = Moderate: SSO lỗi 1–10 lần/năm.
+  - Gây tác động = Low: chỉ đáng kể khi rơi vào kỳ đăng ký.
+
+### 3.4 Ma trận rủi ro (số kịch bản)
+
+Hàng là overall likelihood. Cột là impact. Ô có nền đậm là mức rủi ro theo I-2.
+
+| Likelihood \ Impact | Very Low | Low | Moderate | High | Very High |
+|---|---|---|---|---|---|
+| **Very High** | | | | | |
+| **High** | | | 1 (R-02) | | |
+| **Moderate** | | 1 (R-10) | | **7** (R-03, R-04, R-05, R-07, R-08, R-11, R-12) | 1 (R-01) |
+| **Low** | | | 3 (R-06, R-09, R-13) | | |
+| **Very Low** | | | | | |
+
+**Tổng hợp:** 1 rủi ro High, 8 rủi ro Moderate, 4 rủi ro Low. Không có rủi ro nào ở mức Very High hoặc Very Low.
+
+### 3.5 Thứ tự ưu tiên
+
+**[ĐG]** Thứ tự ưu tiên được sắp theo các tiêu chí lần lượt: mức rủi ro → impact → overall likelihood → confidence thấp hơn được ưu tiên trước. Riêng tiêu chí confidence là để kịch bản bất định nhiều được xem lại sớm.
+
+1. **R-01**: High, escalate.
+2. **R-03, R-04, R-05, R-12** (Moderate, impact High, confidence Low). Tiếp theo là **R-07, R-08, R-11** (Moderate, impact High, confidence Medium).
+3. **R-02**: Moderate, impact Moderate.
+4. **R-06, R-09, R-10, R-13**: Low, được chấp nhận và ghi lại. Mỗi kịch bản vẫn cần risk owner ký xác nhận ở giai đoạn 4.
+
+**Lỗ hổng chung của nhiều kịch bản:**
+
+| Lỗ hổng/điều kiện | Có mặt trong |
+|---|---|
+| V-05 (không có người thứ hai duyệt hay đối soát) | R-03, R-04, R-10 |
+| V-07 (chưa thử khôi phục) | R-01, R-08, R-09 |
+| V-01 (không có MFA) | R-01, R-02, R-11 |
+| PC-02 (tài khoản admin dùng chung) | R-01, R-04, R-08, R-11 |
+
+Đây là đầu vào quan trọng cho giai đoạn 4: một control có thể giảm nhiều rủi ro cùng lúc.
+
+### 3.6 Bất định và giới hạn
+
+**Các rating sát ngưỡng có confidence Low.** Những rating này phải chấm lại ở giai đoạn 5 (§1.5g):
+
+| Kịch bản | Rating sát ngưỡng | Nếu chấm khác thì sao |
+|---|---|---|
+| R-03 | Impact High/Moderate | Nếu Impact là Moderate thì mức rủi ro vẫn là Moderate (tra I-2: Moderate × Moderate). Kết luận **không đổi** |
+| R-05 | Khởi phát Moderate/High | Nếu khởi phát là High thì overall likelihood vẫn là Moderate (tra G-5: High × Moderate). Kết luận **không đổi** |
+| R-01 | Khởi phát Moderate/Low | Nếu khởi phát là Low thì overall likelihood là Moderate (tra G-5: Low × High), nên mức rủi ro vẫn là High. Kết luận **không đổi**, và vẫn phải escalate vì Impact là Very High |
+
+**Các giới hạn khác:**
+- **Kịch bản có liên hệ với nhau:** R-11 thường là bước mở đầu của R-01. Báo cáo đánh giá riêng từng kịch bản và **không** cộng dồn (aggregate) rủi ro. Phần này để ngỏ.
+- **Toàn bộ là định tính:** các mức là phán đoán theo thang thứ bậc, không phải xác suất đã hiệu chỉnh. Mọi tần suất ghi trong báo cáo là **[GĐ]**.
+
+---
+
+## 4–5. Treat / Package
 
 *Chưa thực hiện. Xem kế hoạch trong [PLAN.md](PLAN.md).*
