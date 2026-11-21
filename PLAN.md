@@ -1,7 +1,7 @@
 # Plan chung: IA Risk Assessment
 
 > Kết quả thảo luận Claude ↔ Codex (mỗi bên 3 lượt), ngày 2026-11-21.
-> **Trạng thái: v1 đã hoàn thành cả 5 giai đoạn (2026-11-22), xem mục 8. Kế hoạch cải thiện v2 (chưa triển khai) nằm ở mục 9.**
+> **Trạng thái: v1 đã hoàn thành cả 5 giai đoạn (2026-11-22), xem mục 8. Kế hoạch cải thiện v2 (chưa triển khai) nằm ở mục 9. Mục 9.10 (v2.1) được ưu tiên khi mâu thuẫn với các mục khác.**
 > Đã kiểm chứng lại ngày 2026-11-21 (xem mục 7): Claude tự trích xuất text từ PDF của SP 800-30 Rev.1 và FIPS 199, đồng thời mở trang web của các nguồn còn lại.
 
 ## 1. Mục tiêu và phạm vi
@@ -284,7 +284,7 @@ Các mức như phân loại độ nhạy, nhóm hậu quả và khung thời gi
 1. Các nghĩa vụ bắt buộc (mandatory) ràng buộc lựa chọn. Escalation đòi hỏi người xem xét, nhưng **không** tự động bắt buộc một gói.
 2. Lọc Pareto, so **riêng** từng con số lợi ích với effort.
 3. Trong nhóm Pareto, xếp theo thứ tự: số family xuống dưới High (giảm dần), số family xuống dưới Moderate (giảm dần), effort (tăng dần). Giữ nguyên các trường hợp hòa.
-4. Chọn tham lam (greedy): sau mỗi lần chọn một ứng viên, tính lại lợi ích cận biên của các ứng viên còn lại, có xét điều kiện tiên quyết.
+4. ~~Chọn tham lam (greedy): sau mỗi lần chọn một ứng viên, tính lại lợi ích cận biên.~~ **Bỏ ở bản v2.1** (xem §9.10). Thay vào đó, xếp hạng các gói đơn và bundle đã được đánh giá so với baseline hiện tại. Sau khi triển khai thì chạy lại.
 5. Ứng viên có hiệu ứng `unknown` lên một family có thể vượt ngưỡng được tách khỏi bảng xếp hạng và gắn nhãn **"incomplete"**.
 
 Cách xếp hạng này là **heuristic minh bạch**, không phải danh mục tối ưu.
@@ -295,7 +295,7 @@ Cách xếp hạng này là **heuristic minh bạch**, không phải danh mục 
 |---|---|---|
 | E1 | Độ phủ quy tắc | Tỷ lệ các factor cốt lõi được suy ra từ quy tắc, từ phán đoán, hoặc còn `unknown`. Chia theo từng factor và từng template |
 | E2 | Tính tất định | Hash SHA-256 của output, với đầu vào, phiên bản quy tắc và ngày đánh giá được cố định. Chạy hai lần phải ra cùng hash. Thời gian chạy được ghi ở ngoài output |
-| E3 | Độ nhạy | Nâng hoặc hạ mỗi đầu vào **phán đoán** một mức. Với bằng chứng dạng số, thử giá trị ngay sát ranh giới của quy tắc. Đo tỷ lệ rủi ro bị đổi mức, và độ ổn định của thứ tự gói bằng **Kendall tau-b** (viết bằng thư viện chuẩn, có xử lý trường hợp hòa và trường hợp không xác định) |
+| E3 | Độ nhạy | Nâng hoặc hạ mỗi đầu vào **phán đoán** một mức. Với bằng chứng dạng số, thử giá trị ngay sát ranh giới của quy tắc. Đo tỷ lệ rủi ro bị đổi mức, và độ ổn định của thứ tự gói. ~~Kendall tau-b~~ được thay ở bản v2.1 bằng: số khuyến nghị đứng đầu bị đổi, và số cặp so sánh được bị đảo thứ tự (có xử lý trường hợp hòa và trường hợp bị loại) |
 | E4 | Quy mô | Dữ liệu tổng hợp khoảng 200 tài sản do `synth.py` sinh ra, với seed và phiên bản cố định. Gồm nhiều lớp tài sản, có bằng chứng bị thiếu, có dịch vụ dùng chung, có ca sát ranh giới. Ghi lại số tài sản, số kịch bản và thời gian chạy |
 | E5 | So với baseline | So mô hình với hai cách chọn đơn giản: chọn theo rủi ro cao nhất trước, và chọn theo effort thấp nhất trước. So ở cùng số hành động effort Low/Medium/High. Báo cáo family nào xuống dưới High hoặc Moderate. Kết quả **chỉ có ý nghĩa trong mô hình tổng hợp** |
 | E6 | Truy vết và bảo trì | Tỷ lệ rủi ro có đủ chuỗi giải thích. Chạy thử một chu kỳ Task 4-1 → 4-2 trên case portal, có diff trước/sau. Ví dụ đã sửa: R-02 phụ thuộc cả T-01 **và** T-06, nên phải kiểm chứng cả hai. Mọi bằng chứng kiểm chứng đều ghi rõ là mô phỏng |
@@ -332,8 +332,140 @@ Cách xếp hạng này là **heuristic minh bạch**, không phải danh mục 
 
 ### 9.9 Rủi ro của bản v2
 
+*(Bản v2.1 bổ sung thêm rủi ro, xem §9.10.6.)*
+
 | Rủi ro | Giảm thiểu |
 |---|---|
 | **Khách quan giả:** quy tắc chính xác có thể che đi các giả định chủ quan bên dưới | Hiện rõ nguồn gốc của từng bằng chứng, độ phủ của phán đoán và độ nhạy tại các ranh giới |
 | **Xếp hạng gói gây hiểu nhầm:** hiệu ứng thưa và effort thứ bậc có thể thiên vị các ứng viên được ghi chép đầy đủ hơn | Hiển thị phần còn thiếu (incomplete), giữ nguyên các trường hợp hòa, chỉ rút kết luận trên các so sánh có dữ liệu hỗ trợ |
 | **Vòng lặp tổng hợp:** bộ sinh dữ liệu dễ "thưởng" đúng những giả định mà mô hình đã cài sẵn | Cố định quy tắc trước khi viết `synth.py`. Thêm các phản ví dụ được đặc tả độc lập. Chỉ tuyên bố về hành vi của mô hình, không tuyên bố hiệu quả an ninh thực tế |
+
+### 9.10 Điều chỉnh v2.1: thiết thực, chính xác, hữu dụng (2026-11-22)
+
+> **Bối cảnh:** người dùng cho biết yêu cầu bắt buộc duy nhất là **thiết thực, chính xác và hữu dụng**. Phương pháp và kiến trúc được chọn tự do.
+> Mục này là kết quả thảo luận Claude ↔ Codex (mỗi bên 3 lượt). Khi mâu thuẫn với các mục 9.1 đến 9.9, **mục này được ưu tiên**.
+
+#### 9.10.1 Kiến trúc: không làm web stack ở giai đoạn này
+
+**Đã cân nhắc và hoãn lại:** kiến trúc React → FastAPI → engine Python → PostgreSQL → xuất PDF/Excel. Lý do: kiến trúc này không làm kết quả chính xác hơn hay hữu ích hơn. Chỉ làm khi workflow thực tế, nhu cầu phân quyền hoặc nhu cầu audit chứng minh là cần, ví dụ khi nhiều người phải nhập liệu cùng lúc.
+
+Nếu sau này làm, có 4 bài học từ lần xem xét này:
+- Engine phải là thư viện **thuần túy**, không truy cập database.
+- Không dùng "CIA weight" (cộng có trọng số các mức C, I, A) mà dùng quy tắc mức cao nhất của FIPS 199.
+- Thay "likelihood estimator" và "risk scoring" bằng tra bảng G-5 và I-2.
+- Phân quyền phải ánh xạ đúng các vai trò ở §1.4 của báo cáo.
+
+**Đầu vào:** ba bảng mà người vận hành chỉnh sửa được, dạng CSV lưu từ Excel. Template, gói biện pháp và effects do người phụ trách mô hình quản lý.
+
+| File | Thay đổi so với §9.3 |
+|---|---|
+| `data/assets.csv` | Các thành phần kỹ thuật có thêm `vendor, product, version, exposure` |
+| `data/inputs.csv` | Giữ nguyên các trường nguồn gốc. **Finding** (liên kết với CVE) là các dòng có `subject_id = F-xxx`. Thuộc tính gồm: `cve_id, component_id, applicability (confirmed/suspected/not_applicable), remediation_state, first_confirmed_on, obligation_triggered_on, obligation_policy_version`. Mỗi cặp thành phần–CVE chỉ có một finding cố định. Applicability được ghi **tách riêng** khỏi exposure |
+| `data/controls.csv` *(mới)* | `scope_id, package_id, status, evidence_ref, verified_on`. Tình trạng control vận hành được chuyển về đây |
+| `data/snapshots/` + manifest *(mới, sinh tự động)* | Bản lưu cố định của KEV và EPSS. Manifest ghi: URL nguồn, ngày lấy, ngày phát hành, phiên bản, SHA-256 và tham chiếu license |
+
+**Đầu ra:** **một báo cáo hành động dạng Markdown**.
+- Phần đầu báo cáo ghi: ngày đánh giá, phạm vi, phiên bản snapshot và phiên bản quy tắc.
+- Các mục lần lượt:
+
+| # | Mục | Nội dung |
+|---|---|---|
+| 1 | **Việc gấp** | Các nghĩa vụ đã quá hạn hoặc sắp tới hạn, các escalation, các quyết định chấp nhận đã hết hạn. Mỗi việc ghi owner, hạn và hành động cần làm |
+| 2 | **Thay đổi so với lần trước** | Cái gì đổi, vì sao, và ảnh hưởng tới nghĩa vụ, rating, ưu tiên. Lần chạy đầu ghi "Baseline assessment" |
+| 3 | **Gói biện pháp khuyến nghị** | Thứ tự có dữ liệu hỗ trợ, lý do, effort, điều kiện tiên quyết, family bị ảnh hưởng, kết quả dự kiến, tiêu chí kiểm chứng. Liệt kê riêng các ứng viên incomplete |
+| 4 | **Backlog vá lỗi** | Finding nằm trong KEV kèm nghĩa vụ tương ứng. Finding không nằm trong KEV được xếp theo EPSS trong cùng nhóm so sánh được. Finding thiếu điểm EPSS ghi rõ là chưa xếp hạng |
+| 5 | **Hàng đợi điều tra** | Các việc thu thập bằng chứng, các khả năng hợp lý, và quyết định có thể bị đổi |
+| 6 | **Tình trạng bằng chứng và feed** | Bằng chứng thiếu hoặc đã cũ, ngày và phiên bản snapshot, các lần làm mới thất bại, giới hạn về độ phủ |
+| 7 | **Rủi ro đã chấp nhận và ngoại lệ** | Người có thẩm quyền, lý do, điều kiện, hạn rà soát |
+
+#### 9.10.2 Dùng dữ liệu khai thác thật mà không làm giả likelihood
+
+**Nguồn dữ liệu** (đã xác minh ngày 2026-11-22):
+- **[CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog):** danh sách các lỗ hổng đã bị khai thác thực tế. Tải được dạng CSV và JSON. Có trường `knownRansomwareCampaignUse`. Dữ liệu dùng giấy phép **CC0 1.0** ([LICENSE](https://github.com/cisagov/kev-data/blob/develop/LICENSE)). Các liên kết tới bên thứ ba trong dữ liệu theo license riêng của họ.
+- **[FIRST EPSS](https://www.first.org/epss/):** xác suất một CVE bị khai thác trong **30 ngày tới**. Cập nhật hằng ngày, tải được dạng CSV hoặc qua API. Theo [FAQ](https://www.first.org/epss/faq):
+  - EPSS **không phải** là điểm rủi ro đầy đủ.
+  - EPSS không xét bối cảnh của từng hệ thống cụ thể.
+  - **Không có ngưỡng áp dụng chung**.
+  - FIRST yêu cầu ghi nguồn khi dùng dữ liệu.
+  - Phần điều khoản sử dụng do Codex dẫn ([FIRST Services Terms of Use](https://www.first.org/about/policies/FIRST-Services-Terms-of-Use.pdf)) **Claude chưa tự đọc**.
+- **BOD 22-01 đã bị thu hồi**, thay bằng BOD 26-04 (trang của CISA ghi ngày 10/06/2026). Vì vậy việc khắc phục lỗ hổng trong KEV là **chính sách dự án tự chọn áp dụng**. Dự án không tuyên bố tuân thủ quy định liên bang.
+
+**Đã bác bỏ:**
+- Quy tắc "CVE nằm trong KEV thì G-2 ≥ High".
+- Quy tắc "EPSS vượt ngưỡng thì nâng một mức".
+
+Lý do: KEV và EPSS phản ánh hoạt động khai thác **toàn cầu** đối với từng CVE, không phải khả năng một tổ chức cụ thể bị tấn công. Thêm nữa, horizon 30 ngày của EPSS khác horizon 12 tháng của đánh giá, và **không được quy đổi** từ cái này sang cái kia.
+
+**Các quy tắc mới:**
+
+| Mã | Quy tắc |
+|---|---|
+| CVE-APP-01 | Chỉ liên kết một CVE với một thành phần khi có bằng chứng về sản phẩm, phiên bản, cấu hình và điều kiện tiên quyết. Nếu không chắc chắn, tạo một việc điều tra thay vì mặc định là có lỗ hổng |
+| G2-TI-01 | Tư cách thành viên KEV và điểm EPSS (kèm ngày) được gắn vào phần đánh giá G-2 như **bằng chứng ngoài**. Rating G-2 vẫn là phán đoán tại chỗ, có lý do. Feed tự nó không gán rating |
+| G4-LOCAL-01 | G-4 được đánh giá theo đường tấn công thực tế, quyền cần có, tình trạng vá và các control đã được kiểm chứng. **Không** dùng lại tín hiệu feed lần nữa cho G-4 hay cho impact |
+| TI-ABS-01 | Không có trong KEV không có nghĩa là chưa bị khai thác. Thiếu điểm EPSS không có nghĩa là bằng 0. Kịch bản không có CVE vẫn đi theo đường bằng chứng hoặc phán đoán như cũ |
+| TI-RANSOM-01 | `knownRansomwareCampaignUse = Known` thì phải rà soát lại các kịch bản ransomware liên quan. Giá trị `Unknown` nghĩa là chưa xác nhận, không có nghĩa là "No" |
+| TI-REV-01 | Có một mục KEV mới áp dụng được, hoặc EPSS vượt ngưỡng rà soát đã khai báo, thì kích hoạt đánh giá lại và rà soát khắc phục khẩn. Ngưỡng này chỉ dùng để **gây chú ý**, không dùng để gán nhãn rủi ro |
+| KEV-POL-01 | Khi có đủ ba điều kiện: chính sách đã được áp dụng, applicability đã xác nhận, và finding chưa được khắc phục, thì tạo một **nghĩa vụ khắc phục có hạn**. Hạn là lựa chọn của dự án và phải khai báo. Ngày kích hoạt **giữ nguyên** khi import lại feed. Nghĩa vụ chỉ được đóng khi đã kiểm chứng việc khắc phục, hoặc có ngoại lệ được phê duyệt |
+| EPSS-ORDER-01 | Chỉ xếp thứ tự các finding không thuộc KEV **bên trong backlog vá lỗi**, dựa trên một snapshot có ngày. Percentile không phải là xác suất. Không đẩy cả gói vá lỗi lên trên các biện pháp khác chỉ vì gói đó có một CVE có EPSS cao |
+| VOI-01 (độ nhạy quyết định) | Tạo việc thu thập bằng chứng khi một thay đổi hợp lý của đầu vào làm đổi thẩm quyền quyết định, đổi escalation, hoặc đổi thứ tự gói. Với đầu vào `unknown` thì xét toàn bộ khoảng giá trị hợp lý. Với phán đoán có confidence thấp thì xét các mức liền kề. Tính lại mọi kịch bản dùng chung bằng chứng đó, và loại trùng theo family. Đây **không phải** giá trị thông tin đo được, vì không có xác suất, chi phí thu thập hay lợi ích kỳ vọng |
+
+**Tính tái lập:**
+- Mỗi lần chạy đánh giá đọc **snapshot lưu sẵn** và không lấy dữ liệu trực tiếp từ mạng. Việc import là một bước riêng, chạy bằng tay.
+- Nếu feed đã cũ hoặc không lấy được thì phải báo rõ. Phân biệt hai trường hợp "danh mục không đổi" và "làm mới thất bại".
+
+#### 9.10.3 Thay đổi trong cách xếp hạng (§9.4)
+
+1. **Nghĩa vụ và hạn** được xét **trước** mọi so sánh lợi ích và effort. Nghĩa vụ đã quá hạn được hiển thị nổi bật.
+2. **Hàng đợi điều tra** là một danh sách riêng. Lợi ích dự kiến còn bất định không được che khuất các nghĩa vụ.
+3. **Chia việc xếp thứ tự:** EPSS chỉ xếp thứ tự finding vá lỗi, còn việc so sánh giữa các gói vẫn dùng logic theo family.
+4. **Bỏ chọn tham lam.** Chỉ xếp hạng gói đơn và bundle đã được đánh giá so với baseline hiện tại, rồi chạy lại sau khi triển khai.
+
+#### 9.10.4 Thay đổi trong đánh giá (§9.5)
+
+**Thêm các kiểm tra:**
+- Chặn liên kết CVE khi applicability chưa được xác nhận.
+- Hạn nghĩa vụ giữ nguyên khi import lại feed.
+- Đóng nghĩa vụ phải có bằng chứng kiểm chứng.
+- Xử lý feed thiếu hoặc feed đã cũ.
+- Thứ tự theo EPSS.
+- Khoảng giá trị hợp lý của các đầu vào `unknown`.
+- Lan truyền thay đổi tới mọi kịch bản dùng chung một bằng chứng.
+
+**Chạy thử một tình huống:** cập nhật chính sách KEV làm **đổi thứ tự hành động** trong khi nhãn rủi ro giữ nguyên.
+
+**Báo cáo độ phủ:** tỷ lệ đầu vào có bằng chứng từ nguồn ngoài được báo cáo **riêng**, không gọi đó là "độ chính xác".
+
+**Giới hạn về độ chính xác:**
+- Độ chính xác của mức rủi ro cuối cùng **không kiểm chứng được** trên một hệ thống hư cấu.
+- Những gì kiểm chứng được là: phương pháp được áp dụng đúng, độ phủ của bằng chứng, độ nhạy, và các kiểm tra đóng nghĩa vụ.
+- Cách tăng độ chính xác nhiều nhất là **khớp đúng danh mục tài sản và có bằng chứng control đã kiểm thử**, chứ không phải thêm công thức tính điểm. Một pilot với workflow thật, khi có điều kiện, sẽ kiểm chứng được tính hữu dụng.
+
+#### 9.10.5 Thứ tự công việc mới (thay cho §9.6)
+
+1. **Prepare v2.1:** cố định v1 bằng tag `v1`. Định nghĩa chính sách KEV, hạn khắc phục và hợp đồng dữ liệu (data contract) cho ba bảng đầu vào cùng snapshot. Sửa COND-01 và các anchor còn hở.
+2. **Quy tắc và schema:** chuyển 13 kịch bản sang mô hình mới, và giải thích mọi khác biệt so với v1.
+3. **Kiểm tra dữ liệu:** kiểm tra hợp lệ của việc khớp CVE làm bằng tay. Viết bước import snapshot, có manifest và SHA-256.
+4. **Báo cáo hành động:** sinh nghĩa vụ, chuỗi giải thích, xếp hạng gói, backlog vá lỗi và hàng đợi điều tra.
+5. **So sánh:** thêm chế độ so sánh giữa hai lần chạy, cho Task 4-1 và 4-2.
+6. **Thực nghiệm:** chạy E1 đến E6 và các kiểm tra mới ở §9.10.4. Dùng `synth.py` khoảng 200 tài sản.
+7. **Viết lại báo cáo:** theo khung nghiên cứu, với kết luận theo hướng "việc gì làm trước".
+
+#### 9.10.6 Bổ sung vào phần hoãn lại và rủi ro
+
+**Hoãn thêm:**
+- Web stack (React, FastAPI, PostgreSQL) và xuất PDF/Excel.
+- Tự động khớp CPE và phiên bản.
+- Lấy feed tự động hoặc phụ thuộc vào feed trực tiếp.
+- Ước lượng xác suất likelihood riêng cho từng tổ chức.
+- Chọn tham lam.
+- Kendall tau-b.
+- Nhiều định dạng báo cáo.
+
+**Rủi ro thêm:**
+
+| Rủi ro | Giảm thiểu |
+|---|---|
+| Khớp CVE sai (false applicability) | Chỉ khớp khi có bằng chứng (CVE-APP-01). Trường hợp không chắc chắn chuyển thành việc điều tra |
+| Tạo cảm giác khẩn cấp giả (manufactured urgency) | Chính sách phải có thẩm quyền rõ ràng, và hạn không bị đặt lại khi import lại feed |
+| Chỉ nhìn vào lỗ hổng (vulnerability tunnel vision) | Giữ các kịch bản không có CVE và giữ phần so sánh gói biện pháp |
