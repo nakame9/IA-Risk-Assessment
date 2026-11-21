@@ -1,0 +1,11 @@
+asset_id,name,kind,component_ids,owner,confidentiality,integrity,availability,rationale
+AS-01,Student personal records (PII),information,C-03,Head of Academic Affairs,Moderate,Moderate,Low,"C: disclosure of PII for many students = serious harm to individuals; I: wrong contact/identity data disrupts services but is correctable; A: short outage only delays lookups"
+AS-02,Grades and academic history,information,C-03,Head of Academic Affairs,Moderate,High,Moderate,"I: source of record for transcripts (A-03), undetected tampering = severe; C: grade disclosure = serious privacy harm; A: needed during registration (A-02)"
+AS-03,Graduation status and degree data,information,C-03,Head of Academic Affairs,Low,High,Low,"I: falsified graduation status leads to wrongly issued degrees (A-03) = severe; C: largely published at graduation; A: used a few times per year"
+AS-04,Accounts credentials and role assignments,system_information,C-02;C-04,IT Lead,High,High,Moderate,"C/I: admin credential or role compromise exposes or alters all of C-03 = severe; A: loss blocks all access (serious)"
+AS-05,Backup copies of C-03,information_copy,C-05,IT Lead,Moderate,High,Moderate,"Inherits AS-01..AS-03 sensitivity; I/A: only recovery path after destruction or tampering"
+AS-06,Portal service (registration lookup),service,C-01;C-02,Head of Academic Affairs,Low,Moderate,Moderate,"A: outage during registration week = serious (A-02); I: defacement or wrong display = serious loss of trust"
+AS-07,SSO authentication for the portal,service,C-04,IT Lead,Moderate,Moderate,Moderate,"Single login path for C-01/C-07 (PC-01); outage or tampering blocks or misroutes all users"
+AS-08,Cloud infrastructure configuration,component,C-06,IT Lead,Moderate,High,Moderate,"I: misconfiguration can expose or destroy C-03 and C-05 together = severe"
+AS-09,Admin workstations,component,C-07,IT Lead,Moderate,High,Low,"I: compromised workstation gives an attacker admin sessions to C-02/C-03/C-06"
+AS-10,Audit logs,system_information,C-02;C-03,IT Lead,Low,Moderate,Low,"I: altered or missing logs prevent detecting grade tampering (supports AS-02/AS-03)"

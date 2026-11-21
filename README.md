@@ -16,7 +16,7 @@
 | Giai đoạn | Trạng thái |
 |---|---|
 | 1. Frame | Xong |
-| 2. Identify | Chưa làm |
+| 2. Identify | Xong ([data/assets.csv](data/assets.csv), [data/risk_register.csv](data/risk_register.csv)) |
 | 3. Assess | Chưa làm |
 | 4. Treat | Chưa làm |
 | 5. Package & review | Chưa làm |

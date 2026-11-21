@@ -1,6 +1,6 @@
 # Báo cáo đánh giá rủi ro IA: Cổng hồ sơ sinh viên (hệ thống hư cấu)
 
-> **Trạng thái:** Giai đoạn 1 (Frame) đã xong. Các giai đoạn 2–5 chưa thực hiện.
+> **Trạng thái:** Giai đoạn 1 (Frame) và 2 (Identify) đã xong. Các giai đoạn 3–5 chưa thực hiện.
 > **Phương pháp:** NIST SP 800-30 Rev.1 (Sep 2012). Xem [PLAN.md](PLAN.md).
 > **Lưu ý:** toàn bộ tổ chức, hệ thống, con số và phê duyệt trong báo cáo đều **hư cấu**, dùng cho mục đích học tập.
 
@@ -221,6 +221,170 @@ Anchor riêng cho hệ thống. Các ngưỡng số đều là **[GĐ]**:
 
 ---
 
-## 2–5. Identify / Assess / Treat / Package
+## 2. Identify (Nhận diện)
+
+Giai đoạn này tương ứng với Task 2-1 đến 2-3 của SP 800-30 Rev.1:
+- **Task 2-1:** nhận diện nguồn đe dọa và đặc tính của chúng.
+- **Task 2-2:** nhận diện sự kiện đe dọa.
+- **Task 2-3:** nhận diện lỗ hổng và điều kiện tiền đề.
+
+Likelihood, impact và mức rủi ro (Task 2-4 đến 2-6) thuộc giai đoạn 3, nên các cột đó trong CSV đang để trống.
+
+### 2.1 Tài sản và hồ sơ CIA (FIPS 199)
+
+- Danh sách đầy đủ, kèm lý do chấm từng mức, nằm trong [data/assets.csv](data/assets.csv). Có 10 tài sản, từ AS-01 đến AS-10.
+- Hồ sơ CIA dùng 3 mức Low/Moderate/High theo định nghĩa của FIPS 199:
+  - Low: tác động hạn chế (limited).
+  - Moderate: tác động nghiêm trọng (serious).
+  - High: tác động nặng nề hoặc thảm khốc (severe/catastrophic).
+- Mọi mức chấm đều là **[ĐG]**.
+
+**Hồ sơ của toàn hệ thống:**
+- **[TK]** FIPS 199 quy định hồ sơ của một hệ thống lấy mức **cao nhất** (high water mark) trên từng mục tiêu C, I, A, xét qua các loại thông tin nằm trong hệ thống.
+- Chỉ tính các tài sản có `kind` là `information` hoặc `system_information`:
+  - AS-01, AS-02, AS-03: dữ liệu sinh viên.
+  - AS-04: tài khoản, thông tin xác thực và phân quyền.
+  - AS-10: log kiểm toán.
+- Không tính các tài sản sau:
+  - AS-05 (backup), vì đây là bản sao của cùng dữ liệu nên kế thừa hồ sơ của dữ liệu gốc.
+  - Các tài sản là dịch vụ hoặc thành phần.
+
+> **SC cổng hồ sơ sinh viên = {(confidentiality, HIGH), (integrity, HIGH), (availability, MODERATE)}**
+>
+> - Mức C = HIGH đến từ AS-04: lộ thông tin xác thực admin sẽ dẫn tới lộ toàn bộ C-03.
+> - Mức I = HIGH đến từ AS-02, AS-03, AS-04.
+
+### 2.2 Nguồn đe dọa (threat profiles), Task 2-1
+
+- Loại nguồn đe dọa lấy theo taxonomy ở bảng D-2.
+- Nguồn có chủ đích được chấm 3 đặc tính: capability (D-3), intent (D-4), targeting (D-5).
+- Nguồn không chủ đích được chấm range of effects (D-6).
+- Mọi rating đều là **[ĐG]**.
+
+| ID | Loại (D-2) | Mô tả [GĐ] | Capability | Intent | Targeting | Range of effects |
+|---|---|---|---|---|---|---|
+| TS-01 | Adversarial – Group (established) | Nhóm tội phạm mạng có động cơ tài chính, dùng ransomware và DDoS thuê | High | Moderate | Low | — |
+| TS-02 | Adversarial – Individual (outsider) | Kẻ tấn công cơ hội, dùng scanner và danh sách mật khẩu bị lộ | Low | Low | Very Low | — |
+| TS-03 | Adversarial – Individual (insider) | Sinh viên muốn sửa điểm của chính mình | Low | Moderate | Moderate | — |
+| TS-04 | Adversarial – Individual (privileged insider) | Cán bộ hoặc admin bất mãn, hoặc bị mua chuộc | Moderate | Moderate | High | — |
+| TS-05 | Accidental – Privileged user/administrator | Admin của đội CNTT 3 người (A-04) | — | — | — | Moderate |
+| TS-06 | Accidental – User | Giảng viên nhập điểm | — | — | — | Low |
+| TS-07 | Environmental – Infrastructure failure/outage | Sự cố ở region của nhà cung cấp cloud | — | — | — | High |
+| TS-08 | Structural – Software | Lỗi phần mềm SSO/IdP (C-04) | — | — | — | Moderate |
+
+**Lý do chấm:**
+
+- **TS-01:**
+  - Intent = Moderate. D-4 Moderate mô tả kẻ tấn công muốn chiếm quyền hoặc làm gián đoạn tài nguyên bằng cách tạo chỗ đứng trong hệ thống, đồng thời tránh bị phát hiện. Mô tả này khớp với ransomware.
+  - Targeting = Low. D-5 Low mô tả việc nhắm vào một *nhóm* tổ chức và tìm mục tiêu cơ hội trong nhóm đó. Trường đại học là một nhóm mục tiêu, nhưng không bị nhắm riêng.
+- **TS-02:** Intent = Low. D-4 Low mô tả kẻ tấn công tìm thông tin nhạy cảm mà không quan tâm tới việc bị phát hiện.
+- **TS-03:** Intent = Moderate, vì sinh viên muốn sửa một thông tin cụ thể. Targeting = Moderate, vì sinh viên nhắm dai dẳng vào một thông tin cụ thể dựa trên hiểu biết có sẵn về hệ thống.
+- **TS-04:** Targeting = High, vì người bên trong biết chính xác dữ liệu nào giá trị và nằm ở đâu.
+- **TS-05:** Range = Moderate. Một thao tác sai ở C-06 hoặc C-03 có thể chạm vào một phần đáng kể của hệ thống, kể cả thành phần then chốt.
+- **TS-07:** Range = High. Sự cố mất cả region sẽ làm mất C-01 đến C-03, và C-05 cũng nằm cùng region.
+
+### 2.3 Lỗ hổng (vulnerabilities), Task 2-3: F-2
+
+Tình trạng control ở đây là **[GĐ]**. Mức F-2 được chấm theo đúng tiêu chí "tình trạng triển khai control" của bảng F-2.
+
+| ID | Lỗ hổng | Tình trạng control [GĐ] | F-2 |
+|---|---|---|---|
+| V-01 | Tài khoản cán bộ và admin trên SSO chưa có MFA | Đã lên kế hoạch nhưng chưa triển khai. Có khóa tài khoản khi đăng nhập sai nhiều lần (bù trừ tối thiểu) | High |
+| V-02 | Backup nằm cùng tài khoản cloud, dùng cùng thông tin xác thực admin, không có bản offline hoặc immutable | Chưa có và chưa lên kế hoạch | Very High |
+| V-03 | API sửa điểm chỉ kiểm tra vai trò trên UI, thiếu kiểm tra quyền theo từng đối tượng (object-level authorization) | Triển khai một phần | Moderate |
+| V-04 | Vá framework và thư viện của portal thủ công, mỗi tháng một lần | Triển khai một phần | Moderate |
+| V-05 | Sửa điểm hoặc trạng thái tốt nghiệp không cần người thứ hai duyệt, không có đối soát định kỳ | Đã lên kế hoạch nhưng chưa triển khai | High |
+| V-06 | Máy trạm quản trị vẫn dùng để đọc email, duyệt web, và có quyền local admin | Triển khai một phần (chỉ có antivirus) | Moderate |
+| V-07 | Chưa từng thử khôi phục từ backup, chưa có kế hoạch DR hoặc RTO | Đã lên kế hoạch cho năm sau | High |
+| V-08 | Không có baseline hoặc rà soát cấu hình IAM và security group của cloud | Triển khai một phần (có MFA cho console) | Moderate |
+| V-09 | Log được thu tập trung nhưng không ai xem, không có cảnh báo | Triển khai một phần | Moderate |
+| V-10 | Chức năng xuất hàng loạt hồ sơ không giới hạn số lượng và không cảnh báo | Triển khai một phần (giới hạn theo vai trò) | Moderate |
+| V-11 | Không có rate limiting hoặc WAF. Chỉ có bảo vệ DDoS mặc định của nhà cung cấp | Triển khai một phần | Moderate |
+
+**Về CVSS:**
+- V-03 và V-04 là lỗ hổng kỹ thuật, nhưng hệ thống hư cấu không có CVE cụ thể. Vì vậy cột CVSS của các kịch bản liên quan ghi `unknown`.
+- Các lỗ hổng mang tính tổ chức hoặc quy trình ghi `n/a`, vì CVSS không áp dụng cho chúng.
+
+### 2.4 Điều kiện tiền đề (predisposing conditions), Task 2-3: F-4 và F-5
+
+Loại điều kiện lấy theo taxonomy F-4. Mức F-5 được chấm theo thang đã tùy chỉnh ở §1.5c, tức đếm số thành phần C-xx chịu ảnh hưởng.
+
+| ID | Điều kiện | Loại (F-4) | Thành phần chịu ảnh hưởng | F-5 |
+|---|---|---|---|---|
+| PC-01 | Mọi đăng nhập vào portal và máy quản trị đều phụ thuộc vào một SSO duy nhất | Technical – Architectural | C-01, C-02, C-07 | Moderate |
+| PC-02 | Một tài khoản admin dùng chung cho các máy chủ | Technical – Architectural | C-02, C-03, C-05, C-06, C-07 | High |
+| PC-03 | Portal mở ra Internet (A-01) | Technical – Functional (networked multiuser) | C-01, C-02 | Low |
+| PC-04 | Đội CNTT nhỏ, không trực 24/7 (A-04) | Operational/Environmental | Cả 7 thành phần | Very High |
+| PC-05 | Tải đỉnh và yêu cầu sẵn sàng cao trong kỳ đăng ký (A-02) | Operational/Environmental | C-01, C-02, C-03, C-04 | Moderate |
+
+### 2.5 Kịch bản rủi ro, Task 2-2
+
+- Có 13 kịch bản, nằm trong [data/risk_register.csv](data/risk_register.csv).
+- Tên sự kiện lấy từ bảng E-2 hoặc E-3 khi khớp. Khi không khớp, sự kiện được ghi là "organization-defined event". **[TK]** SP 800-30 coi E-2 và E-3 là các ví dụ tiêu biểu (representative examples).
+
+**Cách ghi hai cột rating ở cấp kịch bản [ĐG]:**
+- `vulnerability_severity` lấy mức F-2 **cao nhất** trong số các V-xx liên quan.
+- `condition_pervasiveness` lấy mức F-5 **cao nhất** trong số các PC-xx liên quan.
+- Đây chỉ là đầu vào để đánh giá likelihood ở giai đoạn 3. Các mức này không được dùng để tính toán trực tiếp.
+
+#### R-01
+Ransomware nhiều bước, nhắm vào AS-01, AS-02, AS-05.
+- **Chuỗi tấn công:**
+  1. Phishing một admin (V-01, V-06).
+  2. Dùng tài khoản admin dùng chung (PC-02) để chạm tới cả C-03 lẫn C-05.
+  3. Xóa backup (V-02).
+  4. Không khôi phục được (V-07).
+  5. Phát hiện chậm (PC-04).
+- **Ghi chú cho giai đoạn 3:** đây là ứng viên cho mức impact **Very High** theo §1.5e, nên phải escalate.
+
+#### R-02
+Dò mật khẩu hoặc dùng mật khẩu bị lộ (credential stuffing) vào tài khoản cán bộ.
+- Thiếu MFA (V-01) và không ai xem log (V-09).
+- Lockout chỉ làm chậm kiểu dò từ một nguồn.
+
+#### R-03
+Sinh viên lợi dụng lỗ hổng object-level authorization (V-03) để sửa điểm của mình.
+- Không có người thứ hai duyệt hay đối soát (V-05), nên thay đổi khó bị phát hiện.
+
+#### R-04
+Insider có quyền sửa trạng thái tốt nghiệp và xóa dấu vết trong log (AS-10).
+- PC-02 khiến khó quy được trách nhiệm cho một người cụ thể.
+
+#### R-05
+Khai thác lỗ hổng mới công bố trước khi kịp vá. Chu kỳ vá hằng tháng (V-04) để lộ ra một cửa sổ khai thác.
+
+#### R-06
+DDoS đúng vào kỳ đăng ký môn (PC-05).
+- Bảo vệ mặc định có thể không đủ (V-11). Mức đủ hay không là **[ĐG]**, chưa có số liệu.
+
+#### R-07
+Admin cấu hình sai quyền của storage hoặc security group, làm lộ C-03 hoặc C-05 ra Internet (V-08).
+
+#### R-08
+Admin xóa nhầm bảng điểm, rồi phát hiện bản backup không khôi phục được (V-07).
+- PC-04 làm thời gian phát hiện và xử lý kéo dài.
+
+#### R-09
+Mất region cloud trong kỳ đăng ký.
+- Backup nằm cùng region, và chưa có DR (V-07).
+
+#### R-10
+Giảng viên nhập sai điểm, và điểm sai được dùng để cấp bảng điểm trước khi ai đó phát hiện (V-05).
+
+#### R-11
+Malware qua email trên máy trạm quản trị (V-06), dẫn tới bị đánh cắp phiên hoặc thông tin xác thực admin (AS-04).
+- Đây thường là bước đầu của R-01, nhưng được tách riêng vì tác động riêng lên AS-04 và AS-09.
+
+#### R-12
+Cán bộ phòng Đào tạo xuất hàng loạt hồ sơ rồi làm lộ ra ngoài.
+- Chức năng xuất không giới hạn (V-10) và không có cảnh báo (V-09).
+
+#### R-13
+SSO/IdP gặp sự cố trong kỳ đăng ký (PC-01, PC-05).
+- Kịch bản này chỉ có điều kiện tiền đề, không có V-xx, nên cột `vulnerability_severity` ghi `n/a`.
+
+---
+
+## 3–5. Assess / Treat / Package
 
 *Chưa thực hiện. Xem kế hoạch trong [PLAN.md](PLAN.md).*
