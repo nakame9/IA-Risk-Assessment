@@ -184,10 +184,28 @@ Schema của ba file này nằm ở [PLAN.md](PLAN.md) §9.3, và sẽ được 
 
 **`data/snapshots/manifest.csv`:**
 
-`source, url, retrieved_on, published_on, version, sha256, license_ref, status`
+`source, url, retrieved_on, published_on, version, sha256, license_ref, status, path`
 
 - `source` ∈ {kev, epss}
 - `status` ∈ {ok, refresh_failed}
+- `path` là đường dẫn tương đối tính từ `data/`. Cột này được thêm ở bước 3.
+
+**Lệnh import** (bước 3):
+```
+python risk.py import kev|epss FILE [--url URL]
+```
+- File được tải về bằng tay trước. Lệnh import **không** truy cập mạng.
+- **Định dạng chấp nhận:**
+  - KEV: file JSON. Trong mỗi mục phải có `cveID` và `knownRansomwareCampaignUse`. Phiên bản lấy từ `catalogVersion`, ngày phát hành lấy từ `dateReleased`.
+  - EPSS: file CSV hoặc `.csv.gz`, có dòng đầu dạng `#model_version:…,score_date:…` và tiêu đề `cve,epss,percentile`.
+  - Tên các trường này là theo hiểu biết của dự án, **chưa đối chiếu với file thật**. Nếu sai định dạng thì lệnh import báo lỗi rõ ràng.
+- **Khi import:**
+  - File có SHA-256 trùng một snapshot đã có thì không lưu thêm.
+  - File lỗi thì ghi một dòng `refresh_failed`, và giữ nguyên snapshot hợp lệ gần nhất.
+- **Khi chạy đánh giá:**
+  - Kiểm tra lại SHA-256 của snapshot. Nếu không khớp thì dừng.
+  - Snapshot cũ hơn 7 ngày (tính theo `--as-of`) bị cảnh báo là cũ (stale).
+- **Snapshot EPSS không được commit** (`.gitignore`), vì điều khoản sử dụng dịch vụ của FIRST chưa được đọc. Manifest vẫn được commit, nên ai tải cùng file đó về đều kiểm chứng lại được bằng SHA-256.
 
 **Ghi chú về license:**
 - **[TK]** KEV dùng giấy phép CC0 1.0 (kho `cisagov/kev-data`).

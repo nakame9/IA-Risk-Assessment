@@ -12,7 +12,7 @@
 - [report.md](report.md): báo cáo đánh giá (v1, được cố định bằng tag `v1`).
 - [SPEC.md](SPEC.md): đặc tả đánh giá v2.1, tức bước Prepare. Gồm ánh xạ Task 1-1 → 1-5 của NIST, bộ quy tắc có mã, chính sách KEV, quy trình thu thập bằng chứng và data contract.
 
-**Tiến độ v2.1** (theo [PLAN.md](PLAN.md) §9.10.5): đã xong bước 1 (Prepare) và bước 2 (quy tắc và schema, chuyển 13 kịch bản). Các bước 3–7 chưa làm.
+**Tiến độ v2.1** (theo [PLAN.md](PLAN.md) §9.10.5): đã xong bước 1 (Prepare), bước 2 (quy tắc và schema, chuyển 13 kịch bản) và bước 3 (kiểm tra khớp CVE và import snapshot). Repo chưa có snapshot KEV/EPSS thật và chưa có finding CVE nào. Các bước 4–7 chưa làm.
 
 **Dữ liệu v2.1** (`data/`):
 
@@ -38,7 +38,9 @@
 
 ```
 python risk.py           # kiểm tra data/, sinh out/register.md, out/matrix.md, out/trace.md (chuỗi giải thích)
-python risk.py --check   # self-check: bảng G-5/I-2, ranh giới quy tắc, kiểm tra hợp lệ, kết quả case portal
+python risk.py --check   # self-check: bảng G-5/I-2, ranh giới quy tắc, kiểm tra hợp lệ, khớp CVE, snapshot, kết quả case portal
+python risk.py import kev known_exploited_vulnerabilities.json --url <nguồn>   # lưu file feed đã tải về làm snapshot
+python risk.py --as-of 2026-11-22   # chạy với ngày đánh giá cố định, để kết quả tái lập được
 ```
 
 `data/*.csv` là dữ liệu nguồn. `out/*.md` do script sinh ra, không sửa tay.

@@ -1,0 +1,3 @@
+__pycache__/
+# EPSS snapshots: FIRST terms of use not yet read (SPEC 6.5); the manifest keeps their SHA-256
+data/snapshots/epss/
