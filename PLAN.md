@@ -1,6 +1,7 @@
 # Plan chung: IA Risk Assessment
 
 > Kết quả thảo luận Claude ↔ Codex (mỗi bên 3 lượt), ngày 2026-11-21.
+> **Trạng thái: đã hoàn thành cả 5 giai đoạn (2026-11-22). Xem mục 8.**
 > Đã kiểm chứng lại ngày 2026-11-21 (xem mục 7): Claude tự trích xuất text từ PDF của SP 800-30 Rev.1 và FIPS 199, đồng thời mở trang web của các nguồn còn lại.
 
 ## 1. Mục tiêu và phạm vi
@@ -136,11 +137,13 @@ out/matrix.md          # sinh tự động
 - SP 800-60 Rev.2 (Claude chưa xác minh trạng thái, nên chưa dùng).
 - Mọi UI, database, tài khoản, dashboard, quét tự động.
 
-**Câu hỏi còn mở (cần người dùng trả lời):**
+**Câu hỏi mở (đã đóng):** người dùng không trả lời các câu hỏi này, nên dự án đi tiếp với giả định mặc định.
 
-- Có rubric hoặc yêu cầu môn học không?
-- Deadline và quy mô nhóm?
-- Có muốn dùng một tổ chức hoặc hệ thống thật thay cho hệ thống hư cấu không?
+| Câu hỏi | Cách đã xử lý |
+|---|---|
+| Có rubric hoặc yêu cầu môn học không? | Không có rubric, nên dự án bám theo đầu ra ở mục 4. Nếu sau này có rubric thì cần đối chiếu lại |
+| Deadline và quy mô nhóm? | Không đặt deadline. Các hạn triển khai trong báo cáo là giả định của hệ thống hư cấu, không phải deadline của dự án |
+| Dùng tổ chức/hệ thống thật? | Không. Giữ hệ thống hư cấu, mọi bằng chứng đều được gắn nhãn [GĐ]/[ĐG] |
 
 ## 7. Kết quả kiểm chứng (2026-11-21)
 
@@ -155,4 +158,26 @@ out/matrix.md          # sinh tự động
 | SP 800-53 Rev.5 và SP 800-60 Vol.I Rev.1 tồn tại | **Đúng** | csrc.nist.gov |
 | ISO/IEC 27005:2022 (ấn bản 4, tháng 10/2022) | **Đúng** theo Wikipedia. Trang iso.org trả về 403 nên chưa đọc được trực tiếp | en.wikipedia.org |
 | SP 800-60 Rev.2 | **Chưa xác minh**: URL bản draft trả về 404. Plan vẫn giữ nguyên là chưa dùng | — |
-| SP 800-53 có bản phát hành mới hơn (5.2.0) | **Chưa xác minh trực tiếp**. Khi chọn control ở giai đoạn 4, cần lấy bản phát hành hiện hành trên csrc | — |
+| SP 800-53 có bản phát hành mới hơn (5.2.0) | **Chưa xác minh trực tiếp**. Ở giai đoạn 4, mã và tên control đã được đối chiếu với PDF SP 800-53 Rev.5 (bản trên nvlpubs). Chưa so với bản 5.2.0 | — |
+
+## 8. Trạng thái hoàn thành (2026-11-22)
+
+| Giai đoạn | Đầu ra | Nơi lưu |
+|---|---|---|
+| 1. Frame | Phạm vi, giả định, vai trò, thang đo kèm anchor, appetite, điều kiện rà soát lại | `report.md` §1 |
+| 2. Identify | 10 tài sản có hồ sơ CIA, 8 nguồn đe dọa, 11 lỗ hổng, 5 điều kiện tiền đề, 13 kịch bản | `data/assets.csv`, `data/risk_register.csv`, `report.md` §2 |
+| 3. Assess | 2 ví dụ tính tay, kết quả 13 kịch bản (1 High, 8 Moderate, 4 Low), ma trận, thứ tự ưu tiên, mức bất định | `report.md` §3 |
+| 4. Treat | 13 gói biện pháp gắn control SP 800-53 Rev.5, hồ sơ quyết định mô phỏng, residual `projected` (0 High, 3 Moderate, 10 Low), bằng chứng kiểm chứng | `report.md` §4 |
+| 5. Package & review | `risk.py` + `--check`, `out/*.md`, đối soát, phân tích độ nhạy, hạn chế, kết luận | `risk.py`, `out/`, `report.md` §5 |
+
+**Kiểm tra lúc đóng dự án:**
+- `python risk.py --check` pass.
+- Chạy lại `risk.py` thì `out/` không thay đổi so với bản đã commit.
+- 13 dòng của risk register điền đủ các cột bắt buộc.
+- Mọi link nội bộ đều hợp lệ.
+
+**Những điểm còn ngoài phạm vi, chủ ý để lại:**
+- **Residual chỉ là dự kiến:** mọi residual đều `projected`, vì hệ thống hư cấu không có control thật để kiểm chứng.
+- **Không có rà soát độc lập:** plan không yêu cầu bước này.
+- **Bản phát hành SP 800-53 mới nhất:** chưa xác minh bản 5.2.0 (mục 7).
+- **Các mục đã hoãn ở mục 6:** FAIR, ánh xạ ATT&CK đầy đủ, cộng dồn rủi ro giữa các kịch bản.
