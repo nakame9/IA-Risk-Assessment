@@ -19,6 +19,15 @@
 | 2. Identify | Xong ([data/assets.csv](data/assets.csv), [data/risk_register.csv](data/risk_register.csv)) |
 | 3. Assess | Xong: 1 rủi ro High, 8 Moderate, 4 Low ([report.md §3](report.md)) |
 | 4. Treat | Xong: residual dự kiến 0 High, 3 Moderate, 10 Low ([report.md §4](report.md)) |
-| 5. Package & review | Chưa làm |
+| 5. Package & review | Xong: `risk.py`, self-check, [out/](out/), phân tích độ nhạy, kết luận ([report.md §5](report.md)) |
+
+**Cách chạy** (cần Python 3, chỉ dùng thư viện chuẩn):
+
+```
+python risk.py           # tính lại mức rủi ro, sinh out/register.md và out/matrix.md
+python risk.py --check   # self-check: đối chiếu bảng G-5/I-2 với PLAN.md, ví dụ tính tay, nhãn không hợp lệ
+```
+
+`data/*.csv` là dữ liệu nguồn. `out/*.md` do script sinh ra, không sửa tay.
 
 Mọi dữ liệu trong repo đều hư cấu và chỉ dùng cho mục đích học tập.

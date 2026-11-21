@@ -1,6 +1,6 @@
 # Báo cáo đánh giá rủi ro IA: Cổng hồ sơ sinh viên (hệ thống hư cấu)
 
-> **Trạng thái:** Giai đoạn 1–4 (Frame, Identify, Assess, Treat) đã xong. Giai đoạn 5 chưa thực hiện.
+> **Trạng thái:** Đã hoàn thành cả 5 giai đoạn. Kết luận cho người ra quyết định nằm ở [§5.4](#54-kết-luận-cho-người-ra-quyết-định).
 > **Phương pháp:** NIST SP 800-30 Rev.1 (Sep 2012). Xem [PLAN.md](PLAN.md).
 > **Lưu ý:** toàn bộ tổ chức, hệ thống, con số và phê duyệt trong báo cáo đều **hư cấu**, dùng cho mục đích học tập.
 
@@ -499,7 +499,7 @@ Hàng là overall likelihood. Cột là impact. Ô có nền đậm là mức r�
 1. **R-01**: High, escalate.
 2. **R-03, R-04, R-05, R-12** (Moderate, impact High, confidence Low). Tiếp theo là **R-07, R-08, R-11** (Moderate, impact High, confidence Medium).
 3. **R-02**: Moderate, impact Moderate.
-4. **R-06, R-09, R-10, R-13**: Low, được chấp nhận và ghi lại. Mỗi kịch bản vẫn cần risk owner ký xác nhận ở giai đoạn 4.
+4. **R-06, R-09, R-13** (impact Moderate), tiếp theo là **R-10** (impact Low): Low, được chấp nhận và ghi lại. Mỗi kịch bản vẫn cần risk owner ký xác nhận ở giai đoạn 4.
 
 **Lỗ hổng chung của nhiều kịch bản:**
 
@@ -698,6 +698,75 @@ Có hai phương án được cân nhắc chung cho mọi rủi ro:
 
 ---
 
-## 5. Package & review
+## 5. Package & review (Đóng gói và rà soát)
 
-*Chưa thực hiện. Giai đoạn này gồm `risk.py`, self-check, `out/*.md`, chấm lại các rating sát ngưỡng và phần hạn chế tổng thể. Xem [PLAN.md](PLAN.md).*
+### 5.1 Tính toán tự động và đối soát
+
+**[risk.py](risk.py):**
+- Chỉ dùng thư viện chuẩn của Python.
+- Đọc [data/risk_register.csv](data/risk_register.csv).
+- Tra bảng G-5 và I-2 để tính overall likelihood, mức rủi ro hiện tại và mức rủi ro còn lại.
+- Gắn cờ theo chính sách ở §1.6.
+- Sinh ra hai file [out/register.md](out/register.md) và [out/matrix.md](out/matrix.md).
+- Script **chỉ gắn cờ** những việc mà chính sách yêu cầu. Nó không bao giờ tự chấp nhận rủi ro.
+
+```
+python risk.py           # sinh out/register.md và out/matrix.md
+python risk.py --check   # chạy self-check
+```
+
+**Self-check (`--check`) kiểm tra 5 điều:**
+1. Bảng G-5 và I-2 trong code khớp **từng ô** với bản chép nguyên văn trong [PLAN.md](PLAN.md).
+2. Hai ví dụ tính tay ở §3.1 và §3.2 cho đúng kết quả.
+3. Kịch bản có impact Very High luôn bị gắn cờ escalate.
+4. Nhãn rating không hợp lệ (ví dụ `Medium`) làm script **báo lỗi**. Giá trị `unknown` làm dòng đó bị bỏ qua kèm cảnh báo, không bao giờ bị coi là 0.
+5. Register thật được tính đủ 13 dòng mà không có cảnh báo nào.
+
+Ngoài ra, khi cố ý sửa sai một ô của G-5 hoặc đưa một nhãn sai vào CSV, self-check đều báo lỗi đúng chỗ.
+
+**Đối soát kết quả:** kết quả do script sinh ra khớp với phần tính tay ở 4 chỗ:
+- Bảng §3.3, đủ 13 dòng.
+- Ma trận ở §3.4.
+- Thứ tự ưu tiên ở §3.5.
+- Số lượng rủi ro còn lại ở §4.2: 0 High, 3 Moderate, 10 Low.
+
+Lần đối soát duy nhất phát hiện sai khác là thứ tự trong nhóm rủi ro Low ở §3.5. Đã sửa: R-10 xếp sau cùng vì impact của nó thấp hơn.
+
+### 5.2 Độ nhạy và chấm lại các rating sát ngưỡng
+
+**Cách làm:** lần lượt nâng hoặc hạ **từng** rating đầu vào một mức, rồi xem mức rủi ro hiện tại có thay đổi không. Kết quả là **hầu hết các kịch bản đều nằm cạnh một ngưỡng**. Đây là đặc điểm thường gặp của thang định tính 5 mức. Bảng dưới chỉ liệt kê những thay đổi có thể **làm đổi quyết định xử lý**:
+
+| Kịch bản | Confidence | Thay đổi một mức | Hệ quả đối với quyết định |
+|---|---|---|---|
+| R-06 (đang accept) | Low | Khởi phát hoặc G-4 tăng một mức thì mức rủi ro thành **Moderate** | Risk owner không còn được tự chấp nhận. Phải xử lý (T-11) hoặc cần System owner chấp nhận |
+| R-13 (đang accept) | Medium | Khởi phát hoặc G-4 tăng một mức thì mức rủi ro thành **Moderate** | Như trên |
+| R-03, R-11 (residual Moderate) | Low / Medium | Khởi phát, G-4 hoặc impact tăng một mức thì mức rủi ro hiện tại thành **High** | Cần Risk executive cấp ngoại lệ. Quyết định mitigate vẫn giữ nguyên |
+| R-01 | Low | Impact giảm một mức thì mức rủi ro thành Moderate và **không còn phải escalate**. Khởi phát hoặc G-4 tăng một mức thì mức rủi ro thành Very High | Quyết định mitigate vẫn giữ nguyên trong cả hai hướng |
+
+**Chấm lại các rating có confidence Low** (R-01, R-03, R-04, R-05, R-06, R-12):
+- Hệ thống là hư cấu nên **không có bằng chứng mới** nào để dựa vào. Vì vậy mọi rating được **giữ nguyên**.
+- Tuy vậy, kết quả độ nhạy dẫn tới hai thay đổi trong hồ sơ quyết định:
+  - **R-06:** quyết định accept chỉ còn hiệu lực khi chưa có dấu hiệu bị DDoS hoặc bị tống tiền bằng DDoS. Nếu có, phải chấm lại ngay. Điều kiện này đã có trong D-R06, nay được nâng thành điều kiện bắt buộc.
+  - **R-03:** thêm vào danh sách theo dõi ưu tiên của T-06. Mọi lần sửa điểm sau khi đã khóa sổ đều phải được xem lại.
+
+### 5.3 Hạn chế tổng thể
+
+1. **Hư cấu:** tổ chức, hệ thống, tình trạng control, tần suất và phê duyệt đều là **[GĐ]**. Kết quả chỉ minh họa phương pháp, không áp dụng được cho một hệ thống thật nếu chưa thu thập bằng chứng thật.
+2. **Định tính:** các mức là phán đoán theo thang thứ bậc, không phải xác suất. Kết quả độ nhạy ở §5.2 cho thấy một thay đổi một mức thường đủ để đổi mức rủi ro.
+3. **Không cộng dồn:** các kịch bản liên quan nhau được đánh giá riêng, ví dụ R-11 thường là bước đầu của R-01.
+4. **Residual chưa kiểm chứng:** mọi residual đều là `projected`. Mức giảm của từng control là **[ĐG]**.
+5. **Không có chi phí bằng tiền và không dùng FAIR:** công sức chỉ được ước lượng tương đối.
+6. **Pháp lý:** nghĩa vụ bảo vệ dữ liệu cá nhân được coi là ràng buộc (A-05), nhưng chưa xác minh văn bản luật cụ thể.
+7. **Nguồn:** các bảng của SP 800-30 Rev.1 (2012) được dùng nguyên văn. Có thể đã có bản phát hành mới hơn của SP 800-53, nhưng chưa xác minh (xem [PLAN.md](PLAN.md) §7).
+
+### 5.4 Kết luận cho người ra quyết định
+
+- **Rủi ro lớn nhất** là ransomware nhiều bước (R-01), ở mức **High** và đã được escalate.
+  - Nguyên nhân gốc là ba điểm yếu đi cùng nhau: backup nằm cùng chỗ và dùng chung thông tin xác thực (V-02), chưa có MFA (V-01), tài khoản admin dùng chung (PC-02).
+- **Ba gói nên làm trước** là T-01 (MFA), T-03 (tài khoản admin riêng) và T-02 (backup tách biệt, có thử khôi phục).
+  - T-01 và T-03 cần công sức thấp, T-02 cần công sức vừa.
+  - Ba gói giảm trực tiếp 5 trên 13 kịch bản: R-01, R-02, R-04, R-08, R-11. R-09 chỉ được lợi gián tiếp.
+- **Sau khi triển khai đủ 12 gói** (T-11 được hoãn), mức rủi ro dự kiến còn 0 High, 3 Moderate, 10 Low.
+  - Ba rủi ro Moderate còn lại (R-01, R-03, R-11) cần System owner chấp nhận theo ủy quyền.
+  - Các mức này chỉ được coi là đạt khi có bằng chứng như liệt kê ở §4.5.
+- **Đánh giá lại** khi gặp một trong các điều kiện ở §1.7, và chậm nhất vào 2027-11-22.
