@@ -116,3 +116,17 @@ R-13,corrected_before_use,no,judgment,,[GD] SSO failure lasting a few hours; con
 R-13,outage_hours,4,judgment,,[GD] SSO failure lasting a few hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
 R-13,in_critical_window,yes,judgment,,[GD] SSO failure lasting a few hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
 R-13,multiple_severe_documented,no,judgment,,[GD] SSO failure lasting a few hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
+F-001,cve_id,CVE-2025-24813,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-001,component_id,AS-06,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-001,applicability,confirmed,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-001,remediation_state,open,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-001,first_confirmed_on,2026-11-18,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-002,cve_id,CVE-2026-34486,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-002,component_id,AS-06,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-002,applicability,suspected,judgment,,"[GD] product matches, installed version not yet confirmed",Low,assessment team,2026-11-22
+F-002,remediation_state,open,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-003,cve_id,CVE-2017-12617,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-003,component_id,AS-06,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-003,applicability,confirmed,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-003,remediation_state,remediated_verified,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-003,first_confirmed_on,2026-01-10,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22

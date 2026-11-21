@@ -76,6 +76,17 @@ Các đầu vào còn lại là **phán đoán**, phải có `rationale` và `co
 | EPSS-ORDER-01 | 1.0 | Chỉ xếp thứ tự các finding không thuộc KEV bên trong backlog vá lỗi: theo `exposure`, sau đó theo EPSS giảm dần. Finding thiếu điểm EPSS ghi là chưa xếp hạng. Percentile chỉ để hiển thị, không phải là xác suất |
 | VOI-01 | 1.0 | Độ nhạy quyết định. Với đầu vào `unknown`, xét mọi mức hợp lệ. Với phán đoán có confidence Low, xét các mức liền kề. Với số liệu, xét giá trị sát ranh giới của quy tắc. Nếu thẩm quyền quyết định, escalation hoặc thứ tự gói có thể đổi thì tạo một việc thu thập bằng chứng |
 
+### 3.3 Quy tắc cho hiệu ứng của gói biện pháp (thêm ở bước 4)
+
+| Mã | Phiên bản | Quy tắc |
+|---|---|---|
+| EFF-01 | 1.0 | Trong residual **dự kiến**, G-4 không được là Very Low. Theo anchor ở §3.1, mức VL chỉ đạt được khi rào chắn **đã được kiểm thử**. Muốn lên VL thì phải có bằng chứng kiểm chứng (report §4.5) |
+| EFF-02 | 1.0 | Một tập gói lớn hơn không được cho kết quả tệ hơn bất kỳ tập con nào của nó, xét trên từng thành phần: initiation, adverse, impact |
+| Hiệu ứng thưa | 1.0 | Hiệu ứng của ứng viên S lên kịch bản r là dòng trong `effects.csv` có **đúng** tập `S ∩ applicable(r)`. Không có dòng đó thì hiệu ứng là `unknown`, và ứng viên được gắn nhãn *incomplete*. Không bao giờ ghép các factor từ nhiều dòng khác nhau |
+| Xếp hạng | 1.0 | Lợi ích = các family có rủi ro nặng nhất vượt xuống dưới High, và các family vượt xuống dưới Moderate. Gói đơn được lọc Pareto theo (hai con số lợi ích) so với effort, rồi xếp theo thứ tự: số family xuống dưới High, số family xuống dưới Moderate, effort. Bundle được liệt kê riêng, với effort ghi là "not assessed", tức **không cộng** các effort tier. Nghĩa vụ KEV đứng trên mọi thứ hạng |
+| VOI-01 (thông số) | 1.0 | **[DA]** Với `initiation_likelihood` và `adverse_impact_likelihood` có confidence Low, thử mức liền kề ±1. Với các thuộc tính số có confidence khác High, thử ×0,5 và ×2. Đầu vào sẽ được đưa vào hàng đợi điều tra nếu thay đổi đó làm đổi thẩm quyền quyết định (owner, delegated, senior) hoặc đổi escalation |
+| Cửa sổ "sắp tới hạn" | 1.0 | **[DA]** 30 ngày, dùng cho mục 1 của báo cáo hành động |
+
 ## 4. Chính sách khắc phục KEV (KEV-POL-01)
 
 > **[TK]** BOD 22-01 của CISA đã bị **thu hồi** và được thay bằng BOD 26-04 (trang của CISA ghi ngày 10/06/2026). Chính sách dưới đây là **chính sách tổ chức hư cấu tự chọn áp dụng**, không phải tuân thủ quy định liên bang.
@@ -253,14 +264,52 @@ Các rating suy ra được (overall likelihood, mức rủi ro, residual) giờ
 |---|---|---|---|
 | Rủi ro hiện tại v1 | 1 | 8 | 4 |
 | Rủi ro hiện tại v2.1 | 2 | 6 | 5 |
-| Residual (dự kiến), cả v1 và v2.1 | 0 | 3 | 10 |
+| Residual (dự kiến) sau bước 2, vẫn dùng effects của v1. *Đã được thay bằng §7.3: 0 / 2 / 11* | 0 | 3 | 10 |
 
 **Hệ quả đối với quyết định:**
 - **R-11** giờ ở mức High, nên phải xử lý hoặc cần Risk executive cấp ngoại lệ. Quyết định mitigate trong D-R11 vẫn đúng, và residual vẫn là Moderate.
 - **R-08** giờ ở mức Low, nên owner được phép chấp nhận. Quyết định mitigate vẫn được giữ, vì gói T-02 vốn cần cho R-01.
 - Độ nhạy: R-08 nằm đúng ranh giới. Nếu G-4 quay lại H thì R-08 thành Moderate. Đây là ứng viên cho hàng đợi điều tra (VOI-01): bằng chứng cần thu thập là biên bản thử khôi phục.
 
+### 7.3 Bước 4: chấm lại effects và finding minh họa (ngày 2026-11-22)
+
+**Phát hiện thiếu sót của bước 2:** `effects.csv` vẫn mang các rating residual của v1, **chưa được chấm lại theo anchor G-4**. Ở bước 4, toàn bộ effects đã được chấm lại theo EFF-01 và EFF-02. Đồng thời thêm effects cho từng gói đơn, để xếp hạng được gói. Tổng cộng có 35 dòng.
+
+| Kịch bản | Residual v1 → v2.1 | Lý do |
+|---|---|---|
+| R-01 | Moderate → **Low** | Bundle có MFA và máy trạm quản trị riêng, tức một rào chắn triển khai đủ (G-4 L). Backup khôi phục được nên mất hậu quả phá hủy, impact giảm từ VH xuống H |
+| R-02 | Low → **Moderate** | v1 chấm G-4 = VL nhờ MFA. Theo EFF-01, mức VL chỉ đạt được sau khi kiểm thử, nên residual dự kiến chỉ là L |
+| R-03 | Moderate → **Low** | Đối soát giúp sửa sai trước khi dữ liệu được dùng, nên I-01 giới hạn impact ở mức L |
+
+**Residual dự kiến của v2.1:** 0 High, 2 Moderate (R-02, R-11), 11 Low.
+
+**Finding minh họa** (**[GĐ]**, giả định cho hệ thống hư cấu, giả sử AS-06 chạy Apache Tomcat). Mã CVE là thật và có trong snapshot KEV 2026.11.20:
+
+| Finding | CVE | Trạng thái giả định | Kết quả |
+|---|---|---|---|
+| F-001 | CVE-2025-24813 | Đã xác nhận áp dụng, chưa khắc phục | Nghĩa vụ KEV mở, hạn 2026-12-02 (thành phần mở ra internet: 14 ngày) |
+| F-002 | CVE-2026-34486 | Nghi ngờ áp dụng | Vào hàng đợi điều tra |
+| F-003 | CVE-2017-12617 | Đã khắc phục và kiểm chứng | Nghĩa vụ đã đóng |
+
+Chưa có finding nào nằm ngoài KEV, và chưa có snapshot EPSS. Vì vậy thứ tự theo EPSS (EPSS-ORDER-01) mới chỉ được kiểm tra bằng code, chưa có dữ liệu thật để minh họa.
+
+**Kết quả xếp hạng gói** ([out/action_report.md](out/action_report.md) mục 3):
+- **Nhóm Pareto của gói đơn:** T-04 kéo 2 family xuống dưới Moderate, effort Medium. T-09 và T-10 mỗi gói kéo 1 family, effort Low.
+- **Family ransomware:** **không gói đơn nào** kéo được family này xuống dưới High. Chỉ bundle đầy đủ của R-01 làm được.
+- **Các tổ hợp nhỏ hơn** (T-02 + T-03; T-01 + T-03 + T-08 + T-12) được đánh dấu *incomplete*, vì chưa có effect được đánh giá cho R-01.
+- **Việc cần làm:** người phụ trách mô hình phải đánh giá thêm các tổ hợp này nếu muốn biết tổ hợp nhỏ nhất đủ để kéo family ransomware xuống.
+
 **Kiểm chứng:**
-- `python risk.py --check` cố định 13 cặp (mức rủi ro hiện tại, residual) nêu trên.
+- `python risk.py --check` cố định 13 cặp (mức rủi ro hiện tại, residual) theo §7.3.
+- Self-check còn kiểm tra:
+  - **Hai quy tắc effects:** EFF-01 và EFF-02.
+  - **Nghĩa vụ KEV:**
+    - ngày kích hoạt và hạn theo exposure,
+    - giữ nguyên khi import lại feed,
+    - ngày đã ghi nhận được ưu tiên,
+    - quá hạn,
+    - đóng nghĩa vụ,
+    - trường hợp chưa có KEV.
+  - **Kết quả của case portal:** nghĩa vụ, nhóm Pareto, bundle của family ransomware, và các mục trong hàng đợi điều tra.
 - Phần kiểm tra hợp lệ đã được thử với dữ liệu cố ý làm sai: thuộc tính không khai báo, subject không tồn tại, giá trị âm, thiếu `evidence_ref`, gói biện pháp không áp dụng được. Tất cả đều bị từ chối.
 - Một đầu vào `unknown` làm mức rủi ro thành `unknown` và kịch bản được đưa vào hàng đợi điều tra, không bị coi là 0.

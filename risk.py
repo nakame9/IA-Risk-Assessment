@@ -54,9 +54,17 @@ ATTRS = {
     'obligation_policy_version': ('F', 'text', None),
 }
 FINDING_REQUIRED = ['cve_id', 'component_id', 'applicability', 'remediation_state']
+IMPACT_ATTRS = ['info_class', 'records_disclosed', 'integrity_consequence', 'corrected_before_use',
+                'outage_hours', 'in_critical_window', 'multiple_severe_documented']
 RULES = {'F2-01': '1.0', 'G3-01': '1.0', 'C-01': '1.0', 'I-01': '1.0', 'A-01': '1.0', 'IMP-01': '1.0',
-         'CVE-APP-01': '1.0'}
+         'CVE-APP-01': '1.0', 'KEV-POL-01': '1.0', 'EPSS-ORDER-01': '1.0', 'VOI-01': '1.0', 'EFF-01': '1.0', 'EFF-02': '1.0'}
 FEED_MAX_AGE_DAYS = 7          # SPEC 5, evidence type "feed" [DA]
+EVIDENCE_MAX_AGE = {'inventory': 180, 'config': 90, 'test': 365, 'scan': 30, 'feed': 7, 'incident': 365,
+                    'interview': 180}                   # SPEC 5 [DA]; 'assumption' never expires
+KEV_POLICY = 'KEV-POL-1.0'
+KEV_DUE_DAYS = {'internet': 14, 'internal': 30, 'isolated': 30}   # SPEC 4 [DA]
+SOON_DAYS = 30                 # "upcoming" window for the time-sensitive section [DA]
+EFFORT = ['Low', 'Medium', 'High']
 LICENSE_REF = {'kev': 'https://github.com/cisagov/kev-data/blob/develop/LICENSE (CC0 1.0)',
                'epss': 'https://www.first.org/epss/ (attribution requested; terms of use not yet read)'}
 MANIFEST_FIELDS = ['source', 'url', 'retrieved_on', 'published_on', 'version', 'sha256', 'license_ref', 'status', 'path']
@@ -149,6 +157,20 @@ def policy_flags(risk, impact):
     flags = {VL: 'owner may accept', L: 'owner may accept', M: 'treat or delegated acceptance',
              H: 'treat or senior exception', VH: 'treat or senior exception'}[risk]
     return flags + ('; ESCALATE' if impact == VH else '')
+
+
+def decision_class(risk, impact):
+    """Required decision authority (report.md 1.6) plus escalation; used by VOI-01."""
+    return {VL: 'owner', L: 'owner', M: 'delegated', H: 'senior', VH: 'senior'}[risk] + ('+escalate' if impact == VH else '')
+
+
+def rate(tpl, v):
+    """Apply the template's rules to typed input values -> (initiation, adverse, impact, (C, I, A))."""
+    initiation = g3_01(v['annual_frequency']) if tpl['init_rule'] == 'G3-01' else v['initiation_likelihood']
+    c = c_01(v['info_class'], v['records_disclosed'])
+    i = i_01(v['integrity_consequence'], v['corrected_before_use'])
+    a = a_01(v['outage_hours'], v['in_critical_window'])
+    return initiation, v['adverse_impact_likelihood'], imp_01(c, i, a, v['multiple_severe_documented']), (c, i, a)
 
 
 # ---------------------------------------------------------------- feed snapshots (SPEC 6.5, A-08)
@@ -365,6 +387,20 @@ def validate(d):
             err.append(f'{where}: unknown risk or package')
         if any(e[k] not in LEVELS for k in ('initiation', 'adverse', 'impact')):
             err.append(f'{where}: invalid level')
+        elif e['adverse'] == VL:
+            err.append(f'{where}: projected G-4 cannot be Very Low before barriers are tested (EFF-01)')
+    # EFF-02: a larger package set may not project a worse rating than any of its subsets
+    by_risk = {}
+    for e in d['effects']:
+        by_risk.setdefault(e['risk_id'], []).append(e)
+    for rid, rows in by_risk.items():
+        for a in rows:
+            for b in rows:
+                sa, sb = set(a['package_ids'].split(';')), set(b['package_ids'].split(';'))
+                valid = all(x[k] in LEVELS for x in (a, b) for k in ('initiation', 'adverse', 'impact'))
+                if sa < sb and valid and \
+                        any(LEVELS.index(b[k]) > LEVELS.index(a[k]) for k in ('initiation', 'adverse', 'impact')):
+                    err.append(f"effects {rid}: {b['package_ids']} projects worse than its subset {a['package_ids']} (EFF-02)")
     for r in d['risk_register']:
         where = f"risk_register {r['risk_id']}"
         if r['template_id'] not in templates:
@@ -407,17 +443,12 @@ def evaluate(d):
             trace.append(f"{attr} = {row['value']} ({row['mode']}, confidence {row['confidence']}; {why})")
             return v
 
+        names = (['annual_frequency'] if tpl['init_rule'] == 'G3-01' else ['initiation_likelihood']) \
+            + ['adverse_impact_likelihood'] + IMPACT_ATTRS
+        values = {n: val(n) for n in names}
+        initiation, adverse, impact, (c, i, a) = rate(tpl, values)
         if tpl['init_rule'] == 'G3-01':
-            f = val('annual_frequency')
-            initiation = g3_01(f)
-            trace.append(f'G3-01 v{RULES["G3-01"]}: annual_frequency {f} -> initiation {initiation}')
-        else:
-            initiation = val('initiation_likelihood')
-        adverse = val('adverse_impact_likelihood')
-        c = c_01(val('info_class'), val('records_disclosed'))
-        i = i_01(val('integrity_consequence'), val('corrected_before_use'))
-        a = a_01(val('outage_hours'), val('in_critical_window'))
-        impact = imp_01(c, i, a, val('multiple_severe_documented'))
+            trace.append(f"G3-01 v{RULES['G3-01']}: annual_frequency {values['annual_frequency']} -> initiation {initiation}")
         trace.append(f'C-01 -> {c}; I-01 -> {i}; A-01 -> {a}; IMP-01 v{RULES["IMP-01"]} -> impact {impact}')
         sys_ids = {system_of[x] for x in r['asset_id'].split(';')}
         f2 = {p: f2_01(next((status[(s, p)] for s in sys_ids if (s, p) in status), UNK))
@@ -426,7 +457,7 @@ def evaluate(d):
                    key=conf_rank.get, default='High')
         row = {**r, 'initiation': initiation, 'adverse': adverse, 'impact': impact, 'confidence': conf,
                'f2': f2, 'trace': trace, 'overall': UNK, 'risk': UNK, 'flags': '', 'res_risk': '', 'res_overall': '',
-               'res_impact': '', 'res_basis': ''}
+               'res_impact': '', 'res_basis': '', 'values': values, 'tpl': tpl, 'input_rows': got, 'missing': missing}
         if UNK in (initiation, adverse, impact):
             warnings.append(f'{rid}: rating unknown (missing or unknown: {", ".join(missing)}); added to investigation queue')
             out.append(row)
@@ -468,6 +499,247 @@ def finding_status(d, feeds):
                     'ransomware': k['ransomware'] if k else '',
                     'epss': epss[cve][0] if cve in epss else UNK, 'percentile': epss[cve][1] if cve in epss else UNK})
     return out
+
+
+def obligations(d, feeds, as_of):
+    """KEV-POL-01 (SPEC 4): confirmed, unremediated KEV findings -> dated remediation obligations.
+    The trigger date is derived from stable data (confirmation date, KEV dateAdded), so re-importing
+    a feed cannot restart it; a recorded obligation_triggered_on always wins."""
+    if 'kev' not in feeds:
+        return [], ['KEV snapshot unavailable: KEV obligations cannot be determined']
+    kev = feeds['kev'][1]
+    exposure = {a['asset_id']: a['exposure'] for a in d['assets']}
+    out, notes = [], []
+    for fid, f in sorted(findings(d).items()):
+        v = {a: f[a]['value'] for a in f}
+        k = kev.get(v['cve_id'])
+        if not k or v['applicability'] != 'confirmed':
+            continue
+        trigger = max(parse('first_confirmed_on', v['first_confirmed_on']), datetime.date.fromisoformat(k['date_added']))
+        if 'obligation_triggered_on' in v:
+            recorded = parse('obligation_triggered_on', v['obligation_triggered_on'])
+            if recorded != trigger:
+                notes.append(f'{fid}: recorded obligation_triggered_on {recorded} kept (derived {trigger})')
+            trigger = recorded
+        due = trigger + datetime.timedelta(days=KEV_DUE_DAYS[exposure[v['component_id']]])
+        state = {'remediated_verified': 'closed', 'exception': 'exception (needs approved, time-limited exception)'}.get(
+            v['remediation_state'], 'overdue' if as_of > due else 'open')
+        out.append({'finding_id': fid, 'cve_id': v['cve_id'], 'component_id': v['component_id'],
+                    'exposure': exposure[v['component_id']], 'triggered_on': trigger, 'due': due, 'state': state,
+                    'remediation_state': v['remediation_state'], 'ransomware': k['ransomware'],
+                    'policy': v.get('obligation_policy_version', KEV_POLICY)})
+    return out, notes
+
+
+def candidate_effects(rows, d):
+    """Supported package candidates: every single package and every package set assessed in effects.csv.
+    For a candidate S and risk r the effect is the row for exactly S & applicable(r); a missing row is
+    unknown (never 'no benefit'). Benefit = families whose worst risk crosses below High / below Moderate."""
+    by_risk = {r['risk_id']: r for r in rows if r['risk'] != UNK}
+    applicable = {r['risk_id']: frozenset(filter(None, r['applicable_packages'].split(';'))) for r in rows}
+    eff = {(e['risk_id'], frozenset(e['package_ids'].split(';'))): e for e in d['effects']}
+    packages = {p['package_id']: p for p in d['packages']}
+    families = {}
+    for r in rows:
+        families.setdefault(r['family_id'], []).append(r['risk_id'])
+    worst = lambda lv: max(lv, key=LEVELS.index) if lv and UNK not in lv else UNK
+    before = {f: worst([by_risk[x]['risk'] if x in by_risk else UNK for x in rids]) for f, rids in families.items()}
+    cands = sorted({frozenset([p]) for p in packages} | {k[1] for k in eff if len(k[1]) > 1},
+                   key=lambda s: (len(s), sorted(s)))
+    out = []
+    for S in cands:
+        after, unknown_fams = {}, set()
+        for f, rids in families.items():
+            lv = []
+            for rid in rids:
+                K = S & applicable[rid]
+                if rid not in by_risk:
+                    lv.append(UNK)
+                elif not K:
+                    lv.append(by_risk[rid]['risk'])
+                elif (rid, K) in eff:
+                    e = eff[(rid, K)]
+                    lv.append(risk_level(overall_likelihood(e['initiation'], e['adverse']), e['impact']))
+                else:
+                    lv.append(UNK)
+                    unknown_fams.add(f)
+            after[f] = worst(lv)
+        cross = lambda th: sorted(f for f in families if before[f] != UNK and after[f] != UNK
+                                  and LEVELS.index(before[f]) >= LEVELS.index(th) > LEVELS.index(after[f]))
+        below_h, below_m = cross(H), cross(M)
+        tiers = [packages[p]['effort_tier'] for p in sorted(S)]
+        out.append({'packages': sorted(S), 'below_high': below_h, 'below_moderate': below_m,
+                    'effort': tiers[0] if len(S) == 1 else 'not assessed (' + ', '.join(tiers) + ')',
+                    'deferred': [p for p in S if packages[p]['status'] == 'deferred'],
+                    'incomplete': sorted(unknown_fams)})
+    return out
+
+
+def rank_candidates(cands):
+    """SPEC 9.4/9.10.3: Pareto filter of complete single packages on (crossings below High, below Moderate)
+    versus effort, then lexicographic order; ties kept. Bundles are listed separately (effort not summed)."""
+    key = lambda c: (len(c['below_high']), len(c['below_moderate']))
+    singles = [c for c in cands if len(c['packages']) == 1 and not c['incomplete'] and any(key(c))]
+
+    def dominates(a, b):
+        ea, eb = EFFORT.index(a['effort']), EFFORT.index(b['effort'])
+        ka, kb = key(a), key(b)
+        return ka[0] >= kb[0] and ka[1] >= kb[1] and ea <= eb and (ka != kb or ea != eb)
+    order = lambda c: (-key(c)[0], -key(c)[1], EFFORT.index(c['effort']), c['packages'])
+    front = sorted([c for c in singles if not any(dominates(o, c) for o in singles)], key=order)
+    dominated = sorted([c for c in singles if c not in front], key=order)
+    bundles = sorted([c for c in cands if len(c['packages']) > 1 and not c['incomplete'] and any(key(c))],
+                     key=lambda c: (-key(c)[0], -key(c)[1], len(c['packages']), c['packages']))
+    incomplete = [c for c in cands if c['incomplete']]
+    no_crossing = [c for c in cands if not c['incomplete'] and not any(key(c))]
+    return front, dominated, bundles, incomplete, no_crossing
+
+
+def investigation_queue(rows, d, fstatus):
+    """VOI-01 decision sensitivity: inputs whose plausible alternatives change the required decision class."""
+    tasks = []
+    for r in rows:
+        if r['risk'] == UNK:
+            tasks.append((r['risk_id'], ', '.join(r['missing']), 'all valid values', 'rating unknown: no decision possible'))
+            continue
+        base = decision_class(r['risk'], r['impact'])
+        for attr, v in r['values'].items():
+            conf = r['input_rows'][attr]['confidence']
+            _, kind, allowed = ATTRS[attr]
+            if attr in ('initiation_likelihood', 'adverse_impact_likelihood') and conf == 'Low':
+                n = LEVELS.index(v)
+                alts = [LEVELS[j] for j in (n - 1, n + 1) if 0 <= j < 5]
+            elif kind in ('float', 'int') and conf != 'High' and v not in (0, UNK):
+                alts = [type(v)(v * 0.5), type(v)(v * 2)]
+            else:
+                continue
+            flips = []
+            for alt in alts:
+                ini, adv, imp, _ = rate(r['tpl'], {**r['values'], attr: alt})
+                if UNK in (ini, adv, imp):
+                    continue
+                cls = decision_class(risk_level(overall_likelihood(ini, adv), imp), imp)
+                if cls != base:
+                    flips.append(f'{alt} -> {cls}')
+            if flips:
+                tasks.append((r['risk_id'], f'{attr} = {v} (confidence {conf})', '; '.join(flips),
+                              f'current decision class: {base}'))
+    for f in fstatus:
+        if f['applicability'] == 'suspected':
+            tasks.append((f['finding_id'], f"{f['cve_id']} on {f['component_id']}: applicability suspected",
+                          f"confirmed -> KEV obligation" if f['in_kev'] == 'yes' else 'confirmed -> patch backlog',
+                          'CVE-APP-01: collect product/version/configuration evidence'))
+    for c in d['controls']:
+        if c['status'] == UNK:
+            tasks.append((c['package_id'], f"control status unknown at {c['scope_id']}", 'F-2 unknown',
+                          'collect config or test evidence'))
+    return tasks
+
+
+def stale_evidence(d, as_of):
+    out = []
+    for i in d['inputs']:
+        kind = i['evidence_ref'].split(':', 1)[0].strip() if i['mode'] == 'evidence' else ''
+        if kind in EVIDENCE_MAX_AGE:
+            age = (as_of - datetime.date.fromisoformat(i['observed_on'])).days
+            if age > EVIDENCE_MAX_AGE[kind]:
+                out.append(f"{i['subject_id']}/{i['attribute']}: {kind} evidence is {age} days old (> {EVIDENCE_MAX_AGE[kind]})")
+    return out
+
+
+def render_action(res, as_of):
+    rows, d, feeds = res['rows'], res['data'], res['feeds']
+    soon = as_of + datetime.timedelta(days=SOON_DAYS)
+    feed_note = '; '.join(f"{s} {m['version'] or '-'} (retrieved {m['retrieved_on']})" for s, (m, _) in feeds.items()) or 'none'
+    out = ['# Action report (generated)', '',
+           f'> Assessment date {as_of} · scope: all assets in data/assets.csv · {SPEC_VERSION} · rules '
+           + ', '.join(f'{k} v{v}' for k, v in RULES.items()) + f' · feed snapshots: {feed_note}.',
+           '> Generated by `python risk.py`; do not edit by hand. The script flags what policy requires; '
+           'it never accepts a risk or closes an obligation.', '']
+    # 1
+    out += ['## 1. Time-sensitive actions', '', '| Item | Required action | Owner / authority | Due |', '|---|---|---|---|']
+    for o in res['obligations']:
+        if o['state'] in ('open', 'overdue') and o['due'] <= soon or o['state'] == 'overdue':
+            out.append(f"| {o['finding_id']} {o['cve_id']} on {o['component_id']} ({o['exposure']}) — **{o['state']}** | "
+                       f"remediate (KEV-POL-01{', known ransomware use: review FAM-RANSOM' if o['ransomware'] == 'Known' else ''}) "
+                       f"| IT Lead | {o['due']} |")
+    for r in rows:
+        if r['risk'] in (H, VH) or 'ESCALATE' in r['flags']:
+            out.append(f"| {r['risk_id']} risk {r['risk']}{' (impact Very High)' if 'ESCALATE' in r['flags'] else ''} | "
+                       f"{r['flags']} | Risk executive | decision before treatment due {r['due_date'] or '-'} |")
+    for r in d['risk_register']:
+        if r['treatment_option'] == 'accept' and datetime.date.fromisoformat(r['next_review']) <= soon:
+            out.append(f"| {r['risk_id']} acceptance review | re-assess and re-approve | {r['risk_owner']} | {r['next_review']} |")
+    # 2
+    out += ['', '## 2. Changes since the previous assessment', '', 'Baseline assessment (no previous run to compare).']
+    # 3
+    front, dominated, bundles, incomplete, none = res['ranking']
+    fmt = lambda c: (f"| {' + '.join(c['packages'])} | {', '.join(c['below_high']) or '-'} | "
+                     f"{', '.join(c['below_moderate']) or '-'} | {c['effort']} |"
+                     + (' deferred' if c['deferred'] else '') )
+    hdr = ['| Candidate | Families below High | Families below Moderate | Effort |', '|---|---|---|---|']
+    out += ['', '## 3. Recommended packages', '',
+            'Benefit counts scenario families whose worst risk crosses a threshold, using only supported effects '
+            '(data/effects.csv). Projected outcomes are not verified until the package evidence in report.md §4.5 exists.', '',
+            '**Pareto front of single packages** (ordered: below-High crossings, below-Moderate crossings, effort):', ''] + hdr
+    out += [fmt(c) for c in front] or ['| - | | | |']
+    out += ['', '**Single packages dominated by the front** (same or less benefit for more effort):', ''] + hdr
+    out += [fmt(c) for c in dominated] or ['| - | | | |']
+    out += ['', '**Assessed combinations** (effort not assessed: tiers are listed, never added):', ''] + hdr
+    out += [fmt(c) for c in bundles] or ['| - | | | |']
+    out += ['', '**Incomplete candidates** (some affected scenario has no assessed effect for this set):', '']
+    out += [f"- {' + '.join(c['packages'])}: unknown effect on {', '.join(c['incomplete'])}" for c in incomplete] or ['- none']
+    out += ['', f"No threshold crossing from: {', '.join(' + '.join(c['packages']) for c in none) or '-'}."]
+    if any(o['state'] in ('open', 'overdue') for o in res['obligations']):
+        out += ['', 'Constraint: open KEV obligations (section 1) must be met regardless of this ranking.']
+    # 4
+    out += ['', '## 4. Patch backlog', '', '| Finding | CVE | Component | Exposure | In KEV | Obligation | EPSS | Percentile |',
+            '|---|---|---|---|---|---|---|---|']
+    obl = {o['finding_id']: o for o in res['obligations']}
+    exposure = {a['asset_id']: a['exposure'] for a in d['assets']}
+    open_f = [f for f in res['findings'] if f['applicability'] == 'confirmed' and f['remediation_state'] != 'remediated_verified']
+    kev_f = [f for f in open_f if f['finding_id'] in obl]
+    rank_exp = {'internet': 0, 'internal': 1, 'isolated': 2}
+    other = sorted([f for f in open_f if f['finding_id'] not in obl],
+                   key=lambda f: (rank_exp[exposure[f['component_id']]], f['epss'] == UNK,
+                                  -(f['epss'] if f['epss'] != UNK else 0), f['finding_id']))       # EPSS-ORDER-01
+    for f in kev_f + other:
+        o = obl.get(f['finding_id'])
+        out.append(f"| {f['finding_id']} | {f['cve_id']} | {f['component_id']} | {exposure[f['component_id']]} | {f['in_kev']} | "
+                   f"{o['state'] + ' due ' + str(o['due']) if o else '-'} | {f['epss'] if f['epss'] != UNK else 'unranked (no EPSS)'} | "
+                   f"{f['percentile'] if f['percentile'] != UNK else '-'} |")
+    if not open_f:
+        out.append('| - | | | | | | | |')
+    closed = [o for o in res['obligations'] if o['state'] == 'closed']
+    if closed:
+        out += ['', 'Closed obligations (remediation verified): ' + ', '.join(f"{o['finding_id']} {o['cve_id']}" for o in closed) + '.']
+    # 5
+    out += ['', '## 5. Investigation queue (VOI-01 decision sensitivity)', '',
+            'Inputs whose plausible alternatives would change the required decision authority or escalation. '
+            'This is decision sensitivity, not a measured value of information.', '',
+            '| Subject | Input | Alternative -> decision class | Note |', '|---|---|---|---|']
+    out += [f'| {a} | {b} | {c} | {n} |' for a, b, c, n in res['queue']] or ['| - | | | |']
+    # 6
+    out += ['', '## 6. Evidence and feed status', '']
+    for s in PARSERS:
+        if s in feeds:
+            m = feeds[s][0]
+            out.append(f"- {s}: version {m['version'] or '-'}, published {m['published_on'] or '-'}, retrieved {m['retrieved_on']}, "
+                       f"SHA-256 {m['sha256'][:12]}…, license: {m['license_ref']}")
+        else:
+            out.append(f'- {s}: no snapshot')
+    out += [f'- {w}' for w in res['warnings'] + res['stale'] + res['notes']]
+    n_judg = sum(1 for r in rows for x in r['input_rows'].values() if x['mode'] == 'judgment')
+    n_evid = sum(1 for r in rows for x in r['input_rows'].values() if x['mode'] == 'evidence')
+    out += [f'- Scenario inputs: {n_evid} evidence, {n_judg} judgment.']
+    # 7
+    out += ['', '## 7. Accepted risks and exceptions', '', '| Risk | Level | Owner | Decision | Next review |', '|---|---|---|---|---|']
+    by_id = {r['risk_id']: r for r in rows}
+    out += [f"| {r['risk_id']} | {by_id[r['risk_id']]['risk']} | {r['risk_owner']} | {r['decision_ref']} | {r['next_review']} |"
+            for r in d['risk_register'] if r['treatment_option'] == 'accept'] or ['| - | | | | |']
+    exc = [o for o in res['obligations'] if o['state'].startswith('exception')]
+    out += [f"- {o['finding_id']} {o['cve_id']}: KEV obligation under exception" for o in exc]
+    return '\n'.join(out) + '\n'
 
 
 # ---------------------------------------------------------------- rendering
@@ -523,7 +795,11 @@ def run(as_of, root=DATA):
         raise SystemExit('invalid data:\n  ' + '\n  '.join(errors))
     rows, warnings = evaluate(d)
     feeds, feed_warnings = load_snapshots(as_of, root)
-    return rows, warnings + feed_warnings, feeds, finding_status(d, feeds)
+    fstatus = finding_status(d, feeds)
+    obl, notes = obligations(d, feeds, as_of)
+    return {'data': d, 'rows': rows, 'warnings': warnings + feed_warnings, 'feeds': feeds, 'findings': fstatus,
+            'obligations': obl, 'notes': notes, 'ranking': rank_candidates(candidate_effects(rows, d)),
+            'queue': investigation_queue(rows, d, fstatus), 'stale': stale_evidence(d, as_of)}
 
 
 # ---------------------------------------------------------------- self-check
@@ -568,22 +844,22 @@ def check():
     def f(fid, attr, value, mode='evidence', ref='scan:EX-1'):
         return {'subject_id': fid, 'attribute': attr, 'value': value, 'mode': mode, 'evidence_ref': ref if mode == 'evidence' else '',
                 'rationale': 'test' if mode == 'judgment' else '', 'confidence': 'High', 'assessor': 't', 'observed_on': '2026-11-22'}
-    good = [f('F-001', 'cve_id', 'CVE-2024-0001'), f('F-001', 'component_id', 'AS-06'),
-            f('F-001', 'applicability', 'confirmed'), f('F-001', 'remediation_state', 'open'),
-            f('F-001', 'first_confirmed_on', '2026-11-20')]
+    good = [f('F-901', 'cve_id', 'CVE-2024-0001'), f('F-901', 'component_id', 'AS-06'),
+            f('F-901', 'applicability', 'confirmed'), f('F-901', 'remediation_state', 'open'),
+            f('F-901', 'first_confirmed_on', '2026-11-20')]
     assert validate({**d, 'inputs': d['inputs'] + good}) == []
-    bad = good + [f('F-002', 'cve_id', 'CVE-2024-0001'), f('F-002', 'component_id', 'AS-06'),     # duplicate pair
-                  f('F-002', 'applicability', 'confirmed', mode='judgment'),                     # no evidence
-                  f('F-002', 'remediation_state', 'remediated_verified', mode='judgment'),
-                  f('F-003', 'cve_id', 'CVE-2024-0002'), f('F-003', 'component_id', 'AS-99'),     # unknown asset
-                  f('F-003', 'applicability', 'suspected', mode='judgment'),
-                  f('F-003', 'remediation_state', 'open', mode='judgment'),
-                  f('F-003', 'obligation_triggered_on', '2026-01-01'), f('F-003', 'first_confirmed_on', '2026-02-01'),
-                  f('F-004', 'cve_id', 'CVE-2024-0003'), f('R-01', 'cve_id', 'CVE-2024-0004')]
+    bad = good + [f('F-902', 'cve_id', 'CVE-2024-0001'), f('F-902', 'component_id', 'AS-06'),     # duplicate pair
+                  f('F-902', 'applicability', 'confirmed', mode='judgment'),                     # no evidence
+                  f('F-902', 'remediation_state', 'remediated_verified', mode='judgment'),
+                  f('F-903', 'cve_id', 'CVE-2024-0002'), f('F-903', 'component_id', 'AS-99'),     # unknown asset
+                  f('F-903', 'applicability', 'suspected', mode='judgment'),
+                  f('F-903', 'remediation_state', 'open', mode='judgment'),
+                  f('F-903', 'obligation_triggered_on', '2026-01-01'), f('F-903', 'first_confirmed_on', '2026-02-01'),
+                  f('F-904', 'cve_id', 'CVE-2024-0003'), f('R-01', 'cve_id', 'CVE-2024-0004')]
     errors = validate({**d, 'inputs': d['inputs'] + bad})
-    for frag in ('duplicate of F-001', 'confirmed applicability needs evidence', 'needs first_confirmed_on',
+    for frag in ('duplicate of F-901', 'confirmed applicability needs evidence', 'needs first_confirmed_on',
                  'remediated_verified needs evidence', "'AS-99' is not an asset", 'before first_confirmed_on',
-                 'F-004: missing', 'R-01/cve_id: attribute not allowed'):
+                 'F-904: missing', 'R-01/cve_id: attribute not allowed'):
         _expect_error(errors, frag)
     # 6. Snapshot import: provenance, unchanged detection, failure recording, staleness, tamper detection.
     with tempfile.TemporaryDirectory() as tmp:
@@ -609,20 +885,47 @@ def check():
         _, warns = load_snapshots(datetime.date(2026, 12, 1), root)
         assert any('kev: snapshot is stale' in w for w in warns)
         fs = finding_status({**d, 'inputs': d['inputs'] + good}, feeds)
-        assert fs[0]['in_kev'] == 'yes' and fs[0]['epss'] == 0.42
+        t = next(x for x in fs if x['finding_id'] == 'F-901')
+        assert t['in_kev'] == 'yes' and t['epss'] == 0.42
         (root / feeds['kev'][0]['path']).write_text('tampered', encoding='utf-8')
         try:
             load_snapshots(datetime.date(2026, 11, 22), root)
             raise AssertionError('tampered snapshot accepted')
         except SystemExit:
             pass
-    # 7. Migrated portal case (SPEC 7.2): expected v2.1 levels.
-    rows, warns, _, _ = run(datetime.date(2026, 11, 22))
-    got = {r['risk_id']: (r['risk'], r['res_risk']) for r in rows}
-    expected = {'R-01': (H, M), 'R-02': (M, L), 'R-03': (M, M), 'R-04': (M, L), 'R-05': (M, L), 'R-06': (L, L),
+    # 7. Effects rules EFF-01 / EFF-02.
+    e = lambda pk, a, b, c: {'risk_id': 'R-01', 'package_ids': pk, 'initiation': a, 'adverse': b, 'impact': c, 'basis_ref': 't'}
+    errors = validate({**d, 'effects': d['effects'] + [e('T-01;T-12', M, VL, H)]})
+    _expect_error(errors, 'EFF-01')
+    errors = validate({**d, 'effects': d['effects'] + [e('T-01;T-12', M, H, VH)]})        # worse than T-01 alone
+    _expect_error(errors, 'EFF-02')
+    # 8. KEV-POL-01 obligations: dates, due by exposure, closure, persistence, overdue.
+    kev = ({'version': 't'}, {'CVE-2024-0001': {'ransomware': 'Known', 'date_added': '2026-11-19'}})
+    dd = {**d, 'inputs': d['inputs'] + good}
+    obl, _ = obligations(dd, {'kev': kev}, datetime.date(2026, 11, 22))
+    o = next(x for x in obl if x['finding_id'] == 'F-901' and x['cve_id'] == 'CVE-2024-0001')
+    assert o['triggered_on'] == datetime.date(2026, 11, 20) and o['due'] == datetime.date(2026, 12, 4) and o['state'] == 'open'
+    later = ({'version': 't2'}, {'CVE-2024-0001': {'ransomware': 'Known', 'date_added': '2026-11-19'}})   # re-import
+    assert obligations(dd, {'kev': later}, datetime.date(2026, 11, 22))[0] == obl
+    assert obligations(dd, {'kev': kev}, datetime.date(2026, 12, 5))[0][-1]['state'] == 'overdue'
+    rec = dd['inputs'] + [f('F-901', 'obligation_triggered_on', '2026-11-21')]
+    assert obligations({**d, 'inputs': rec}, {'kev': kev}, datetime.date(2026, 11, 22))[0][-1]['triggered_on'] == datetime.date(2026, 11, 21)
+    assert obligations(dd, {}, datetime.date(2026, 11, 22))[0] == []
+    # 9. Portal case (SPEC 7.2 / 7.3): levels, obligations, ranking and investigation queue.
+    res = run(datetime.date(2026, 11, 22))
+    got = {r['risk_id']: (r['risk'], r['res_risk']) for r in res['rows']}
+    expected = {'R-01': (H, L), 'R-02': (M, M), 'R-03': (M, L), 'R-04': (M, L), 'R-05': (M, L), 'R-06': (L, L),
                 'R-07': (M, L), 'R-08': (L, L), 'R-09': (L, L), 'R-10': (L, L), 'R-11': (H, M), 'R-12': (M, L),
                 'R-13': (L, L)}
-    assert got == expected and not [w for w in warns if w.startswith('R-')], (got, warns)
+    assert got == expected and not [w for w in res['warnings'] if w.startswith('R-')], (got, res['warnings'])
+    if 'kev' in res['feeds']:
+        states = {o['finding_id']: (o['state'], o['due']) for o in res['obligations']}
+        assert states == {'F-001': ('open', datetime.date(2026, 12, 2)), 'F-003': ('closed', datetime.date(2026, 1, 24))}, states
+    front, _, bundles, _, _ = res['ranking']
+    assert [c['packages'] for c in front] == [['T-04'], ['T-09'], ['T-10']], front
+    assert bundles[0]['packages'] == ['T-01', 'T-02', 'T-03', 'T-08', 'T-12', 'T-13'] and bundles[0]['below_high'] == ['FAM-RANSOM']
+    subjects = {t[0] for t in res['queue']}
+    assert {'R-03', 'R-07', 'F-002', 'T-12'} <= subjects, subjects
     print('self-check passed')
 
 
@@ -636,14 +939,16 @@ def main(argv):
         import_snapshot(argv[1], argv[2], url)
         return
     as_of = datetime.date.fromisoformat(argv[argv.index('--as-of') + 1]) if '--as-of' in argv else datetime.date.today()
-    rows, warnings, feeds, fstatus = run(as_of)
-    reg, mat, tr = render(rows, warnings, feeds, fstatus, as_of)
+    res = run(as_of)
+    reg, mat, tr = render(res['rows'], res['warnings'], res['feeds'], res['findings'], as_of)
     (ROOT / 'out').mkdir(exist_ok=True)
-    for name, text in (('register.md', reg), ('matrix.md', mat), ('trace.md', tr)):
+    for name, text in (('action_report.md', render_action(res, as_of)), ('register.md', reg),
+                       ('matrix.md', mat), ('trace.md', tr)):
         (ROOT / 'out' / name).write_text(text, encoding='utf-8')
-    for w in warnings:
+    for w in res['warnings']:
         print('WARNING:', w, file=sys.stderr)
-    print(f'wrote out/register.md, out/matrix.md, out/trace.md ({len(rows)} risks, {len(fstatus)} findings)')
+    print(f"wrote out/action_report.md, register.md, matrix.md, trace.md ({len(res['rows'])} risks, "
+          f"{len(res['findings'])} findings, {len(res['obligations'])} KEV obligations)")
 
 
 if __name__ == '__main__':
