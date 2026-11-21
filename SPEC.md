@@ -201,4 +201,47 @@ Schema của ba file này nằm ở [PLAN.md](PLAN.md) §9.3, và sẽ được 
 - **Anchor tính sẵn sàng:**
   - Bảng ở report §1.5e được chỉnh cho khớp với A-01, lấp khoảng 3–7 ngày còn hở.
   - **Không rating nào của v1 bị đổi**: R-06, R-09, R-13 vẫn là Moderate theo A-01 (gián đoạn vài giờ trong kỳ đăng ký).
-- **Các quy tắc C-01, I-01, G-4:** chưa áp dụng lại cho 13 kịch bản. Việc này thuộc bước 2, và ở đó mọi khác biệt so với v1 phải được giải thích.
+- **Các quy tắc C-01, I-01, G-4:** đã áp dụng lại cho 13 kịch bản ở bước 2. Kết quả ở §7.2.
+
+### 7.2 Kết quả chuyển đổi 13 kịch bản (bước 2, ngày 2026-11-22)
+
+**Dữ liệu sau khi chuyển đổi:**
+- `data/templates.csv`: 13 template.
+- `data/inputs.csv`: 117 dòng đầu vào.
+- `data/controls.csv`, `data/packages.csv`: 13 dòng mỗi file.
+- `data/effects.csv`: 9 dòng.
+- `data/risk_register.csv`: chỉ còn thông tin của từng kịch bản và quyết định.
+
+Các rating suy ra được (overall likelihood, mức rủi ro, residual) giờ do `risk.py` tính, và **không lưu trong CSV**.
+
+**Quy tắc chấm mới cho ra cùng kết quả với v1 ở các chỗ sau:**
+- **Impact:** C-01, I-01, A-01 và IMP-01 cho ra **đúng** mức impact của v1 ở cả 13 kịch bản.
+- **Initiation của nguồn không chủ đích:** G3-01 cho ra **đúng** mức của v1, với tần suất giả định [GĐ] như sau: R-07 0,5/năm; R-08 0,3/năm; R-09 0,5/năm; R-10 30/năm; R-13 3/năm.
+- **Initiation của nguồn có chủ đích (G-2):** vẫn là phán đoán, nên giữ nguyên.
+
+**Khác biệt: 4 rating G-4 được chấm lại theo anchor ở §3.1:**
+
+| Kịch bản | G-4 v1 → v2.1 | Mức rủi ro v1 → v2.1 | Lý do theo anchor |
+|---|---|---|---|
+| R-07 | High → **Very High** | Moderate → Moderate | Kho dữ liệu đã mở ra Internet thì không còn rào chắn nào giữa sự kiện và tác động. MFA của console không chặn được việc truy cập dữ liệu đã bị lộ |
+| R-08 | High → **Moderate** | Moderate → **Low** | Backup có tồn tại nhưng chưa từng được thử, đúng định nghĩa "một rào chắn chưa được kiểm thử" của mức M. v1 chấm H vì cho rằng "chưa thử thì dễ thất bại", tức đã lấy chuyện chưa thử làm lý do nâng mức, trong khi anchor xếp trường hợp này vào M |
+| R-11 | Moderate → **High** | Moderate → **High** | Rào chắn chỉ có antivirus và spam filter, đúng ví dụ của mức H. **v1 không nhất quán:** R-01 có cùng rào chắn này nhưng được chấm G-4 = H |
+| R-12 | High → **Very High** | Moderate → Moderate | Insider đã có sẵn vai trò được phép xuất dữ liệu, nên việc giới hạn theo vai trò không còn là rào chắn |
+
+**Tổng hợp:**
+
+| | High | Moderate | Low |
+|---|---|---|---|
+| Rủi ro hiện tại v1 | 1 | 8 | 4 |
+| Rủi ro hiện tại v2.1 | 2 | 6 | 5 |
+| Residual (dự kiến), cả v1 và v2.1 | 0 | 3 | 10 |
+
+**Hệ quả đối với quyết định:**
+- **R-11** giờ ở mức High, nên phải xử lý hoặc cần Risk executive cấp ngoại lệ. Quyết định mitigate trong D-R11 vẫn đúng, và residual vẫn là Moderate.
+- **R-08** giờ ở mức Low, nên owner được phép chấp nhận. Quyết định mitigate vẫn được giữ, vì gói T-02 vốn cần cho R-01.
+- Độ nhạy: R-08 nằm đúng ranh giới. Nếu G-4 quay lại H thì R-08 thành Moderate. Đây là ứng viên cho hàng đợi điều tra (VOI-01): bằng chứng cần thu thập là biên bản thử khôi phục.
+
+**Kiểm chứng:**
+- `python risk.py --check` cố định 13 cặp (mức rủi ro hiện tại, residual) nêu trên.
+- Phần kiểm tra hợp lệ đã được thử với dữ liệu cố ý làm sai: thuộc tính không khai báo, subject không tồn tại, giá trị âm, thiếu `evidence_ref`, gói biện pháp không áp dụng được. Tất cả đều bị từ chối.
+- Một đầu vào `unknown` làm mức rủi ro thành `unknown` và kịch bản được đưa vào hàng đợi điều tra, không bị coi là 0.

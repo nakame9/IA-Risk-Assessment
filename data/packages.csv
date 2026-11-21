@@ -1,0 +1,14 @@
+package_id,name,control_ids,effort_tier,requires,owner,due_date,status,verification_ref
+T-01,MFA on SSO for all staff and admin accounts,IA-2(1);IA-2(2),Low,,IT Lead,2027-01-31,planned,report.md §4.5
+T-02,"Separate immutable cross-region backup, dual-authorized deletion, quarterly restore tests",CP-9;CP-9(1);CP-9(3);CP-9(7);CP-4;CP-10,Medium,,IT Lead,2027-02-28,planned,report.md §4.5
+T-03,"Individual admin accounts, least privilege, logging of privileged functions",AC-2;AC-6(5);AC-6(9),Low,,IT Lead,2027-01-31,planned,report.md §4.5
+T-04,Dual authorization for post-lock grade/graduation changes; reconciliation before issuing,AC-3(2);AC-5,Medium,,IT Lead,2027-02-28,planned,report.md §4.5
+T-05,Server-side object-level authorization on grade API; security testing; annual pentest,AC-3;SA-11;CA-8,Medium,,IT Lead,2027-02-28,planned,report.md §4.5
+T-06,"Weekly log review, automated alerts on atypical account use, restricted log admin",AU-6;AU-6(1);AU-9(4);AC-2(12),Medium,,IT Lead,2027-02-28,planned,report.md §4.5
+T-07,"Severity-based patching, vulnerability scanning, WAF in front of C-01",SI-2;RA-5;SC-7,Medium,,IT Lead,2027-02-28,planned,report.md §4.5
+T-08,"Dedicated admin workstations, separate non-privileged accounts, no local admin",AC-6(2);CM-7;SI-3,Medium,,IT Lead,2027-03-31,planned,report.md §4.5
+T-09,"Cloud IAM/security-group baseline, change control, deny by default",CM-2;CM-3;CM-6;SC-7(5),Low,,IT Lead,2027-02-28,planned,report.md §4.5
+T-10,Daily export limits and alerts on large exports,AC-6;SI-4(18),Low,,IT Lead,2027-03-31,planned,report.md §4.5
+T-11,Rate limiting and DDoS response plan,SC-5,Medium,,IT Lead,,deferred,report.md §4.5
+T-12,Phishing awareness training with practical exercises,AT-2(1);AT-2(3),Low,,IT Lead,2027-03-31,planned,report.md §4.5
+T-13,Ransomware incident handling procedure,IR-4,Low,,IT Lead,2027-03-31,planned,report.md §4.5

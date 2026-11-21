@@ -12,7 +12,17 @@
 - [report.md](report.md): báo cáo đánh giá (v1, được cố định bằng tag `v1`).
 - [SPEC.md](SPEC.md): đặc tả đánh giá v2.1, tức bước Prepare. Gồm ánh xạ Task 1-1 → 1-5 của NIST, bộ quy tắc có mã, chính sách KEV, quy trình thu thập bằng chứng và data contract.
 
-**Tiến độ v2.1** (theo [PLAN.md](PLAN.md) §9.10.5): bước 1 (Prepare) đã xong. Các bước 2–7 chưa làm.
+**Tiến độ v2.1** (theo [PLAN.md](PLAN.md) §9.10.5): đã xong bước 1 (Prepare) và bước 2 (quy tắc và schema, chuyển 13 kịch bản). Các bước 3–7 chưa làm.
+
+**Dữ liệu v2.1** (`data/`):
+
+| Ai sửa | File |
+|---|---|
+| Người vận hành | `assets.csv`, `inputs.csv` (bằng chứng và phán đoán, mỗi dòng có nguồn), `controls.csv` |
+| Người phụ trách mô hình | `templates.csv`, `packages.csv`, `effects.csv` |
+| Cả hai | `risk_register.csv` (kịch bản và quyết định) |
+
+Định dạng chi tiết của từng file nằm ở [SPEC.md](SPEC.md) §6.
 
 **Tiến độ:**
 
@@ -27,8 +37,8 @@
 **Cách chạy** (cần Python 3, chỉ dùng thư viện chuẩn):
 
 ```
-python risk.py           # tính lại mức rủi ro, sinh out/register.md và out/matrix.md
-python risk.py --check   # self-check: đối chiếu bảng G-5/I-2 với PLAN.md, ví dụ tính tay, nhãn không hợp lệ
+python risk.py           # kiểm tra data/, sinh out/register.md, out/matrix.md, out/trace.md (chuỗi giải thích)
+python risk.py --check   # self-check: bảng G-5/I-2, ranh giới quy tắc, kiểm tra hợp lệ, kết quả case portal
 ```
 
 `data/*.csv` là dữ liệu nguồn. `out/*.md` do script sinh ra, không sửa tay.

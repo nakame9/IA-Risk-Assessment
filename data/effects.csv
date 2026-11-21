@@ -1,0 +1,10 @@
+risk_id,package_ids,initiation,adverse,impact,basis_ref
+R-01,T-01;T-02;T-03;T-08;T-12;T-13,Moderate,Moderate,High,report.md#d-r01
+R-02,T-01;T-06,Very High,Very Low,Moderate,report.md#d-r02
+R-03,T-04;T-05,High,Low,Moderate,report.md#d-r03
+R-04,T-03;T-04;T-06,Low,Low,High,report.md#d-r04
+R-05,T-07,Moderate,Low,High,report.md#d-r05
+R-07,T-09,Very Low,High,High,report.md#d-r07
+R-08,T-02;T-03,Low,Low,Moderate,report.md#d-r08
+R-11,T-01;T-03;T-08;T-12,High,Low,High,report.md#d-r11
+R-12,T-06;T-10,Low,Moderate,Moderate,report.md#d-r12

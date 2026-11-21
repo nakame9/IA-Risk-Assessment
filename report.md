@@ -1,6 +1,9 @@
 # Báo cáo đánh giá rủi ro IA: Cổng hồ sơ sinh viên (hệ thống hư cấu)
 
-> **Trạng thái:** Đã hoàn thành cả 5 giai đoạn. Kết luận cho người ra quyết định nằm ở [§5.4](#54-kết-luận-cho-người-ra-quyết-định).
+> **Lưu ý (2026-11-22):** các §1–5 dưới đây là **báo cáo v1**, được cố định bằng tag `v1`.
+> Kết quả hiện hành theo mô hình v2.1 nằm ở [out/](out/), gồm register, ma trận và trace. Khác biệt so với v1 được giải thích ở [SPEC.md](SPEC.md) §7.2: R-11 tăng lên High, R-08 giảm xuống Low. Báo cáo sẽ được viết lại ở bước 7 của plan v2.1.
+>
+> **Trạng thái (v1):** Đã hoàn thành cả 5 giai đoạn. Kết luận cho người ra quyết định nằm ở [§5.4](#54-kết-luận-cho-người-ra-quyết-định).
 > **Phương pháp:** NIST SP 800-30 Rev.1 (Sep 2012). Xem [PLAN.md](PLAN.md).
 > **Lưu ý:** toàn bộ tổ chức, hệ thống, con số và phê duyệt trong báo cáo đều **hư cấu**, dùng cho mục đích học tập.
 
