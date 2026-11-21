@@ -161,14 +161,14 @@ Overall likelihood được tra theo bảng **G-5**, chép nguyên văn ở [PLA
 - H-3 Very High là "**multiple** severe or catastrophic adverse effects".
 - FIPS 199 LOW là "limited adverse effect".
 
-Anchor riêng cho hệ thống. Các ngưỡng số đều là **[GĐ]**:
+Anchor riêng cho hệ thống. Các ngưỡng số đều là **[GĐ]**. Cột A đã được chỉnh ngày 2026-11-22 cho khớp với quy tắc A-01 trong [SPEC.md](SPEC.md), để lấp khoảng 3–7 ngày còn hở. Không rating nào thay đổi.
 
 | Mức | Bảo mật (C) | Toàn vẹn (I) | Sẵn sàng (A) |
 |---|---|---|---|
 | Very Low | Lộ thông tin vốn đã công khai, ví dụ danh bạ khoa | Sai lệch hiển thị, dữ liệu gốc không bị ảnh hưởng | Gián đoạn dưới 1 giờ, ngoài kỳ đăng ký |
-| Low | Lộ dữ liệu cá nhân không nhạy cảm của dưới 10 sinh viên | Sai lệch nhỏ, phát hiện và sửa được từ log trong ngày | Gián đoạn dưới 1 ngày, ngoài kỳ đăng ký |
-| Moderate | Lộ hồ sơ hoặc điểm của 10–1.000 sinh viên | Sửa điểm trái phép nhưng phát hiện được trước khi cấp bảng điểm | Gián đoạn 1–3 ngày, hoặc vài giờ trong kỳ đăng ký |
-| High | Lộ phần lớn hoặc toàn bộ CSDL (trên 1.000 sinh viên) | Dữ liệu điểm hoặc tốt nghiệp bị sửa mà không phát hiện được, và đã được dùng để cấp văn bằng | Không cấp được bảng điểm hoặc bằng trong hơn 1 tuần, hoặc mất trọn một kỳ đăng ký |
+| Low | Lộ dữ liệu cá nhân không nhạy cảm của dưới 10 sinh viên | Sai lệch nhỏ, phát hiện và sửa được từ log trong ngày | Gián đoạn từ 1 giờ đến dưới 24 giờ, ngoài kỳ đăng ký |
+| Moderate | Lộ hồ sơ hoặc điểm của 10–1.000 sinh viên | Sửa điểm trái phép nhưng phát hiện được trước khi cấp bảng điểm | Gián đoạn 24 giờ – 7 ngày ngoài kỳ đăng ký, hoặc dưới 24 giờ trong kỳ đăng ký |
+| High | Lộ phần lớn hoặc toàn bộ CSDL (trên 1.000 sinh viên) | Dữ liệu điểm hoặc tốt nghiệp bị sửa mà không phát hiện được, và đã được dùng để cấp văn bằng | Gián đoạn hơn 7 ngày, hoặc từ 24 giờ trở lên trong kỳ đăng ký |
 | Very High | Nhiều tác động High xảy ra cùng lúc. Ví dụ: ransomware vừa làm lộ dữ liệu, vừa mã hóa C-03, vừa phá hỏng C-05 nên không khôi phục được | | |
 
 #### f) Level of risk (I-2, I-3)
@@ -365,8 +365,9 @@ Admin xóa nhầm bảng điểm, rồi phát hiện bản backup không khôi p
 - PC-04 làm thời gian phát hiện và xử lý kéo dài.
 
 #### R-09
-Mất region cloud trong kỳ đăng ký.
+Mất region cloud **vào bất kỳ lúc nào**.
 - Backup nằm cùng region, và chưa có DR (V-07).
+- Thiệt hại lớn nhất nếu sự cố rơi vào kỳ đăng ký. Điều kiện thời điểm này **chỉ được xét ở G-4** (COND-01, sửa ngày 2026-11-22). Bản trước định nghĩa sự kiện là "trong kỳ đăng ký" rồi lại hạ G-4 vì cùng lý do đó, nên điều kiện thời điểm bị tính hai lần.
 
 #### R-10
 Giảng viên nhập sai điểm, và điểm sai được dùng để cấp bảng điểm trước khi ai đó phát hiện (V-05).
@@ -380,7 +381,8 @@ Cán bộ phòng Đào tạo xuất hàng loạt hồ sơ rồi làm lộ ra ngo
 - Chức năng xuất không giới hạn (V-10) và không có cảnh báo (V-09).
 
 #### R-13
-SSO/IdP gặp sự cố trong kỳ đăng ký (PC-01, PC-05).
+SSO/IdP gặp sự cố **vào bất kỳ lúc nào** (PC-01, PC-05).
+- Việc trùng kỳ đăng ký chỉ được xét ở G-4 (COND-01, sửa ngày 2026-11-22).
 - Kịch bản này chỉ có điều kiện tiền đề, không có V-xx, nên cột `vulnerability_severity` ghi `n/a`.
 
 ---
@@ -470,13 +472,14 @@ Overall likelihood được tra theo bảng G-5. Mức rủi ro hiện tại (cu
   - Xảy ra = Low: dưới 1 lần/năm.
   - Gây tác động = High: một kho dữ liệu bị mở ra Internet sẽ bị scanner tìm thấy rất nhanh (R-07); backup chưa từng thử khôi phục nên dễ khôi phục thất bại (R-08).
 - **R-09:**
-  - Gây tác động = Low: chỉ gây hại khi sự cố rơi đúng vào khoảng 10 ngày đăng ký mỗi năm (A-02).
+  - Gây tác động = Low: chỉ gây hại đáng kể khi sự cố rơi đúng vào khoảng 10 ngày đăng ký mỗi năm (A-02). Theo COND-01, đây là chỗ **duy nhất** điều kiện thời điểm được xét.
+  - Impact = Moderate: **[GĐ]** sự cố region thường kéo dài vài giờ, tức dưới 24 giờ trong kỳ đăng ký, ứng với mức Moderate của A-01. Nếu sự cố kéo dài từ 24 giờ trở lên thì impact thành High. Đây là một ranh giới mà việc thu thập bằng chứng ở v2.1 phải xác định (VOI-01).
 - **R-11:**
   - Khởi phát = High: email chứa malware gửi tới cán bộ là chuyện thường xuyên.
   - Impact = High: kẻ tấn công lấy được thông tin xác thực admin (AS-04, C = High).
 - **R-13:**
   - Xảy ra = Moderate: SSO lỗi 1–10 lần/năm.
-  - Gây tác động = Low: chỉ đáng kể khi rơi vào kỳ đăng ký.
+  - Gây tác động = Low: chỉ đáng kể khi rơi vào kỳ đăng ký. Theo COND-01, đây là chỗ duy nhất điều kiện thời điểm được xét.
 
 ### 3.4 Ma trận rủi ro (số kịch bản)
 

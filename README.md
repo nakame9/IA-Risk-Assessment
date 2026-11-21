@@ -9,7 +9,10 @@
 **Tài liệu:**
 
 - [PLAN.md](PLAN.md): kế hoạch, phương pháp, các bảng tra G-5/I-2 và kết quả kiểm chứng nguồn.
-- [report.md](report.md): báo cáo đánh giá.
+- [report.md](report.md): báo cáo đánh giá (v1, được cố định bằng tag `v1`).
+- [SPEC.md](SPEC.md): đặc tả đánh giá v2.1, tức bước Prepare. Gồm ánh xạ Task 1-1 → 1-5 của NIST, bộ quy tắc có mã, chính sách KEV, quy trình thu thập bằng chứng và data contract.
+
+**Tiến độ v2.1** (theo [PLAN.md](PLAN.md) §9.10.5): bước 1 (Prepare) đã xong. Các bước 2–7 chưa làm.
 
 **Tiến độ:**
 

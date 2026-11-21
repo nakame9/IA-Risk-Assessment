@@ -443,7 +443,7 @@ Lý do: KEV và EPSS phản ánh hoạt động khai thác **toàn cầu** đố
 
 #### 9.10.5 Thứ tự công việc mới (thay cho §9.6)
 
-1. **Prepare v2.1:** cố định v1 bằng tag `v1`. Định nghĩa chính sách KEV, hạn khắc phục và hợp đồng dữ liệu (data contract) cho ba bảng đầu vào cùng snapshot. Sửa COND-01 và các anchor còn hở.
+1. ✅ *(Xong ngày 2026-11-22. Kết quả là [SPEC.md](SPEC.md) và tag `v1`.)* **Prepare v2.1:** cố định v1 bằng tag `v1`. Định nghĩa chính sách KEV, hạn khắc phục và hợp đồng dữ liệu (data contract) cho ba bảng đầu vào cùng snapshot. Sửa COND-01 và các anchor còn hở.
 2. **Quy tắc và schema:** chuyển 13 kịch bản sang mô hình mới, và giải thích mọi khác biệt so với v1.
 3. **Kiểm tra dữ liệu:** kiểm tra hợp lệ của việc khớp CVE làm bằng tay. Viết bước import snapshot, có manifest và SHA-256.
 4. **Báo cáo hành động:** sinh nghĩa vụ, chuỗi giải thích, xếp hạng gói, backlog vá lỗi và hàng đợi điều tra.
