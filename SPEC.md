@@ -271,6 +271,34 @@ Các rating suy ra được (overall likelihood, mức rủi ro, residual) giờ
 - **R-08** giờ ở mức Low, nên owner được phép chấp nhận. Quyết định mitigate vẫn được giữ, vì gói T-02 vốn cần cho R-01.
 - Độ nhạy: R-08 nằm đúng ranh giới. Nếu G-4 quay lại H thì R-08 thành Moderate. Đây là ứng viên cho hàng đợi điều tra (VOI-01): bằng chứng cần thu thập là biên bản thử khôi phục.
 
+### 7.4 Bước 5: so sánh giữa hai lần chạy, tức bước Maintain (Task 4-1/4-2) (ngày 2026-11-22)
+
+**Cơ chế:**
+- Mỗi lần chạy ghi `state.json`: một bản tóm tắt tất định gồm rating, các đầu vào, control, finding, nghĩa vụ, nhóm Pareto, hàng đợi điều tra, phiên bản quy tắc và phiên bản feed.
+- **SHA-256 của state** được in ở đầu báo cáo hành động.
+- Khi chạy với `--baseline <state.json cũ>`, mục 2 của báo cáo liệt kê các thay đổi, và **quy mỗi thay đổi của rủi ro về đúng đầu vào đã thay đổi**. Nếu không có đầu vào nào đổi, báo cáo ghi rõ là do quy tắc, effects hoặc control. Nếu phiên bản quy tắc hoặc đặc tả khác nhau, báo cáo cảnh báo trước khi liệt kê.
+- **So sánh chỉ chạy khi có `--baseline` truyền vào rõ ràng.** Nhờ vậy cùng đầu vào luôn cho cùng đầu ra. Self-check đã kiểm tra hai lần chạy cho ra state và báo cáo giống hệt nhau (E2).
+
+**Chuyển từ `projected` sang `verified`:**
+- Khi **mọi** gói đã chọn cho một rủi ro ở trạng thái `implemented_assessed_effective` trong `controls.csv`, residual được tính bằng rủi ro hiện tại, và trạng thái residual là `verified`.
+- Nếu rủi ro hiện tại sau kiểm chứng vẫn tệ hơn residual đã dự kiến, script cảnh báo rằng dự kiến không đạt.
+
+**Tùy chọn mới:**
+- `--data DIR`: đọc dữ liệu kiểu overlay. File nào không có trong DIR thì lấy từ `data/`.
+- `--out DIR`: thư mục ghi kết quả.
+
+**Ví dụ chu kỳ 2** ([examples/cycle2/](examples/cycle2/), **mô phỏng**, ngày đánh giá 2026-12-05). Thư mục chỉ chứa 3 file đã thay đổi:
+
+| Thay đổi mô phỏng | Kết quả trong [examples/cycle2/out/action_report.md](examples/cycle2/out/action_report.md) |
+|---|---|
+| T-01 (MFA) và T-06 (alert) được kiểm thử. R-02 G-4 chấm lại thành VL theo anchor "hai rào chắn đã kiểm thử" | R-02: Moderate → **Low**, residual `projected` → `verified`, thẩm quyền chuyển từ delegated sang owner |
+| MFA đã kiểm chứng làm G-4 của R-01 và R-11 giảm từ H xuống M | R-11: High → **Moderate**. R-01 không đổi mức (impact Very High), nhưng giờ vào hàng đợi điều tra |
+| F-001 được vá và kiểm chứng. F-002 được xác nhận áp dụng | Nghĩa vụ F-001 đóng lại. Nghĩa vụ F-002 mới mở, hạn 2026-12-16 |
+| (Không đổi gì về dữ liệu xếp hạng) | **Nhóm Pareto thêm T-02**. Khi R-11 đã xuống Moderate, chỉ còn R-01 giữ family ransomware ở mức High, và riêng T-02 đủ kéo R-01 xuống dưới High |
+| Snapshot KEV vẫn là bản lấy ngày 2026-11-22 | Cảnh báo snapshot đã cũ (13 ngày, quá giới hạn 7 ngày) |
+
+Mọi bằng chứng của chu kỳ 2 đều được gắn nhãn `[simulated cycle 2]`.
+
 ### 7.3 Bước 4: chấm lại effects và finding minh họa (ngày 2026-11-22)
 
 **Phát hiện thiếu sót của bước 2:** `effects.csv` vẫn mang các rating residual của v1, **chưa được chấm lại theo anchor G-4**. Ở bước 4, toàn bộ effects đã được chấm lại theo EFF-01 và EFF-02. Đồng thời thêm effects cho từng gói đơn, để xếp hạng được gói. Tổng cộng có 35 dòng.

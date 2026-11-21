@@ -1,0 +1,396 @@
+{
+ "as_of": "2026-12-05",
+ "bundles": [
+  "T-01 + T-02 + T-03 + T-08 + T-12 + T-13",
+  "T-04 + T-05",
+  "T-03 + T-04 + T-06",
+  "T-06 + T-10"
+ ],
+ "controls": {
+  "T-01@SYS-PORTAL": "implemented_assessed_effective",
+  "T-02@SYS-PORTAL": "absent_unplanned",
+  "T-03@SYS-PORTAL": "absent_unplanned",
+  "T-04@SYS-PORTAL": "planned_compensated",
+  "T-05@SYS-PORTAL": "partial",
+  "T-06@SYS-PORTAL": "implemented_assessed_effective",
+  "T-07@SYS-PORTAL": "partial",
+  "T-08@SYS-PORTAL": "partial",
+  "T-09@SYS-PORTAL": "partial",
+  "T-10@SYS-PORTAL": "partial",
+  "T-11@SYS-PORTAL": "partial",
+  "T-12@SYS-PORTAL": "unknown",
+  "T-13@SYS-PORTAL": "absent_unplanned"
+ },
+ "feeds": {
+  "kev": {
+   "sha256": "12c9ca4c5350ecacdf22bdce91b4ffcf06b8c8dc9c69b8bfb4c1a21be7a5fe50",
+   "version": "2026.11.20"
+  }
+ },
+ "findings": {
+  "F-001": {
+   "applicability": "confirmed",
+   "component_id": "AS-06",
+   "cve_id": "CVE-2025-24813",
+   "in_kev": "yes",
+   "remediation_state": "remediated_verified"
+  },
+  "F-002": {
+   "applicability": "confirmed",
+   "component_id": "AS-06",
+   "cve_id": "CVE-2026-34486",
+   "in_kev": "yes",
+   "remediation_state": "open"
+  },
+  "F-003": {
+   "applicability": "confirmed",
+   "component_id": "AS-06",
+   "cve_id": "CVE-2017-12617",
+   "in_kev": "yes",
+   "remediation_state": "remediated_verified"
+  }
+ },
+ "front": [
+  "T-02",
+  "T-04",
+  "T-09",
+  "T-10"
+ ],
+ "incomplete": [
+  "T-02 + T-03",
+  "T-02 + T-03 + T-13",
+  "T-01 + T-03 + T-08 + T-12"
+ ],
+ "obligations": {
+  "F-001": {
+   "due": "2026-12-02",
+   "state": "closed"
+  },
+  "F-002": {
+   "due": "2026-12-16",
+   "state": "open"
+  },
+  "F-003": {
+   "due": "2026-01-24",
+   "state": "closed"
+  }
+ },
+ "queue": [
+  "R-01: adverse_impact_likelihood = Moderate (confidence Low)",
+  "R-01: initiation_likelihood = Moderate (confidence Low)",
+  "R-03: adverse_impact_likelihood = Moderate (confidence Low)",
+  "R-03: initiation_likelihood = High (confidence Low)",
+  "R-04: adverse_impact_likelihood = High (confidence Low)",
+  "R-04: initiation_likelihood = Low (confidence Low)",
+  "R-05: adverse_impact_likelihood = Moderate (confidence Low)",
+  "R-05: initiation_likelihood = Moderate (confidence Low)",
+  "R-06: adverse_impact_likelihood = Moderate (confidence Low)",
+  "R-06: initiation_likelihood = Low (confidence Low)",
+  "R-07: annual_frequency = 0.5 (confidence Medium)",
+  "R-12: initiation_likelihood = Low (confidence Low)",
+  "T-12: control status unknown at SYS-PORTAL"
+ ],
+ "risks": {
+  "R-01": {
+   "adverse": "Moderate",
+   "decision_class": "senior+escalate",
+   "impact": "Very High",
+   "initiation": "Moderate",
+   "inputs": {
+    "adverse_impact_likelihood": "Moderate",
+    "corrected_before_use": "no",
+    "in_critical_window": "yes",
+    "info_class": "nonpublic",
+    "initiation_likelihood": "Moderate",
+    "integrity_consequence": "severe",
+    "multiple_severe_documented": "yes",
+    "outage_hours": "720",
+    "records_disclosed": "12000"
+   },
+   "residual": "Low",
+   "residual_status": "projected",
+   "risk": "High",
+   "status": "treatment_planned",
+   "treatment_option": "mitigate"
+  },
+  "R-02": {
+   "adverse": "Very Low",
+   "decision_class": "owner",
+   "impact": "Moderate",
+   "initiation": "Very High",
+   "inputs": {
+    "adverse_impact_likelihood": "Very Low",
+    "corrected_before_use": "no",
+    "in_critical_window": "no",
+    "info_class": "nonpublic",
+    "initiation_likelihood": "Very High",
+    "integrity_consequence": "negligible",
+    "multiple_severe_documented": "no",
+    "outage_hours": "0",
+    "records_disclosed": "500"
+   },
+   "residual": "Low",
+   "residual_status": "verified",
+   "risk": "Low",
+   "status": "treatment_verified",
+   "treatment_option": "mitigate"
+  },
+  "R-03": {
+   "adverse": "Moderate",
+   "decision_class": "delegated",
+   "impact": "High",
+   "initiation": "High",
+   "inputs": {
+    "adverse_impact_likelihood": "Moderate",
+    "corrected_before_use": "no",
+    "in_critical_window": "no",
+    "info_class": "nonpublic",
+    "initiation_likelihood": "High",
+    "integrity_consequence": "severe",
+    "multiple_severe_documented": "no",
+    "outage_hours": "0",
+    "records_disclosed": "0"
+   },
+   "residual": "Low",
+   "residual_status": "projected",
+   "risk": "Moderate",
+   "status": "treatment_planned",
+   "treatment_option": "mitigate"
+  },
+  "R-04": {
+   "adverse": "High",
+   "decision_class": "delegated",
+   "impact": "High",
+   "initiation": "Low",
+   "inputs": {
+    "adverse_impact_likelihood": "High",
+    "corrected_before_use": "no",
+    "in_critical_window": "no",
+    "info_class": "nonpublic",
+    "initiation_likelihood": "Low",
+    "integrity_consequence": "severe",
+    "multiple_severe_documented": "no",
+    "outage_hours": "0",
+    "records_disclosed": "0"
+   },
+   "residual": "Low",
+   "residual_status": "projected",
+   "risk": "Moderate",
+   "status": "treatment_planned",
+   "treatment_option": "mitigate"
+  },
+  "R-05": {
+   "adverse": "Moderate",
+   "decision_class": "delegated",
+   "impact": "High",
+   "initiation": "Moderate",
+   "inputs": {
+    "adverse_impact_likelihood": "Moderate",
+    "corrected_before_use": "no",
+    "in_critical_window": "no",
+    "info_class": "nonpublic",
+    "initiation_likelihood": "Moderate",
+    "integrity_consequence": "negligible",
+    "multiple_severe_documented": "no",
+    "outage_hours": "0",
+    "records_disclosed": "12000"
+   },
+   "residual": "Low",
+   "residual_status": "projected",
+   "risk": "Moderate",
+   "status": "treatment_planned",
+   "treatment_option": "mitigate"
+  },
+  "R-06": {
+   "adverse": "Moderate",
+   "decision_class": "owner",
+   "impact": "Moderate",
+   "initiation": "Low",
+   "inputs": {
+    "adverse_impact_likelihood": "Moderate",
+    "corrected_before_use": "no",
+    "in_critical_window": "yes",
+    "info_class": "public",
+    "initiation_likelihood": "Low",
+    "integrity_consequence": "negligible",
+    "multiple_severe_documented": "no",
+    "outage_hours": "6",
+    "records_disclosed": "0"
+   },
+   "residual": "Low",
+   "residual_status": "accepted",
+   "risk": "Low",
+   "status": "accepted",
+   "treatment_option": "accept"
+  },
+  "R-07": {
+   "adverse": "Very High",
+   "decision_class": "delegated",
+   "impact": "High",
+   "initiation": "Low",
+   "inputs": {
+    "adverse_impact_likelihood": "Very High",
+    "annual_frequency": "0.5",
+    "corrected_before_use": "no",
+    "in_critical_window": "no",
+    "info_class": "nonpublic",
+    "integrity_consequence": "negligible",
+    "multiple_severe_documented": "no",
+    "outage_hours": "0",
+    "records_disclosed": "12000"
+   },
+   "residual": "Low",
+   "residual_status": "projected",
+   "risk": "Moderate",
+   "status": "treatment_planned",
+   "treatment_option": "mitigate"
+  },
+  "R-08": {
+   "adverse": "Moderate",
+   "decision_class": "owner",
+   "impact": "High",
+   "initiation": "Low",
+   "inputs": {
+    "adverse_impact_likelihood": "Moderate",
+    "annual_frequency": "0.3",
+    "corrected_before_use": "no",
+    "in_critical_window": "no",
+    "info_class": "nonpublic",
+    "integrity_consequence": "severe",
+    "multiple_severe_documented": "no",
+    "outage_hours": "240",
+    "records_disclosed": "0"
+   },
+   "residual": "Low",
+   "residual_status": "projected",
+   "risk": "Low",
+   "status": "treatment_planned",
+   "treatment_option": "mitigate"
+  },
+  "R-09": {
+   "adverse": "Low",
+   "decision_class": "owner",
+   "impact": "Moderate",
+   "initiation": "Low",
+   "inputs": {
+    "adverse_impact_likelihood": "Low",
+    "annual_frequency": "0.5",
+    "corrected_before_use": "no",
+    "in_critical_window": "yes",
+    "info_class": "public",
+    "integrity_consequence": "negligible",
+    "multiple_severe_documented": "no",
+    "outage_hours": "8",
+    "records_disclosed": "0"
+   },
+   "residual": "Low",
+   "residual_status": "accepted",
+   "risk": "Low",
+   "status": "accepted",
+   "treatment_option": "accept"
+  },
+  "R-10": {
+   "adverse": "Low",
+   "decision_class": "owner",
+   "impact": "Low",
+   "initiation": "High",
+   "inputs": {
+    "adverse_impact_likelihood": "Low",
+    "annual_frequency": "30",
+    "corrected_before_use": "yes",
+    "in_critical_window": "no",
+    "info_class": "nonpublic",
+    "integrity_consequence": "limited",
+    "multiple_severe_documented": "no",
+    "outage_hours": "0",
+    "records_disclosed": "0"
+   },
+   "residual": "Low",
+   "residual_status": "accepted",
+   "risk": "Low",
+   "status": "accepted",
+   "treatment_option": "accept"
+  },
+  "R-11": {
+   "adverse": "Moderate",
+   "decision_class": "delegated",
+   "impact": "High",
+   "initiation": "High",
+   "inputs": {
+    "adverse_impact_likelihood": "Moderate",
+    "corrected_before_use": "no",
+    "in_critical_window": "no",
+    "info_class": "nonpublic",
+    "initiation_likelihood": "High",
+    "integrity_consequence": "negligible",
+    "multiple_severe_documented": "no",
+    "outage_hours": "0",
+    "records_disclosed": "12000"
+   },
+   "residual": "Moderate",
+   "residual_status": "projected",
+   "risk": "Moderate",
+   "status": "treatment_planned",
+   "treatment_option": "mitigate"
+  },
+  "R-12": {
+   "adverse": "Very High",
+   "decision_class": "delegated",
+   "impact": "High",
+   "initiation": "Low",
+   "inputs": {
+    "adverse_impact_likelihood": "Very High",
+    "corrected_before_use": "no",
+    "in_critical_window": "no",
+    "info_class": "nonpublic",
+    "initiation_likelihood": "Low",
+    "integrity_consequence": "negligible",
+    "multiple_severe_documented": "no",
+    "outage_hours": "0",
+    "records_disclosed": "12000"
+   },
+   "residual": "Low",
+   "residual_status": "projected",
+   "risk": "Moderate",
+   "status": "treatment_planned",
+   "treatment_option": "mitigate"
+  },
+  "R-13": {
+   "adverse": "Low",
+   "decision_class": "owner",
+   "impact": "Moderate",
+   "initiation": "Moderate",
+   "inputs": {
+    "adverse_impact_likelihood": "Low",
+    "annual_frequency": "3",
+    "corrected_before_use": "no",
+    "in_critical_window": "yes",
+    "info_class": "public",
+    "integrity_consequence": "negligible",
+    "multiple_severe_documented": "no",
+    "outage_hours": "4",
+    "records_disclosed": "0"
+   },
+   "residual": "Low",
+   "residual_status": "accepted",
+   "risk": "Low",
+   "status": "accepted",
+   "treatment_option": "accept"
+  }
+ },
+ "rules": {
+  "A-01": "1.0",
+  "C-01": "1.0",
+  "CVE-APP-01": "1.0",
+  "EFF-01": "1.0",
+  "EFF-02": "1.0",
+  "EPSS-ORDER-01": "1.0",
+  "F2-01": "1.0",
+  "G3-01": "1.0",
+  "I-01": "1.0",
+  "IMP-01": "1.0",
+  "KEV-POL-01": "1.0",
+  "VOI-01": "1.0"
+ },
+ "spec": "SPEC-2.1.0"
+}

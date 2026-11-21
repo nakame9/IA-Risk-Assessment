@@ -1,0 +1,133 @@
+subject_id,attribute,value,mode,evidence_ref,rationale,confidence,assessor,observed_on
+R-01,initiation_likelihood,Moderate,judgment,,G-2 rationale in report.md §3.3,Low,assessment team,2026-11-22
+R-01,adverse_impact_likelihood,Moderate,judgment,,"[simulated cycle 2] MFA verified: credential-phishing route closed, malware route remains (G-4 M)",Low,assessment team,2026-12-05
+R-01,info_class,nonpublic,judgment,,"Encryption of C-03 plus deletion of C-05: disclosure, loss of integrity and >7 days outage together",Low,assessment team,2026-11-22
+R-01,records_disclosed,12000,judgment,,"Encryption of C-03 plus deletion of C-05: disclosure, loss of integrity and >7 days outage together",Low,assessment team,2026-11-22
+R-01,integrity_consequence,severe,judgment,,"Encryption of C-03 plus deletion of C-05: disclosure, loss of integrity and >7 days outage together",Low,assessment team,2026-11-22
+R-01,corrected_before_use,no,judgment,,"Encryption of C-03 plus deletion of C-05: disclosure, loss of integrity and >7 days outage together",Low,assessment team,2026-11-22
+R-01,outage_hours,720,judgment,,"Encryption of C-03 plus deletion of C-05: disclosure, loss of integrity and >7 days outage together",Low,assessment team,2026-11-22
+R-01,in_critical_window,yes,judgment,,"Encryption of C-03 plus deletion of C-05: disclosure, loss of integrity and >7 days outage together",Low,assessment team,2026-11-22
+R-01,multiple_severe_documented,yes,judgment,,"Encryption of C-03 plus deletion of C-05: disclosure, loss of integrity and >7 days outage together",Low,assessment team,2026-11-22
+R-02,initiation_likelihood,Very High,judgment,,G-2 rationale in report.md §3.3,Medium,assessment team,2026-11-22
+R-02,adverse_impact_likelihood,Very Low,judgment,,"[simulated cycle 2] G-4 VL anchor: two independent tested barriers (MFA verified 2026-12-01, alerting verified 2026-12-03)",Medium,assessment team,2026-12-05
+R-02,info_class,nonpublic,judgment,,Staff account reads records within its permission scope (~500 students),Medium,assessment team,2026-11-22
+R-02,records_disclosed,500,judgment,,Staff account reads records within its permission scope (~500 students),Medium,assessment team,2026-11-22
+R-02,integrity_consequence,negligible,judgment,,Staff account reads records within its permission scope (~500 students),Medium,assessment team,2026-11-22
+R-02,corrected_before_use,no,judgment,,Staff account reads records within its permission scope (~500 students),Medium,assessment team,2026-11-22
+R-02,outage_hours,0,judgment,,Staff account reads records within its permission scope (~500 students),Medium,assessment team,2026-11-22
+R-02,in_critical_window,no,judgment,,Staff account reads records within its permission scope (~500 students),Medium,assessment team,2026-11-22
+R-02,multiple_severe_documented,no,judgment,,Staff account reads records within its permission scope (~500 students),Medium,assessment team,2026-11-22
+R-03,initiation_likelihood,High,judgment,,G-2 rationale in report.md §3.3,Low,assessment team,2026-11-22
+R-03,adverse_impact_likelihood,Moderate,judgment,,G-4 per SPEC 3.1 anchors,Low,assessment team,2026-11-22
+R-03,info_class,nonpublic,judgment,,Altered grade may be used for a transcript; no reconciliation (V-05),Low,assessment team,2026-11-22
+R-03,records_disclosed,0,judgment,,Altered grade may be used for a transcript; no reconciliation (V-05),Low,assessment team,2026-11-22
+R-03,integrity_consequence,severe,judgment,,Altered grade may be used for a transcript; no reconciliation (V-05),Low,assessment team,2026-11-22
+R-03,corrected_before_use,no,judgment,,Altered grade may be used for a transcript; no reconciliation (V-05),Low,assessment team,2026-11-22
+R-03,outage_hours,0,judgment,,Altered grade may be used for a transcript; no reconciliation (V-05),Low,assessment team,2026-11-22
+R-03,in_critical_window,no,judgment,,Altered grade may be used for a transcript; no reconciliation (V-05),Low,assessment team,2026-11-22
+R-03,multiple_severe_documented,no,judgment,,Altered grade may be used for a transcript; no reconciliation (V-05),Low,assessment team,2026-11-22
+R-04,initiation_likelihood,Low,judgment,,G-2 rationale in report.md §3.3,Low,assessment team,2026-11-22
+R-04,adverse_impact_likelihood,High,judgment,,G-4 per SPEC 3.1 anchors,Low,assessment team,2026-11-22
+R-04,info_class,nonpublic,judgment,,Altered graduation status may lead to a wrongly issued degree (A-03),Low,assessment team,2026-11-22
+R-04,records_disclosed,0,judgment,,Altered graduation status may lead to a wrongly issued degree (A-03),Low,assessment team,2026-11-22
+R-04,integrity_consequence,severe,judgment,,Altered graduation status may lead to a wrongly issued degree (A-03),Low,assessment team,2026-11-22
+R-04,corrected_before_use,no,judgment,,Altered graduation status may lead to a wrongly issued degree (A-03),Low,assessment team,2026-11-22
+R-04,outage_hours,0,judgment,,Altered graduation status may lead to a wrongly issued degree (A-03),Low,assessment team,2026-11-22
+R-04,in_critical_window,no,judgment,,Altered graduation status may lead to a wrongly issued degree (A-03),Low,assessment team,2026-11-22
+R-04,multiple_severe_documented,no,judgment,,Altered graduation status may lead to a wrongly issued degree (A-03),Low,assessment team,2026-11-22
+R-05,initiation_likelihood,Moderate,judgment,,G-2 rationale in report.md §3.3,Low,assessment team,2026-11-22
+R-05,adverse_impact_likelihood,Moderate,judgment,,G-4 per SPEC 3.1 anchors,Low,assessment team,2026-11-22
+R-05,info_class,nonpublic,judgment,,Exploited portal component exposes the whole database,Low,assessment team,2026-11-22
+R-05,records_disclosed,12000,judgment,,Exploited portal component exposes the whole database,Low,assessment team,2026-11-22
+R-05,integrity_consequence,negligible,judgment,,Exploited portal component exposes the whole database,Low,assessment team,2026-11-22
+R-05,corrected_before_use,no,judgment,,Exploited portal component exposes the whole database,Low,assessment team,2026-11-22
+R-05,outage_hours,0,judgment,,Exploited portal component exposes the whole database,Low,assessment team,2026-11-22
+R-05,in_critical_window,no,judgment,,Exploited portal component exposes the whole database,Low,assessment team,2026-11-22
+R-05,multiple_severe_documented,no,judgment,,Exploited portal component exposes the whole database,Low,assessment team,2026-11-22
+R-06,initiation_likelihood,Low,judgment,,G-2 rationale in report.md §3.3,Low,assessment team,2026-11-22
+R-06,adverse_impact_likelihood,Moderate,judgment,,G-4 per SPEC 3.1 anchors,Low,assessment team,2026-11-22
+R-06,info_class,public,judgment,,DDoS lasting hours during registration week,Low,assessment team,2026-11-22
+R-06,records_disclosed,0,judgment,,DDoS lasting hours during registration week,Low,assessment team,2026-11-22
+R-06,integrity_consequence,negligible,judgment,,DDoS lasting hours during registration week,Low,assessment team,2026-11-22
+R-06,corrected_before_use,no,judgment,,DDoS lasting hours during registration week,Low,assessment team,2026-11-22
+R-06,outage_hours,6,judgment,,DDoS lasting hours during registration week,Low,assessment team,2026-11-22
+R-06,in_critical_window,yes,judgment,,DDoS lasting hours during registration week,Low,assessment team,2026-11-22
+R-06,multiple_severe_documented,no,judgment,,DDoS lasting hours during registration week,Low,assessment team,2026-11-22
+R-07,annual_frequency,0.5,evidence,assumption: report.md §2.5 R-07,,Medium,assessment team,2026-11-22
+R-07,adverse_impact_likelihood,Very High,judgment,,"G-4 per SPEC 3.1 anchors (re-rated from v1 High, see SPEC 7.2)",Medium,assessment team,2026-11-22
+R-07,info_class,nonpublic,judgment,,Storage exposed to the Internet holds the whole database or backup,Medium,assessment team,2026-11-22
+R-07,records_disclosed,12000,judgment,,Storage exposed to the Internet holds the whole database or backup,Medium,assessment team,2026-11-22
+R-07,integrity_consequence,negligible,judgment,,Storage exposed to the Internet holds the whole database or backup,Medium,assessment team,2026-11-22
+R-07,corrected_before_use,no,judgment,,Storage exposed to the Internet holds the whole database or backup,Medium,assessment team,2026-11-22
+R-07,outage_hours,0,judgment,,Storage exposed to the Internet holds the whole database or backup,Medium,assessment team,2026-11-22
+R-07,in_critical_window,no,judgment,,Storage exposed to the Internet holds the whole database or backup,Medium,assessment team,2026-11-22
+R-07,multiple_severe_documented,no,judgment,,Storage exposed to the Internet holds the whole database or backup,Medium,assessment team,2026-11-22
+R-08,annual_frequency,0.3,evidence,assumption: report.md §2.5 R-08,,Medium,assessment team,2026-11-22
+R-08,adverse_impact_likelihood,Moderate,judgment,,"G-4 per SPEC 3.1 anchors (re-rated from v1 High, see SPEC 7.2)",Medium,assessment team,2026-11-22
+R-08,info_class,nonpublic,judgment,,Grade tables lost and rebuilt from paper records for >7 days,Medium,assessment team,2026-11-22
+R-08,records_disclosed,0,judgment,,Grade tables lost and rebuilt from paper records for >7 days,Medium,assessment team,2026-11-22
+R-08,integrity_consequence,severe,judgment,,Grade tables lost and rebuilt from paper records for >7 days,Medium,assessment team,2026-11-22
+R-08,corrected_before_use,no,judgment,,Grade tables lost and rebuilt from paper records for >7 days,Medium,assessment team,2026-11-22
+R-08,outage_hours,240,judgment,,Grade tables lost and rebuilt from paper records for >7 days,Medium,assessment team,2026-11-22
+R-08,in_critical_window,no,judgment,,Grade tables lost and rebuilt from paper records for >7 days,Medium,assessment team,2026-11-22
+R-08,multiple_severe_documented,no,judgment,,Grade tables lost and rebuilt from paper records for >7 days,Medium,assessment team,2026-11-22
+R-09,annual_frequency,0.5,evidence,assumption: report.md §2.5 R-09,,Medium,assessment team,2026-11-22
+R-09,adverse_impact_likelihood,Low,judgment,,G-4 per SPEC 3.1 anchors,Medium,assessment team,2026-11-22
+R-09,info_class,public,judgment,,[GD] region outages typically last hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
+R-09,records_disclosed,0,judgment,,[GD] region outages typically last hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
+R-09,integrity_consequence,negligible,judgment,,[GD] region outages typically last hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
+R-09,corrected_before_use,no,judgment,,[GD] region outages typically last hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
+R-09,outage_hours,8,judgment,,[GD] region outages typically last hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
+R-09,in_critical_window,yes,judgment,,[GD] region outages typically last hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
+R-09,multiple_severe_documented,no,judgment,,[GD] region outages typically last hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
+R-10,annual_frequency,30,evidence,assumption: report.md §2.5 R-10,,Medium,assessment team,2026-11-22
+R-10,adverse_impact_likelihood,Low,judgment,,G-4 per SPEC 3.1 anchors,Medium,assessment team,2026-11-22
+R-10,info_class,nonpublic,judgment,,Few students affected; most errors corrected in the review window,Medium,assessment team,2026-11-22
+R-10,records_disclosed,0,judgment,,Few students affected; most errors corrected in the review window,Medium,assessment team,2026-11-22
+R-10,integrity_consequence,limited,judgment,,Few students affected; most errors corrected in the review window,Medium,assessment team,2026-11-22
+R-10,corrected_before_use,yes,judgment,,Few students affected; most errors corrected in the review window,Medium,assessment team,2026-11-22
+R-10,outage_hours,0,judgment,,Few students affected; most errors corrected in the review window,Medium,assessment team,2026-11-22
+R-10,in_critical_window,no,judgment,,Few students affected; most errors corrected in the review window,Medium,assessment team,2026-11-22
+R-10,multiple_severe_documented,no,judgment,,Few students affected; most errors corrected in the review window,Medium,assessment team,2026-11-22
+R-11,initiation_likelihood,High,judgment,,G-2 rationale in report.md §3.3,Medium,assessment team,2026-11-22
+R-11,adverse_impact_likelihood,Moderate,judgment,,"[simulated cycle 2] MFA verified: stolen passwords insufficient, session theft remains (G-4 M)",Medium,assessment team,2026-12-05
+R-11,info_class,nonpublic,judgment,,Stolen admin credentials give access to the whole database,Medium,assessment team,2026-11-22
+R-11,records_disclosed,12000,judgment,,Stolen admin credentials give access to the whole database,Medium,assessment team,2026-11-22
+R-11,integrity_consequence,negligible,judgment,,Stolen admin credentials give access to the whole database,Medium,assessment team,2026-11-22
+R-11,corrected_before_use,no,judgment,,Stolen admin credentials give access to the whole database,Medium,assessment team,2026-11-22
+R-11,outage_hours,0,judgment,,Stolen admin credentials give access to the whole database,Medium,assessment team,2026-11-22
+R-11,in_critical_window,no,judgment,,Stolen admin credentials give access to the whole database,Medium,assessment team,2026-11-22
+R-11,multiple_severe_documented,no,judgment,,Stolen admin credentials give access to the whole database,Medium,assessment team,2026-11-22
+R-12,initiation_likelihood,Low,judgment,,G-2 rationale in report.md §3.3,Low,assessment team,2026-11-22
+R-12,adverse_impact_likelihood,Very High,judgment,,"G-4 per SPEC 3.1 anchors (re-rated from v1 High, see SPEC 7.2)",Low,assessment team,2026-11-22
+R-12,info_class,nonpublic,judgment,,Bulk export of all student records leaked,Low,assessment team,2026-11-22
+R-12,records_disclosed,12000,judgment,,Bulk export of all student records leaked,Low,assessment team,2026-11-22
+R-12,integrity_consequence,negligible,judgment,,Bulk export of all student records leaked,Low,assessment team,2026-11-22
+R-12,corrected_before_use,no,judgment,,Bulk export of all student records leaked,Low,assessment team,2026-11-22
+R-12,outage_hours,0,judgment,,Bulk export of all student records leaked,Low,assessment team,2026-11-22
+R-12,in_critical_window,no,judgment,,Bulk export of all student records leaked,Low,assessment team,2026-11-22
+R-12,multiple_severe_documented,no,judgment,,Bulk export of all student records leaked,Low,assessment team,2026-11-22
+R-13,annual_frequency,3,evidence,assumption: report.md §2.5 R-13,,Medium,assessment team,2026-11-22
+R-13,adverse_impact_likelihood,Low,judgment,,G-4 per SPEC 3.1 anchors,Medium,assessment team,2026-11-22
+R-13,info_class,public,judgment,,[GD] SSO failure lasting a few hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
+R-13,records_disclosed,0,judgment,,[GD] SSO failure lasting a few hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
+R-13,integrity_consequence,negligible,judgment,,[GD] SSO failure lasting a few hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
+R-13,corrected_before_use,no,judgment,,[GD] SSO failure lasting a few hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
+R-13,outage_hours,4,judgment,,[GD] SSO failure lasting a few hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
+R-13,in_critical_window,yes,judgment,,[GD] SSO failure lasting a few hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
+R-13,multiple_severe_documented,no,judgment,,[GD] SSO failure lasting a few hours; consequence case = overlap with registration,Medium,assessment team,2026-11-22
+F-001,cve_id,CVE-2025-24813,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-001,component_id,AS-06,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-001,applicability,confirmed,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-001,remediation_state,remediated_verified,evidence,scan: [simulated cycle 2] rescan shows patched Tomcat on AS-06,,Medium,assessment team,2026-12-01
+F-001,first_confirmed_on,2026-11-18,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-002,cve_id,CVE-2026-34486,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-002,component_id,AS-06,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-002,applicability,confirmed,evidence,scan: [simulated cycle 2] installed version confirmed affected,,High,assessment team,2026-12-02
+F-002,remediation_state,open,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-003,cve_id,CVE-2017-12617,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-003,component_id,AS-06,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-003,applicability,confirmed,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-003,remediation_state,remediated_verified,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-003,first_confirmed_on,2026-01-10,evidence,"assumption: [GD] demonstration finding, fictional scan of AS-06",,Medium,assessment team,2026-11-22
+F-002,first_confirmed_on,2026-12-02,evidence,scan: [simulated cycle 2] installed version confirmed affected,,High,assessment team,2026-12-02

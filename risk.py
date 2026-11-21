@@ -1,6 +1,8 @@
 """IA risk model v2.1 (SPEC.md, SPEC-2.1.0) on NIST SP 800-30 Rev.1 lookup tables G-5 and I-2.
 
-    python risk.py [--as-of YYYY-MM-DD]            # validate data/, write out/register.md, matrix.md, trace.md
+    python risk.py [--as-of DATE] [--data DIR] [--out DIR] [--baseline STATE.json]
+                                                    # validate data, write action_report.md, register.md, matrix.md,
+                                                    # trace.md, state.json; --baseline adds "changes since" (Task 4-1/4-2)
     python risk.py import kev|epss FILE [--url URL]  # store a downloaded feed file as a snapshot (SPEC 6.5)
     python risk.py --check                          # self-check
 
@@ -286,8 +288,9 @@ def load(name, root=DATA):
 
 
 def load_all(root=DATA):
+    """Load the data set from root; files absent from root are read from data/ (overlay, used by examples)."""
     names = ['assets', 'templates', 'inputs', 'controls', 'packages', 'effects', 'risk_register']
-    return {n: load(n + '.csv', root) for n in names}
+    return {n: load(n + '.csv', root if (Path(root) / (n + '.csv')).exists() else DATA) for n in names}
 
 
 def findings(d):
@@ -468,8 +471,18 @@ def evaluate(d):
         trace.append(f"G-5 [{initiation} x {adverse}] -> {row['overall']}; "
                      f"I-2 [{row['overall']} x {impact}] -> {row['risk']}; policy: {row['flags']}")
         chosen = frozenset(filter(None, r['treatment_packages'].split(';')))
+        pkg_status = {p: next((status[(s, p)] for s in sys_ids if (s, p) in status), UNK) for p in chosen}
+        row['res_status'] = 'projected'
         if r['treatment_option'] == 'accept':
-            row.update(res_overall=row['overall'], res_risk=row['risk'], res_impact=impact, res_basis='accepted: residual = current')
+            row.update(res_overall=row['overall'], res_risk=row['risk'], res_impact=impact, res_basis='accepted: residual = current',
+                       res_status='accepted')
+        elif chosen and all(v == 'implemented_assessed_effective' for v in pkg_status.values()):
+            # every chosen package is verified: the current rating already reflects it (projected -> verified)
+            row.update(res_overall=row['overall'], res_risk=row['risk'], res_impact=impact, res_status='verified',
+                       res_basis='treatment verified: residual = current')
+            e = effects.get((rid, chosen))
+            if e and LEVELS.index(row['risk']) > LEVELS.index(risk_level(overall_likelihood(e['initiation'], e['adverse']), e['impact'])):
+                warnings.append(f'{rid}: verified treatment did not achieve the projected residual; review effects.csv')
         elif chosen in {k[1] for k in effects if k[0] == rid}:
             e = effects[(rid, chosen)]
             row['res_overall'] = overall_likelihood(e['initiation'], e['adverse'])
@@ -647,13 +660,93 @@ def stale_evidence(d, as_of):
     return out
 
 
+def state(res, as_of):
+    """Machine-readable, deterministic summary of one assessment run (compared by the next run, Task 4-1/4-2)."""
+    d = res['data']
+    inputs = {}
+    for i in d['inputs']:
+        inputs.setdefault(i['subject_id'], {})[i['attribute']] = i['value']
+    front, _, bundles, incomplete, _ = res['ranking']
+    s = {'as_of': as_of.isoformat(), 'spec': SPEC_VERSION, 'rules': RULES,
+         'feeds': {k: {'version': m['version'], 'sha256': m['sha256']} for k, (m, _) in sorted(res['feeds'].items())},
+         'risks': {r['risk_id']: {'initiation': r['initiation'], 'adverse': r['adverse'], 'impact': r['impact'],
+                                  'risk': r['risk'], 'residual': r['res_risk'], 'residual_status': r.get('res_status', ''),
+                                  'decision_class': decision_class(r['risk'], r['impact']) if r['risk'] != UNK else UNK,
+                                  'inputs': inputs.get(r['risk_id'], {}), 'treatment_option': r['treatment_option'],
+                                  'status': r['status']} for r in sorted(res['rows'], key=lambda x: x['risk_id'])},
+         'controls': {f"{c['package_id']}@{c['scope_id']}": c['status'] for c in d['controls']},
+         'findings': {f['finding_id']: {k: f[k] for k in ('cve_id', 'component_id', 'applicability', 'remediation_state', 'in_kev')}
+                      for f in res['findings']},
+         'obligations': {o['finding_id']: {'state': o['state'], 'due': o['due'].isoformat()} for o in res['obligations']},
+         'front': [' + '.join(c['packages']) for c in front],
+         'bundles': [' + '.join(c['packages']) for c in bundles],
+         'incomplete': [' + '.join(c['packages']) for c in incomplete],
+         'queue': sorted(f'{a}: {b}' for a, b, _, _ in res['queue'])}
+    return s
+
+
+def state_sha(s):
+    return hashlib.sha256(json.dumps(s, sort_keys=True).encode('utf-8')).hexdigest()
+
+
+def diff_states(prev, cur):
+    """Explain what changed between two runs, attributing risk changes to the inputs that moved."""
+    out = []
+    if prev['rules'] != cur['rules'] or prev['spec'] != cur['spec']:
+        out.append(f"**Rules/specification changed** ({prev['spec']} -> {cur['spec']}): differences below may come "
+                   'from rule changes, not only from evidence.')
+    for k in sorted(set(prev['feeds']) | set(cur['feeds'])):
+        a, b = prev['feeds'].get(k), cur['feeds'].get(k)
+        if a != b:
+            out.append(f"Feed {k}: {a['version'] if a else 'none'} -> {b['version'] if b else 'none'}")
+    for fid in sorted(set(prev['findings']) | set(cur['findings'])):
+        a, b = prev['findings'].get(fid), cur['findings'].get(fid)
+        if a != b:
+            if not a:
+                out.append(f"Finding {fid} added: {b['cve_id']} on {b['component_id']} ({b['applicability']}, {b['remediation_state']})")
+            elif not b:
+                out.append(f'Finding {fid} removed')
+            else:
+                ch = ', '.join(f'{k} {a[k]} -> {b[k]}' for k in b if a.get(k) != b[k])
+                out.append(f'Finding {fid} ({b["cve_id"]}): {ch}' + (' — TI-REV-01: now in KEV, review' if a['in_kev'] != 'yes' == b['in_kev'] else ''))
+    for fid in sorted(set(prev['obligations']) | set(cur['obligations'])):
+        a, b = prev['obligations'].get(fid), cur['obligations'].get(fid)
+        if a != b:
+            out.append(f"KEV obligation {fid}: {a['state'] + ' (due ' + a['due'] + ')' if a else 'none'} -> "
+                       f"{b['state'] + ' (due ' + b['due'] + ')' if b else 'none'}")
+    for k in sorted(set(prev['controls']) | set(cur['controls'])):
+        if prev['controls'].get(k) != cur['controls'].get(k):
+            out.append(f"Control {k}: {prev['controls'].get(k, 'none')} -> {cur['controls'].get(k, 'none')}")
+    for rid in sorted(set(prev['risks']) | set(cur['risks'])):
+        a, b = prev['risks'].get(rid), cur['risks'].get(rid)
+        if a == b:
+            continue
+        if not a or not b:
+            out.append(f"Risk {rid} {'added' if b else 'removed'}")
+            continue
+        moved = [f"{k} {a['inputs'].get(k, '-')} -> {b['inputs'].get(k, '-')}"
+                 for k in sorted(set(a['inputs']) | set(b['inputs'])) if a['inputs'].get(k) != b['inputs'].get(k)]
+        parts = [f"{k} {a[k]} -> {b[k]}" for k in ('risk', 'residual', 'residual_status', 'decision_class', 'treatment_option', 'status')
+                 if a[k] != b[k]]
+        if parts or moved:
+            cause = ('because ' + '; '.join(moved)) if moved else 'no input changed: caused by rules, effects or controls'
+            out.append(f"Risk {rid}: {', '.join(parts) or 'inputs changed, level unchanged'} ({cause})")
+    for key, label in (('front', 'Pareto front'), ('bundles', 'assessed combinations'), ('incomplete', 'incomplete candidates')):
+        if prev[key] != cur[key]:
+            out.append(f"{label}: {', '.join(prev[key]) or '-'} -> {', '.join(cur[key]) or '-'}")
+    added, resolved = sorted(set(cur['queue']) - set(prev['queue'])), sorted(set(prev['queue']) - set(cur['queue']))
+    out += [f'Investigation queue added: {q}' for q in added] + [f'Investigation queue resolved: {q}' for q in resolved]
+    return out
+
+
 def render_action(res, as_of):
     rows, d, feeds = res['rows'], res['data'], res['feeds']
     soon = as_of + datetime.timedelta(days=SOON_DAYS)
     feed_note = '; '.join(f"{s} {m['version'] or '-'} (retrieved {m['retrieved_on']})" for s, (m, _) in feeds.items()) or 'none'
     out = ['# Action report (generated)', '',
            f'> Assessment date {as_of} · scope: all assets in data/assets.csv · {SPEC_VERSION} · rules '
-           + ', '.join(f'{k} v{v}' for k, v in RULES.items()) + f' · feed snapshots: {feed_note}.',
+           + ', '.join(f'{k} v{v}' for k, v in RULES.items()) + f' · feed snapshots: {feed_note}'
+           + f" · state SHA-256 {state_sha(res['state'])[:12]}….",
            '> Generated by `python risk.py`; do not edit by hand. The script flags what policy requires; '
            'it never accepts a risk or closes an obligation.', '']
     # 1
@@ -671,7 +764,13 @@ def render_action(res, as_of):
         if r['treatment_option'] == 'accept' and datetime.date.fromisoformat(r['next_review']) <= soon:
             out.append(f"| {r['risk_id']} acceptance review | re-assess and re-approve | {r['risk_owner']} | {r['next_review']} |")
     # 2
-    out += ['', '## 2. Changes since the previous assessment', '', 'Baseline assessment (no previous run to compare).']
+    out += ['', '## 2. Changes since the previous assessment', '']
+    if res.get('baseline') is None:
+        out.append('Baseline assessment (no previous run to compare).')
+    else:
+        b = res['baseline']
+        out.append(f"Compared with the run as of {b['as_of']} (state SHA-256 {state_sha(b)[:12]}…).")
+        out += [f'- {c}' for c in res['changes']] or ['- No change.']
     # 3
     front, dominated, bundles, incomplete, none = res['ranking']
     fmt = lambda c: (f"| {' + '.join(c['packages'])} | {', '.join(c['below_high']) or '-'} | "
@@ -788,18 +887,22 @@ def render(rows, warnings, feeds, fstatus, as_of):
     return '\n'.join(reg) + '\n', '\n'.join(mat), '\n'.join(tr)
 
 
-def run(as_of, root=DATA):
+def run(as_of, root=DATA, baseline=None):
+    root = Path(root)
     d = load_all(root)
     errors = validate(d)
     if errors:
         raise SystemExit('invalid data:\n  ' + '\n  '.join(errors))
     rows, warnings = evaluate(d)
-    feeds, feed_warnings = load_snapshots(as_of, root)
+    feeds, feed_warnings = load_snapshots(as_of, root if (root / 'snapshots' / 'manifest.csv').exists() else DATA)
     fstatus = finding_status(d, feeds)
     obl, notes = obligations(d, feeds, as_of)
-    return {'data': d, 'rows': rows, 'warnings': warnings + feed_warnings, 'feeds': feeds, 'findings': fstatus,
-            'obligations': obl, 'notes': notes, 'ranking': rank_candidates(candidate_effects(rows, d)),
-            'queue': investigation_queue(rows, d, fstatus), 'stale': stale_evidence(d, as_of)}
+    res = {'data': d, 'rows': rows, 'warnings': warnings + feed_warnings, 'feeds': feeds, 'findings': fstatus,
+           'obligations': obl, 'notes': notes, 'ranking': rank_candidates(candidate_effects(rows, d)),
+           'queue': investigation_queue(rows, d, fstatus), 'stale': stale_evidence(d, as_of), 'baseline': baseline}
+    res['state'] = state(res, as_of)
+    res['changes'] = diff_states(baseline, res['state']) if baseline else []
+    return res
 
 
 # ---------------------------------------------------------------- self-check
@@ -926,6 +1029,30 @@ def check():
     assert bundles[0]['packages'] == ['T-01', 'T-02', 'T-03', 'T-08', 'T-12', 'T-13'] and bundles[0]['below_high'] == ['FAM-RANSOM']
     subjects = {t[0] for t in res['queue']}
     assert {'R-03', 'R-07', 'F-002', 'T-12'} <= subjects, subjects
+    # 10. E2 determinism: same inputs, rules and date -> identical state and report.
+    again = run(datetime.date(2026, 11, 22))
+    assert state_sha(again['state']) == state_sha(res['state'])
+    assert render_action(again, datetime.date(2026, 11, 22)) == render_action(res, datetime.date(2026, 11, 22))
+    # 11. Maintain (Task 4-1/4-2): simulated cycle 2 against this baseline; changes attributed to inputs.
+    if (ROOT / 'examples' / 'cycle2').exists() and 'kev' in res['feeds']:
+        c2 = run(datetime.date(2026, 12, 5), ROOT / 'examples' / 'cycle2', res['state'])
+        text = '\n'.join(c2['changes'])
+        for frag in ('Risk R-02: risk Moderate -> Low', 'residual_status projected -> verified',
+                     'because adverse_impact_likelihood Moderate -> Very Low', 'Risk R-11: risk High -> Moderate',
+                     'KEV obligation F-001: open (due 2026-12-02) -> closed', 'KEV obligation F-002: none -> open (due 2026-12-16)',
+                     'Control T-01@SYS-PORTAL: planned_compensated -> implemented_assessed_effective',
+                     'Pareto front: T-04, T-09, T-10 -> T-02, T-04, T-09, T-10'):
+            assert frag in text, (frag, text)
+        assert any('kev: snapshot is stale' in w for w in c2['warnings'])
+    # 12. Verified treatment that misses its projection is flagged; rule changes are reported.
+    dv = load_all()
+    for c in dv['controls']:
+        if c['package_id'] in ('T-04', 'T-05'):
+            c.update(status='implemented_assessed_effective', verified_on='2026-11-22')
+    _, warns = evaluate(dv)
+    assert any(w.startswith('R-03: verified treatment did not achieve') for w in warns), warns
+    changed = {**res['state'], 'rules': {**res['state']['rules'], 'G3-01': '2.0'}}
+    assert diff_states(res['state'], changed)[0].startswith('**Rules/specification changed**')
     print('self-check passed')
 
 
@@ -938,17 +1065,22 @@ def main(argv):
         url = argv[argv.index('--url') + 1] if '--url' in argv else ''
         import_snapshot(argv[1], argv[2], url)
         return
-    as_of = datetime.date.fromisoformat(argv[argv.index('--as-of') + 1]) if '--as-of' in argv else datetime.date.today()
-    res = run(as_of)
+    opt = lambda name, default: argv[argv.index(name) + 1] if name in argv else default
+    as_of = datetime.date.fromisoformat(opt('--as-of', datetime.date.today().isoformat()))
+    data_dir, out_dir = Path(opt('--data', DATA)), Path(opt('--out', ROOT / 'out'))
+    base_path = opt('--baseline', None)           # explicit only, so the same inputs always give the same outputs
+    baseline = json.loads(Path(base_path).read_text(encoding='utf-8')) if base_path else None
+    res = run(as_of, data_dir, baseline)
     reg, mat, tr = render(res['rows'], res['warnings'], res['feeds'], res['findings'], as_of)
-    (ROOT / 'out').mkdir(exist_ok=True)
-    for name, text in (('action_report.md', render_action(res, as_of)), ('register.md', reg),
-                       ('matrix.md', mat), ('trace.md', tr)):
-        (ROOT / 'out' / name).write_text(text, encoding='utf-8')
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for name, text in (('action_report.md', render_action(res, as_of)), ('register.md', reg), ('matrix.md', mat),
+                       ('trace.md', tr), ('state.json', json.dumps(res['state'], indent=1, sort_keys=True) + '\n')):
+        (out_dir / name).write_text(text, encoding='utf-8')
     for w in res['warnings']:
         print('WARNING:', w, file=sys.stderr)
-    print(f"wrote out/action_report.md, register.md, matrix.md, trace.md ({len(res['rows'])} risks, "
-          f"{len(res['findings'])} findings, {len(res['obligations'])} KEV obligations)")
+    print(f"wrote {out_dir}: action_report.md, register.md, matrix.md, trace.md, state.json ({len(res['rows'])} risks, "
+          f"{len(res['findings'])} findings, {len(res['obligations'])} KEV obligations; "
+          f"{'compared with ' + baseline['as_of'] if baseline else 'baseline run'})")
 
 
 if __name__ == '__main__':
