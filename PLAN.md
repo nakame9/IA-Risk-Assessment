@@ -448,7 +448,7 @@ Lý do: KEV và EPSS phản ánh hoạt động khai thác **toàn cầu** đố
 3. ✅ *(Xong ngày 2026-11-22. Phần code và self-check đã chạy trên dữ liệu thử. Snapshot KEV thật (phiên bản 2026.11.20) đã được import. EPSS chưa có.)* **Kiểm tra dữ liệu:** kiểm tra hợp lệ của việc khớp CVE làm bằng tay. Viết bước import snapshot, có manifest và SHA-256.
 4. ✅ *(Xong ngày 2026-11-22. Kết quả ở [out/action_report.md](out/action_report.md), xem [SPEC.md](SPEC.md) §7.3.)* **Báo cáo hành động:** sinh nghĩa vụ, chuỗi giải thích, xếp hạng gói, backlog vá lỗi và hàng đợi điều tra.
 5. ✅ *(Xong ngày 2026-11-22. Xem [SPEC.md](SPEC.md) §7.4 và [examples/cycle2/](examples/cycle2/). Ví dụ này cũng là phần chạy thử chu kỳ bảo trì của E6.)* **So sánh:** thêm chế độ so sánh giữa hai lần chạy, cho Task 4-1 và 4-2.
-6. **Thực nghiệm:** chạy E1 đến E6 và các kiểm tra mới ở §9.10.4. Dùng `synth.py` khoảng 200 tài sản.
+6. ✅ *(Xong ngày 2026-11-22. Kết quả ở [out/experiments.md](out/experiments.md), xem [SPEC.md](SPEC.md) §7.5.)* **Thực nghiệm:** chạy E1 đến E6 và các kiểm tra mới ở §9.10.4. Dùng `synth.py` khoảng 200 tài sản.
 7. **Viết lại báo cáo:** theo khung nghiên cứu, với kết luận theo hướng "việc gì làm trước".
 
 #### 9.10.6 Bổ sung vào phần hoãn lại và rủi ro

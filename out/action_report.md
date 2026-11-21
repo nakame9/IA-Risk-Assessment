@@ -42,11 +42,11 @@ Benefit counts scenario families whose worst risk crosses a threshold, using onl
 | T-03 + T-04 + T-06 | - | FAM-03, FAM-04 | not assessed (Low, Medium, Medium) |
 | T-06 + T-10 | - | FAM-12 | not assessed (Medium, Low) |
 
-**Incomplete candidates** (some affected scenario has no assessed effect for this set):
+**Incomplete candidates** (an affected family that could still cross a threshold has no assessed effect for this set; counts are lower bounds, ordered separately):
 
-- T-02 + T-03: unknown effect on FAM-RANSOM
-- T-02 + T-03 + T-13: unknown effect on FAM-RANSOM
-- T-01 + T-03 + T-08 + T-12: unknown effect on FAM-RANSOM
+- T-02 + T-03: below High ≥ 0, below Moderate ≥ 0; unknown effect on 1 family (FAM-RANSOM)
+- T-02 + T-03 + T-13: below High ≥ 0, below Moderate ≥ 0; unknown effect on 1 family (FAM-RANSOM)
+- T-01 + T-03 + T-08 + T-12: below High ≥ 0, below Moderate ≥ 0; unknown effect on 1 family (FAM-RANSOM)
 
 No threshold crossing from: T-01, T-02, T-03, T-05, T-06, T-08, T-11, T-12, T-13, T-01 + T-06.
 

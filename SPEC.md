@@ -82,7 +82,7 @@ Các đầu vào còn lại là **phán đoán**, phải có `rationale` và `co
 |---|---|---|
 | EFF-01 | 1.0 | Trong residual **dự kiến**, G-4 không được là Very Low. Theo anchor ở §3.1, mức VL chỉ đạt được khi rào chắn **đã được kiểm thử**. Muốn lên VL thì phải có bằng chứng kiểm chứng (report §4.5) |
 | EFF-02 | 1.0 | Một tập gói lớn hơn không được cho kết quả tệ hơn bất kỳ tập con nào của nó, xét trên từng thành phần: initiation, adverse, impact |
-| Hiệu ứng thưa | 1.0 | Hiệu ứng của ứng viên S lên kịch bản r là dòng trong `effects.csv` có **đúng** tập `S ∩ applicable(r)`. Không có dòng đó thì hiệu ứng là `unknown`, và ứng viên được gắn nhãn *incomplete*. Không bao giờ ghép các factor từ nhiều dòng khác nhau |
+| Hiệu ứng thưa | 1.1 | Hiệu ứng của ứng viên S lên kịch bản r là dòng trong `effects.csv` có **đúng** tập `S ∩ applicable(r)`. Không có dòng đó thì hiệu ứng là `unknown`. Không bao giờ ghép các factor từ nhiều dòng khác nhau. **Thay đổi ở bản 1.1 (bước 6):** ứng viên chỉ bị gắn nhãn *incomplete* khi family chưa biết hiệu ứng **còn có thể vượt ngưỡng**, tức mức nặng nhất ≥ Moderate. Ứng viên incomplete được xếp ở một danh sách riêng, ghi lợi ích là cận dưới (≥), và ứng viên có ít family chưa biết hơn được xếp trước. Lý do thay đổi: ở quy mô 200 tài sản, bản 1.0 loại hết mọi ứng viên (§7.5) |
 | Xếp hạng | 1.0 | Lợi ích = các family có rủi ro nặng nhất vượt xuống dưới High, và các family vượt xuống dưới Moderate. Gói đơn được lọc Pareto theo (hai con số lợi ích) so với effort, rồi xếp theo thứ tự: số family xuống dưới High, số family xuống dưới Moderate, effort. Bundle được liệt kê riêng, với effort ghi là "not assessed", tức **không cộng** các effort tier. Nghĩa vụ KEV đứng trên mọi thứ hạng |
 | VOI-01 (thông số) | 1.0 | **[DA]** Với `initiation_likelihood` và `adverse_impact_likelihood` có confidence Low, thử mức liền kề ±1. Với các thuộc tính số có confidence khác High, thử ×0,5 và ×2. Đầu vào sẽ được đưa vào hàng đợi điều tra nếu thay đổi đó làm đổi thẩm quyền quyết định (owner, delegated, senior) hoặc đổi escalation |
 | Cửa sổ "sắp tới hạn" | 1.0 | **[DA]** 30 ngày, dùng cho mục 1 của báo cáo hành động |
@@ -270,6 +270,47 @@ Các rating suy ra được (overall likelihood, mức rủi ro, residual) giờ
 - **R-11** giờ ở mức High, nên phải xử lý hoặc cần Risk executive cấp ngoại lệ. Quyết định mitigate trong D-R11 vẫn đúng, và residual vẫn là Moderate.
 - **R-08** giờ ở mức Low, nên owner được phép chấp nhận. Quyết định mitigate vẫn được giữ, vì gói T-02 vốn cần cho R-01.
 - Độ nhạy: R-08 nằm đúng ranh giới. Nếu G-4 quay lại H thì R-08 thành Moderate. Đây là ứng viên cho hàng đợi điều tra (VOI-01): bằng chứng cần thu thập là biên bản thử khôi phục.
+
+### 7.5 Bước 6: thực nghiệm E1–E6 (ngày 2026-11-22)
+
+**Cách chạy:** `python synth.py`.
+- Lệnh sinh ra `synthetic/`: 200 tài sản, 210 kịch bản, 5 hệ thống, 11 template. Bộ sinh có phiên bản `SYNTH-1.0`, seed 20261122. Thư mục này không được commit, nhưng có thể sinh lại y hệt.
+- Lệnh chạy E1–E6 trên cả case portal lẫn dữ liệu tổng hợp, rồi ghi [out/experiments.md](out/experiments.md).
+
+**Bộ sinh dữ liệu tổng hợp:**
+- Các quy tắc trong `risk.py` đã được cố định **trước** khi viết bộ sinh.
+- **Phản ví dụ được thêm độc lập:**
+  - 3% đầu vào là `unknown`.
+  - 5% effect của gói đơn bị bỏ trống.
+  - Có giá trị nằm đúng ranh giới của quy tắc: tần suất 0,1 / 1 / 10 / 100; số bản ghi 9 / 10 / 1.000 / 1.001; số giờ gián đoạn 1 / 24 / 168.
+- Finding dùng mã CVE thật lấy từ KEV.
+- **Giả định của bộ sinh:** hiệu ứng của gói đơn được sinh theo một bảng giả định. Hiệu ứng của bundle là mức tốt nhất của các gói đơn trong nó. Đây là giả định của dữ liệu tổng hợp, **không phải** cách mô hình suy luận.
+
+**Kết quả chính** (số liệu đầy đủ ở [out/experiments.md](out/experiments.md)):
+
+| Phép đo | Case portal | Tổng hợp (200 tài sản) | Đọc kết quả |
+|---|---|---|---|
+| E2 Tính tất định | Cùng state khi chạy hai lần | Cùng state; sinh lại hai lần ra file giống hệt | Tính toán lặp lại được. Điều này **không** chứng minh bằng chứng là đúng |
+| E4 Quy mô | 13 kịch bản, khoảng 0,02 s | 210 kịch bản, khoảng 0,05 s | Thời gian chạy không phải là điểm nghẽn |
+| E1 Initiation có nguồn gốc từ quy tắc kèm bằng chứng | 38,5% | 34,8% | **Adverse (G-4) vẫn 100% là phán đoán.** Đây là giới hạn lớn nhất về tính khách quan của mô hình |
+| E1 Impact | 100% "quy tắc dùng phán đoán" | 81,9% quy tắc dùng phán đoán, 16,7% unknown | Quy tắc gom phán đoán lại một cách nhất quán, nhưng không thay được bằng chứng |
+| E3 Tỷ lệ nhiễu làm đổi mức của ít nhất một rủi ro | 25,4% | 14,3% | Thang 5 mức nhạy ở ranh giới. Đây là lý do có hàng đợi điều tra VOI-01 |
+| E3 Khuyến nghị đứng đầu bị đổi | 8,5% | 0,0% | Thứ tự gói khá ổn định |
+| E3 Cặp bị đảo thứ tự | 0,9% | 0,1% | Như trên |
+| E5 Mô hình so với chọn theo rủi ro / theo effort, cùng effort tier, đếm số family xuống dưới Moderate | 4 so với 0 / 0 | 34 so với 19 / 22 | Mô hình chọn được gói vượt nhiều ngưỡng hơn. Đây chỉ là so sánh **bên trong** dữ liệu, có nguy cơ vòng lặp (§9.9) |
+| E6 Có đủ chuỗi giải thích | 13/13 | 167/210 (79,5%) | 43 rủi ro thiếu chuỗi giải thích vì có đầu vào `unknown`. Chúng được đưa vào hàng đợi điều tra |
+
+**Phát hiện dẫn tới thay đổi quy tắc (Hiệu ứng thưa 1.1):**
+- Với bản 1.0, ở quy mô 200 tài sản **không còn ứng viên nào** được xếp hạng. Mỗi gói chạm vào rất nhiều kịch bản, nên chỉ cần thiếu một effect là gói bị loại. Quy tắc đúng về nguyên tắc, nhưng không dùng được trong thực tế.
+- Bản 1.1 vẫn giữ nguyên tắc không đoán khi thiếu dữ liệu, nhưng có ba thay đổi:
+  - Chỉ đánh dấu incomplete khi thiếu dữ liệu thật sự có thể làm đổi kết quả.
+  - Xếp các ứng viên incomplete theo lợi ích cận dưới.
+  - Hiện rõ các family còn thiếu effect, để người phụ trách mô hình biết cần đánh giá bổ sung chỗ nào.
+
+**Giới hạn của thực nghiệm:**
+- Dữ liệu tổng hợp chỉ cho thấy **hành vi của mô hình** (A-10). Nó không chứng minh được độ chính xác hay hiệu quả của control.
+- E5 dùng chính dữ liệu effects làm thước đo cho mọi phương pháp, nên kết quả chỉ có giá trị bên trong từng bộ dữ liệu.
+- Chưa có nghiên cứu với hai người chấm thật (§9.5).
 
 ### 7.4 Bước 5: so sánh giữa hai lần chạy, tức bước Maintain (Task 4-1/4-2) (ngày 2026-11-22)
 

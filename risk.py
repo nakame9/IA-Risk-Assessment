@@ -581,10 +581,12 @@ def candidate_effects(rows, d):
                                   and LEVELS.index(before[f]) >= LEVELS.index(th) > LEVELS.index(after[f]))
         below_h, below_m = cross(H), cross(M)
         tiers = [packages[p]['effort_tier'] for p in sorted(S)]
+        # a missing effect matters only where the family could still cross a threshold (worst >= Moderate)
+        blocking = sorted(f for f in unknown_fams if before[f] == UNK or LEVELS.index(before[f]) >= LEVELS.index(M))
         out.append({'packages': sorted(S), 'below_high': below_h, 'below_moderate': below_m,
                     'effort': tiers[0] if len(S) == 1 else 'not assessed (' + ', '.join(tiers) + ')',
                     'deferred': [p for p in S if packages[p]['status'] == 'deferred'],
-                    'incomplete': sorted(unknown_fams)})
+                    'incomplete': blocking})
     return out
 
 
@@ -603,7 +605,9 @@ def rank_candidates(cands):
     dominated = sorted([c for c in singles if c not in front], key=order)
     bundles = sorted([c for c in cands if len(c['packages']) > 1 and not c['incomplete'] and any(key(c))],
                      key=lambda c: (-key(c)[0], -key(c)[1], len(c['packages']), c['packages']))
-    incomplete = [c for c in cands if c['incomplete']]
+    # incomplete candidates: supported crossings are a lower bound; ordered separately, fewest unknowns first
+    incomplete = sorted([c for c in cands if c['incomplete']],
+                        key=lambda c: (-key(c)[0], -key(c)[1], len(c['incomplete']), len(c['packages']), c['packages']))
     no_crossing = [c for c in cands if not c['incomplete'] and not any(key(c))]
     return front, dominated, bundles, incomplete, no_crossing
 
@@ -786,8 +790,12 @@ def render_action(res, as_of):
     out += [fmt(c) for c in dominated] or ['| - | | | |']
     out += ['', '**Assessed combinations** (effort not assessed: tiers are listed, never added):', ''] + hdr
     out += [fmt(c) for c in bundles] or ['| - | | | |']
-    out += ['', '**Incomplete candidates** (some affected scenario has no assessed effect for this set):', '']
-    out += [f"- {' + '.join(c['packages'])}: unknown effect on {', '.join(c['incomplete'])}" for c in incomplete] or ['- none']
+    out += ['', '**Incomplete candidates** (an affected family that could still cross a threshold has no assessed effect '
+            'for this set; counts are lower bounds, ordered separately):', '']
+    show = lambda fams: ', '.join(fams[:5]) + (f' … (+{len(fams) - 5})' if len(fams) > 5 else '')
+    out += [f"- {' + '.join(c['packages'])}: below High ≥ {len(c['below_high'])}, below Moderate ≥ {len(c['below_moderate'])}; "
+            f"unknown effect on {len(c['incomplete'])} famil{'y' if len(c['incomplete']) == 1 else 'ies'} ({show(c['incomplete'])})"
+            for c in incomplete] or ['- none']
     out += ['', f"No threshold crossing from: {', '.join(' + '.join(c['packages']) for c in none) or '-'}."]
     if any(o['state'] in ('open', 'overdue') for o in res['obligations']):
         out += ['', 'Constraint: open KEV obligations (section 1) must be met regardless of this ranking.']
