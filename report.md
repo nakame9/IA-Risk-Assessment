@@ -1,6 +1,6 @@
 # Báo cáo đánh giá rủi ro IA: Cổng hồ sơ sinh viên (hệ thống hư cấu)
 
-> **Trạng thái:** Giai đoạn 1 (Frame), 2 (Identify) và 3 (Assess) đã xong. Giai đoạn 4–5 chưa thực hiện.
+> **Trạng thái:** Giai đoạn 1–4 (Frame, Identify, Assess, Treat) đã xong. Giai đoạn 5 chưa thực hiện.
 > **Phương pháp:** NIST SP 800-30 Rev.1 (Sep 2012). Xem [PLAN.md](PLAN.md).
 > **Lưu ý:** toàn bộ tổ chức, hệ thống, con số và phê duyệt trong báo cáo đều **hư cấu**, dùng cho mục đích học tập.
 
@@ -528,6 +528,176 @@ Hàng là overall likelihood. Cột là impact. Ô có nền đậm là mức r�
 
 ---
 
-## 4–5. Treat / Package
+## 4. Treat (Xử lý rủi ro)
 
-*Chưa thực hiện. Xem kế hoạch trong [PLAN.md](PLAN.md).*
+**Nguyên tắc chung (§1.6):**
+- Chính sách (appetite) chỉ quyết định rủi ro **có bắt buộc phải xử lý** hay không.
+- Phương án được chọn bằng cách so sánh: mức giảm rủi ro, công sức/chi phí, nghĩa vụ bắt buộc (A-05) và phần rủi ro còn lại.
+
+**Quy ước trong báo cáo:**
+- Mã control lấy theo **[TK]** NIST SP 800-53 Rev.5. Tên control được đối chiếu với catalog trong bản PDF chính thức.
+- Mọi phê duyệt đều là **mô phỏng** (A-06).
+- Rủi ro còn lại (residual risk) được tính lại qua bảng G-5 và I-2 và gắn nhãn `projected`. Nhãn này chỉ chuyển thành `verified` sau khi control đã được triển khai và kiểm chứng hiệu quả (§4.5).
+
+### 4.1 Gói biện pháp (treatment packages)
+
+**Lý do gom thành gói:** nhiều kịch bản dùng chung một lỗ hổng (§3.5). Một gói biện pháp vì vậy có thể giảm nhiều rủi ro cùng lúc.
+
+**Cách đọc bảng:**
+- Cột "Công sức" là **[ĐG]**, chỉ mang tính tương đối (Thấp/Vừa/Cao), không có số liệu chi phí.
+- Người triển khai của mọi gói là IT Lead (ISSO), trừ T-04 và T-10, do IT Lead và phòng Đào tạo cùng triển khai.
+
+| Gói | Biện pháp | Control SP 800-53 Rev.5 | Giảm | Dùng cho | Công sức | Hạn |
+|---|---|---|---|---|---|---|
+| T-01 | Bật MFA trên SSO cho mọi tài khoản cán bộ và admin | IA-2(1) Multi-factor authentication to privileged accounts; IA-2(2) … to non-privileged accounts | V-01 | R-01, R-02, R-11 | Thấp | 2027-01-31 |
+| T-02 | Đưa backup sang tài khoản cloud và thông tin xác thực riêng, ở region khác, có bản immutable; việc xóa backup cần hai người duyệt; thử khôi phục mỗi quý; lập kế hoạch khôi phục | CP-9 System backup; CP-9(1) Testing for reliability and integrity; CP-9(3) Separate storage for critical information; CP-9(7) Dual authorization for deletion or destruction; CP-4 Contingency plan testing; CP-10 System recovery and reconstitution | V-02, V-07 | R-01, R-08 (R-09 được lợi gián tiếp) | Vừa | 2027-02-28 |
+| T-03 | Bỏ tài khoản admin dùng chung, cấp tài khoản admin riêng cho từng người, chỉ cấp quyền tối thiểu, ghi log mọi thao tác đặc quyền | AC-2 Account management; AC-6(5) Privileged accounts; AC-6(9) Log use of privileged functions | PC-02 | R-01, R-04, R-08, R-11 | Thấp | 2027-01-31 |
+| T-04 | Sửa điểm hoặc trạng thái tốt nghiệp sau khi đã khóa sổ phải có người thứ hai duyệt; đối soát điểm trước khi cấp bảng điểm hoặc văn bằng | AC-3(2) Dual authorization; AC-5 Separation of duties | V-05 | R-03, R-04 (R-10 được lợi gián tiếp) | Vừa | 2027-02-28 |
+| T-05 | Bổ sung kiểm tra object-level authorization phía server cho API sửa điểm; kiểm thử bảo mật trước khi phát hành; pentest hằng năm | AC-3 Access enforcement; SA-11 Developer testing and evaluation; CA-8 Penetration testing | V-03 | R-03 | Vừa | 2027-02-28 |
+| T-06 | Xem log hằng tuần, có cảnh báo tự động khi tài khoản hoạt động bất thường; chỉ một nhóm nhỏ được quyền sửa hoặc xóa log | AU-6 Audit record review, analysis, and reporting; AU-6(1) Automated process integration; AU-9(4) Access by subset of privileged users; AC-2(12) Account monitoring for atypical usage | V-09 | R-02, R-04, R-12 | Vừa | 2027-02-28 |
+| T-07 | Vá theo mức nghiêm trọng (lỗ hổng nghiêm trọng vá trong 7 ngày [GĐ]), quét lỗ hổng định kỳ, đặt WAF trước C-01 | SI-2 Flaw remediation; RA-5 Vulnerability monitoring and scanning; SC-7 Boundary protection | V-04 | R-05 | Vừa | 2027-02-28 |
+| T-08 | Dùng máy trạm riêng cho quản trị, không đọc email và không duyệt web trên máy này; admin dùng tài khoản thường cho công việc thường; bỏ quyền local admin | AC-6(2) Non-privileged access for nonsecurity functions; CM-7 Least functionality; SI-3 Malicious code protection | V-06 | R-01, R-11 | Vừa | 2027-03-31 |
+| T-09 | Lập baseline cấu hình IAM và security group, mọi thay đổi phải qua kiểm soát; mặc định chặn, chỉ mở khi cần | CM-2 Baseline configuration; CM-3 Configuration change control; CM-6 Configuration settings; SC-7(5) Deny by default — allow by exception | V-08 | R-07 | Thấp | 2027-02-28 |
+| T-10 | Giới hạn số hồ sơ được xuất mỗi ngày, cảnh báo khi có lượt xuất lớn | AC-6 Least privilege; SI-4(18) Analyze traffic and covert exfiltration | V-10 | R-12 | Thấp | 2027-03-31 |
+| T-11 | *(Hoãn)* Rate limiting và kế hoạch ứng phó DDoS | SC-5 Denial-of-service protection | V-11 | R-06 | Vừa | — |
+| T-12 | Đào tạo nhận biết phishing có bài tập thực hành | AT-2(1) Practical exercises; AT-2(3) Social engineering and mining | V-01, V-06 (gián tiếp) | R-01, R-11 | Thấp | 2027-03-31 |
+| T-13 | Lập quy trình xử lý sự cố ransomware | IR-4 Incident handling | PC-04 (gián tiếp) | R-01 | Thấp | 2027-03-31 |
+
+**Gói ưu tiên:** T-01, T-02 và T-03 có công sức thấp hoặc vừa, nhưng giảm được 4–5 kịch bản cùng lúc. Vì vậy ba gói này được xếp hạn sớm nhất.
+
+### 4.2 Quyết định xử lý và rủi ro còn lại
+
+Cách tính residual như sau:
+- Các control trong bảng **chủ yếu làm giảm G-4**, tức khả năng sự kiện gây tác động bất lợi.
+- Mức khởi phát (G-2/G-3) thường **không đổi**, vì nguồn đe dọa vẫn còn đó. Riêng R-07 có giảm mức khởi phát, vì T-09 làm giảm chính tần suất cấu hình sai.
+- Với các rủi ro chọn "accept", residual được giữ bằng rủi ro hiện tại.
+
+| Risk | Hiện tại | Phương án | Gói | Residual: khởi phát / gây tác động → G-5 / impact | **Residual (I-2)** | Risk owner | Hạn |
+|---|---|---|---|---|---|---|---|
+| R-01 | **High** | Mitigate | T-01, T-02, T-03, T-08, T-12, T-13 | Moderate / Moderate → Moderate / High | **Moderate** | Head of Academic Affairs | 2027-03-31 |
+| R-02 | Moderate | Mitigate | T-01, T-06 | Very High / Very Low → Low / Moderate | **Low** | Head of Academic Affairs | 2027-02-28 |
+| R-03 | Moderate | Mitigate | T-05, T-04 | High / Low → Moderate / Moderate | **Moderate** | Head of Academic Affairs | 2027-02-28 |
+| R-04 | Moderate | Mitigate | T-04, T-03, T-06 | Low / Low → Low / High | **Low** | Head of Academic Affairs | 2027-02-28 |
+| R-05 | Moderate | Mitigate | T-07 | Moderate / Low → Low / High | **Low** | Head of Academic Affairs | 2027-02-28 |
+| R-06 | Low | Accept | — | không đổi | **Low** | Head of Academic Affairs | Rà soát 2027-11-22 |
+| R-07 | Moderate | Mitigate | T-09 | Very Low / High → Low / High | **Low** | Head of Academic Affairs | 2027-02-28 |
+| R-08 | Moderate | Mitigate | T-02, T-03 | Low / Low → Low / Moderate | **Low** | Head of Academic Affairs | 2027-02-28 |
+| R-09 | Low | Accept | — | không đổi | **Low** | Head of Academic Affairs | Rà soát 2027-11-22 |
+| R-10 | Low | Accept | — | không đổi | **Low** | Head of Academic Affairs | Rà soát 2027-11-22 |
+| R-11 | Moderate | Mitigate | T-08, T-01, T-03, T-12 | High / Low → Moderate / High | **Moderate** | IT Lead | 2027-03-31 |
+| R-12 | Moderate | Mitigate | T-10, T-06 | Low / Moderate → Low / Moderate | **Low** | Head of Academic Affairs | 2027-03-31 |
+| R-13 | Low | Accept | — | không đổi | **Low** | IT Lead | Rà soát 2027-11-22 |
+
+**Tổng hợp (projected):**
+- Trước xử lý: 1 High, 8 Moderate, 4 Low.
+- Sau xử lý: 0 High, 3 Moderate (R-01, R-03, R-11), 10 Low.
+- Ba rủi ro còn ở mức Moderate cần **System owner chấp nhận theo ủy quyền** (§1.6).
+
+### 4.3 Hồ sơ quyết định (mô phỏng)
+
+Mỗi hồ sơ ghi lại: các phương án đã cân nhắc, lý do chọn, người quyết định và điều kiện để quyết định còn hiệu lực.
+
+Có hai phương án được cân nhắc chung cho mọi rủi ro:
+- **Avoid:** tức ngừng chức năng. Phương án này bị loại cho mọi rủi ro liên quan tới portal, vì portal phục vụ chức năng đào tạo cốt lõi (A-03).
+- **Transfer:** bảo hiểm an ninh mạng chỉ bù đắp thiệt hại tài chính. Nó không khôi phục được dữ liệu và không chuyển được trách nhiệm bảo vệ dữ liệu cá nhân (A-05). Vì vậy transfer chỉ được xem là **bổ sung**, không thay thế mitigate.
+
+#### D-R01
+- **Escalation:** rủi ro bị escalate lên Risk executive, vì Impact là Very High.
+- **Quyết định:** mitigate bằng T-01, T-02, T-03, T-08, T-12, T-13.
+- **Lý do:**
+  - Không được phép accept vì rủi ro ở mức High.
+  - T-02 là gói then chốt, vì nó cắt bước "xóa backup". Nhờ vậy impact giảm từ Very High xuống High: dữ liệu vẫn có thể bị lộ, nhưng khôi phục được.
+  - Bảo hiểm an ninh mạng được ghi nhận là phương án bổ sung, cần Risk executive cân nhắc riêng. Phần này nằm ngoài phạm vi báo cáo.
+- **Phần còn lại:** residual Moderate được System owner chấp nhận theo ủy quyền, với điều kiện T-02 đạt thử khôi phục lần đầu.
+- **Hạn rà soát:** 2027-11-22.
+
+#### D-R02
+- **Quyết định:** mitigate bằng T-01 và T-06.
+- **Lý do:** MFA vô hiệu hóa gần như toàn bộ tấn công credential stuffing, với công sức thấp.
+
+#### D-R03
+- **Quyết định:** mitigate bằng T-05 và T-04.
+- **Lý do:**
+  - T-05 sửa trực tiếp lỗ hổng V-03.
+  - T-04 bảo đảm điểm bị sửa sẽ bị phát hiện trước khi được dùng để cấp văn bằng. Nhờ vậy impact giảm từ High xuống Moderate.
+- **Phần còn lại:** residual Moderate vì động cơ sửa điểm của sinh viên không đổi. System owner chấp nhận theo ủy quyền.
+
+#### D-R04
+- **Quyết định:** mitigate bằng T-04, T-03, T-06.
+- **Lý do:**
+  - Cần người thứ hai duyệt, tài khoản admin riêng, và log được bảo vệ.
+  - Một insider muốn sửa dữ liệu khi đó phải thông đồng với người khác và để lại dấu vết.
+
+#### D-R05
+- **Quyết định:** mitigate bằng T-07.
+- **Lý do:** rút ngắn cửa sổ vá và có WAF chặn trước.
+- **Phần còn lại:** impact vẫn High vì kẻ tấn công vẫn có thể lấy được CSDL nếu khai thác thành công.
+
+#### D-R06
+- **Quyết định:** accept. Risk owner xác nhận.
+- **Lý do:**
+  - Rủi ro ở mức Low.
+  - T-11 cần công sức vừa, nhưng chỉ giảm một rủi ro Low.
+- **Điều kiện xem lại:** khi có dấu hiệu bị DDoS, hoặc khi bị đe dọa tống tiền bằng DDoS (ransom DDoS).
+
+#### D-R07
+- **Quyết định:** mitigate bằng T-09.
+- **Lý do:** có baseline và mặc định chặn thì tần suất cấu hình sai giảm, nên mức khởi phát giảm từ Low xuống Very Low.
+
+#### D-R08
+- **Quyết định:** mitigate bằng T-02 và T-03.
+- **Lý do:** backup đã được thử khôi phục thì impact giảm từ High xuống Moderate. Tối đa chỉ mất dữ liệu của 24 giờ gần nhất, tương ứng chu kỳ backup hằng ngày.
+
+#### D-R09
+- **Quyết định:** accept. Risk owner xác nhận.
+- **Lý do:**
+  - Bản backup ở region khác của T-02 có giúp, nhưng chưa được tính vào residual để giữ ước lượng thận trọng.
+  - Phương án dựng site xử lý dự phòng (CP-7 Alternate processing site) bị hoãn vì chi phí cao so với một rủi ro Low.
+
+#### D-R10
+- **Quyết định:** accept. Risk owner xác nhận.
+- **Lý do:** việc đối soát của T-04 sẽ giúp gián tiếp, nhưng chưa được tính vào residual.
+
+#### D-R11
+- **Quyết định:** mitigate bằng T-08, T-01, T-03, T-12.
+- **Phần còn lại:** residual Moderate vì email chứa malware vẫn tới thường xuyên. System owner chấp nhận theo ủy quyền.
+
+#### D-R12
+- **Quyết định:** mitigate bằng T-10 và T-06.
+- **Lý do:** giới hạn số hồ sơ xuất mỗi ngày làm số bản ghi có thể bị lộ giảm xuống dưới 1.000, nên impact giảm từ High xuống Moderate.
+- **Phần còn lại:** khả năng gây tác động vẫn ở mức Moderate, vì insider vẫn có thể sao chép từng phần nhỏ.
+
+#### D-R13
+- **Quyết định:** accept. Risk owner xác nhận.
+- **Hành động kèm theo:**
+  - Thỏa thuận SLA với đơn vị CNTT trung tâm đang vận hành SSO (SA-9 External system services).
+  - Hành động này không làm đổi rating.
+
+### 4.4 Hạn chế của phần xử lý
+
+- **Residual là dự kiến:** mọi residual mới là `projected`. Mức giảm của từng control là **[ĐG]**, chưa có số liệu hiệu quả thực tế.
+- **Ước lượng công sức:** mức công sức chỉ là tương đối. Báo cáo không ước lượng chi phí bằng tiền và không dùng FAIR (đã hoãn).
+- **Hạn triển khai:** các hạn là **[GĐ]**. Hạn của T-01 và T-03 sớm nhất, vì hai gói này cần công sức thấp nhất mà lại giảm được nhiều kịch bản nhất.
+
+### 4.5 Kiểm chứng hiệu quả (để chuyển `projected` → `verified`)
+
+| Gói | Bằng chứng cần có |
+|---|---|
+| T-01 | 100% tài khoản cán bộ và admin đã bật MFA, theo báo cáo từ IdP |
+| T-02 | Biên bản thử khôi phục đạt yêu cầu. Thử xóa backup bằng một tài khoản đơn lẻ thì bị từ chối |
+| T-03 | Đã xóa tài khoản dùng chung. Log ghi được thao tác đặc quyền theo từng người |
+| T-04 | Thử sửa một điểm đã khóa sổ thì thay đổi bị giữ lại chờ người thứ hai duyệt |
+| T-05 | Kết quả kiểm thử và pentest không còn lỗ hổng object-level authorization trên API sửa điểm |
+| T-06 | Có biên bản xem log hằng tuần. Cảnh báo kích hoạt đúng khi thử nghiệm |
+| T-07 | Báo cáo quét lỗ hổng. Thời gian vá lỗ hổng nghiêm trọng đúng mục tiêu |
+| T-08 | Danh sách máy trạm quản trị, không có quyền local admin và không dùng email trên máy |
+| T-09 | Rà soát cấu hình so với baseline không còn chênh lệch |
+| T-10 | Cảnh báo kích hoạt khi thử xuất vượt giới hạn |
+| T-12 | Tỷ lệ hoàn thành bài tập phishing thực hành |
+| T-13 | Quy trình đã được phê duyệt và đã diễn tập mô phỏng (tabletop) |
+
+---
+
+## 5. Package & review
+
+*Chưa thực hiện. Giai đoạn này gồm `risk.py`, self-check, `out/*.md`, chấm lại các rating sát ngưỡng và phần hạn chế tổng thể. Xem [PLAN.md](PLAN.md).*
