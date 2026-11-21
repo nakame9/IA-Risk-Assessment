@@ -1,7 +1,7 @@
 # Plan chung: IA Risk Assessment
 
 > Kết quả thảo luận Claude ↔ Codex (mỗi bên 3 lượt), ngày 2026-11-21.
-> **Trạng thái: đã hoàn thành cả 5 giai đoạn (2026-11-22). Xem mục 8.**
+> **Trạng thái: v1 đã hoàn thành cả 5 giai đoạn (2026-11-22), xem mục 8. Kế hoạch cải thiện v2 (chưa triển khai) nằm ở mục 9.**
 > Đã kiểm chứng lại ngày 2026-11-21 (xem mục 7): Claude tự trích xuất text từ PDF của SP 800-30 Rev.1 và FIPS 199, đồng thời mở trang web của các nguồn còn lại.
 
 ## 1. Mục tiêu và phạm vi
@@ -181,3 +181,159 @@ out/matrix.md          # sinh tự động
 - **Không có rà soát độc lập:** plan không yêu cầu bước này.
 - **Bản phát hành SP 800-53 mới nhất:** chưa xác minh bản 5.2.0 (mục 7).
 - **Các mục đã hoãn ở mục 6:** FAIR, ánh xạ ATT&CK đầy đủ, cộng dồn rủi ro giữa các kịch bản.
+
+## 9. Kế hoạch cải thiện v2: chuyển từ một bài đánh giá sang một mô hình nghiên cứu
+
+> Đây là kết quả thảo luận Claude ↔ Codex (mỗi bên 3 lượt), ngày 2026-11-22. **Chưa triển khai.**
+
+### 9.1 Bài toán và câu hỏi nghiên cứu
+
+**Bài toán:** một tổ chức có hàng trăm tài sản thông tin. Nếu đánh giá theo cảm tính, tổ chức không biết nên xử lý vấn đề nào trước.
+
+**Câu hỏi nghiên cứu (RQ):** làm thế nào để xây dựng một mô hình đánh giá rủi ro **nhất quán**, **giải thích được**, và **hỗ trợ ưu tiên biện pháp** bảo đảm thông tin? Mô hình dựa trên NIST SP 800-30 Rev.1.
+
+Ba thuộc tính của RQ được chuyển thành ba câu hỏi con có thể kiểm chứng:
+
+| Thuộc tính | Câu hỏi con |
+|---|---|
+| **Nhất quán** | Với cùng một bộ bằng chứng, mô hình có luôn cho cùng một kết quả không? Bao nhiêu phần đầu vào được suy ra từ quy tắc, và bao nhiêu phần còn là phán đoán? |
+| **Giải thích được** | Mọi mức rủi ro có lần ngược được qua chuỗi bằng chứng → quy tắc → ô của bảng G-5/I-2 → yêu cầu chính sách hay không? |
+| **Hỗ trợ ưu tiên** | Mô hình có xếp hạng được các **biện pháp** (gói control) chứ không chỉ xếp hạng rủi ro, mà không phải làm phép tính giả trên các nhãn thứ bậc hay không? |
+
+### 9.2 Các khoảng trống của bản v1 (từ lượt 1 của Codex, Claude đã đồng ý)
+
+- **Quy mô:**
+  - Kịch bản đang được viết tay cho từng dòng.
+  - `risk.py` không đọc `assets.csv` và không kiểm tra tham chiếu tài sản.
+  - Self-check cố định con số 13 kịch bản.
+  - Thang F-5 gắn chặt vào 7 thành phần của portal.
+- **Nhất quán:**
+  - G-4 chỉ có một ví dụ anchor.
+  - Anchor về tính sẵn sàng bỏ sót khoảng 3–7 ngày.
+  - **Lỗi điều kiện hóa ở R-09 và R-13:** sự kiện đã ghi "trong kỳ đăng ký", nhưng G-4 lại bị hạ vì lý do "ít khi trùng kỳ đăng ký". Điều kiện thời điểm vì vậy bị tính hai lần.
+- **Giải thích được:**
+  - Output do script sinh ra không có bằng chứng và quy tắc đứng sau từng rating.
+  - Confidence chỉ ghi ở cấp kịch bản, nên không biết đầu vào nào là đầu vào bất định.
+- **Ưu tiên biện pháp:**
+  - Việc ưu tiên T-01, T-02, T-03 chỉ dựa trên lập luận.
+  - Residual được chấm theo cả bộ gói, nên không biết lợi ích riêng hay lợi ích cận biên của từng gói.
+  - R-01 và R-11 chồng lấn nhau, dễ bị tính lợi ích hai lần.
+- **Prepare/Maintain:**
+  - Chưa ánh xạ rõ tới Task 1-1 → 1-5 và 4-1 → 4-2 của SP 800-30. Claude đã tự xác minh số hiệu các task này trong PDF.
+  - Chưa có quy trình thu thập bằng chứng, và chưa chạy thử một chu kỳ cập nhật nào.
+
+### 9.3 Mô hình v2 (đã thống nhất)
+
+**Nguyên tắc:**
+- Giữ nguyên G-5/I-2 và hồ sơ CIA theo FIPS 199.
+- Không cộng, trừ hay chia trên các nhãn thứ bậc.
+- Dữ liệu vẫn ở dạng CSV, code chỉ dùng thư viện chuẩn của Python.
+
+**Lớp tài sản và template kịch bản:**
+- Mỗi tài sản thuộc một `asset_class`, ví dụ: `pii_database`, `web_service`, `identity_service`, `backup_store`, `admin_endpoint`, `email`, `document_store`.
+- **Template kịch bản mang quy tắc, không mang rating.** Template cố định nguồn đe dọa, sự kiện và quy tắc nào được áp dụng. Mỗi tài sản cụ thể chỉ cung cấp thuộc tính bằng chứng.
+- Kịch bản cấp tài sản được sinh theo công thức: tài sản × template áp dụng được.
+- Kịch bản cấp toàn hệ thống được tạo **một lần**, kèm danh sách tài sản bị ảnh hưởng và một `family_id`. Ví dụ: ransomware, sự cố mất region.
+
+**Quy tắc có mã và phiên bản:**
+- Quy tắc là các hàm nhỏ trong `risk.py`. Không xây ngôn ngữ cấu hình quy tắc.
+- Mỗi quy tắc khai báo các thuộc tính nó đọc, kiểu dữ liệu, đơn vị và giá trị hợp lệ.
+- `--check` từ chối thuộc tính lạ, giá trị sai và bản ghi mâu thuẫn.
+- Bằng chứng còn thiếu cho kết quả `unknown`.
+
+| Mã | Quy tắc |
+|---|---|
+| F2-01 | Control chưa có và chưa lên kế hoạch → VH. Đã lên kế hoạch, có bù trừ tối thiểu → H. Triển khai một phần → M. Triển khai đủ, hiệu quả ở mức "somewhat" → L. Triển khai đủ, đã được đánh giá, hiệu quả → VL. Thiếu bằng chứng về hiệu quả → `unknown`. Đây là **cách diễn giải của dự án** dựa trên F-2. Riêng mức VL đã được đối chiếu nguyên văn ("fully implemented, assessed, and effective") |
+| G3-01 | Gọi `f` là tần suất mỗi năm. `0≤f≤0.1` → VL; `0.1<f<1` → L; `1≤f<10` → M; `10≤f≤100` → H; `f>100` → VH. Quy tắc này phá thế trùng ranh giới tại giá trị 10/năm của bảng G-3 |
+| C-01 | Thông tin công khai, hoặc không có bản ghi nào bị lộ → VL. Các trường hợp khác xếp theo số bản ghi bị lộ, chia ba khoảng 1–9 / 10–1.000 / >1.000: thông tin không công khai thông thường → L / M / H; thông tin nhạy cảm → M / H / H |
+| I-01 | Xét hậu quả **nếu thông tin sai được đem dùng**. Hậu quả negligible / limited / serious / severe → VL / L / M / H. Nếu có cơ chế phát hiện **và sửa trước khi dữ liệu được dùng**, mức tối đa là L. Chỉ phát hiện mà không sửa thì không giảm mức |
+| A-01 | Gián đoạn 0 giờ → VL. Ngoài khung thời gian then chốt: `(0,1)` / `[1,24)` / `[24,168]` / `>168` giờ → VL / L / M / H. Trong khung thời gian then chốt: `(0,24)` / `≥24` giờ → M / H |
+| IMP-01 | Impact là mức cao nhất trong ba mức C, I, A. Chỉ xếp VH khi bằng chứng ghi nhận **nhiều hậu quả nặng khác nhau**, không chỉ vì nhiều chiều CIA cùng bị ảnh hưởng |
+| COND-01 | Sự kiện mất dịch vụ được định nghĩa là xảy ra **vào bất kỳ lúc nào**. Thời điểm trùng khung then chốt chỉ được xét **một lần**, ở G-4. Quy tắc này sửa lỗi của R-09 và R-13 |
+
+Các mức như phân loại độ nhạy, nhóm hậu quả và khung thời gian then chốt vẫn là phán đoán. Chúng phải được định nghĩa ở Prepare và có bằng chứng đi kèm.
+
+**Dữ liệu (tối thiểu):**
+
+| File | Nội dung gốc |
+|---|---|
+| `data/assets.csv` | Các trường hiện có, thêm `asset_class` và `system_id` |
+| `data/templates.csv` | `template_id, asset_classes, scope, threat_profile_id, event, init_rule, adverse_rule, impact_rule` |
+| `data/inputs.csv` | `subject_id, attribute, value, mode (evidence/judgment), evidence_ref, rationale, confidence, assessor, observed_on` |
+| `data/packages.csv` | `package_id, scope_ids, control_ids, effort_tier, requires, owner, status, verification_ref`. Bundle là một dòng riêng, có effort được đánh giá riêng. **Không cộng effort tier** |
+| `data/effects.csv` | `risk_id, package_ids (một tập chính xác), initiation, adverse, impact, basis_ref` |
+| `data/risk_register.csv` | Chỉ còn thông tin của từng kịch bản và quyết định, thêm `template_id, family_id, applicable_packages, last_reviewed, next_review`. Các rating suy ra được chuyển sang output sinh tự động |
+
+**Chuỗi giải thích:** với mỗi rủi ro, script sinh ra chuỗi: bằng chứng/phán đoán → quy tắc (mã + phiên bản) → rating đầu vào → ô G-5 → ô I-2 → yêu cầu chính sách → giả định về gói biện pháp.
+
+### 9.4 Xếp hạng biện pháp (không dùng phép tính giả)
+
+**Hiệu ứng thưa (sparse effects):**
+- Một ứng viên là một gói đơn hoặc một bundle đã được đánh giá.
+- Ứng viên chỉ có hiệu ứng lên một rủi ro khi có đúng tập gói tương ứng trong `effects.csv`.
+- **Không ghép** các factor tốt nhất từ nhiều dòng khác nhau.
+- Tổ hợp chưa được đánh giá là `unknown`, không phải "không có lợi ích".
+
+**Cách đo lợi ích:** lợi ích được tính bằng **số family** có rủi ro nặng nhất vượt xuống dưới ngưỡng. Hai con số được ghi riêng:
+- số family xuống dưới High,
+- số family xuống dưới Moderate.
+
+Đếm theo family chứ không theo kịch bản, để R-01 và R-11 không được tính trùng.
+
+**Thứ tự xếp hạng:**
+1. Các nghĩa vụ bắt buộc (mandatory) ràng buộc lựa chọn. Escalation đòi hỏi người xem xét, nhưng **không** tự động bắt buộc một gói.
+2. Lọc Pareto, so **riêng** từng con số lợi ích với effort.
+3. Trong nhóm Pareto, xếp theo thứ tự: số family xuống dưới High (giảm dần), số family xuống dưới Moderate (giảm dần), effort (tăng dần). Giữ nguyên các trường hợp hòa.
+4. Chọn tham lam (greedy): sau mỗi lần chọn một ứng viên, tính lại lợi ích cận biên của các ứng viên còn lại, có xét điều kiện tiên quyết.
+5. Ứng viên có hiệu ứng `unknown` lên một family có thể vượt ngưỡng được tách khỏi bảng xếp hạng và gắn nhãn **"incomplete"**.
+
+Cách xếp hạng này là **heuristic minh bạch**, không phải danh mục tối ưu.
+
+### 9.5 Đánh giá (chỉ ghi những gì sẽ thực sự chạy)
+
+| # | Phép đo | Cách làm |
+|---|---|---|
+| E1 | Độ phủ quy tắc | Tỷ lệ các factor cốt lõi được suy ra từ quy tắc, từ phán đoán, hoặc còn `unknown`. Chia theo từng factor và từng template |
+| E2 | Tính tất định | Hash SHA-256 của output, với đầu vào, phiên bản quy tắc và ngày đánh giá được cố định. Chạy hai lần phải ra cùng hash. Thời gian chạy được ghi ở ngoài output |
+| E3 | Độ nhạy | Nâng hoặc hạ mỗi đầu vào **phán đoán** một mức. Với bằng chứng dạng số, thử giá trị ngay sát ranh giới của quy tắc. Đo tỷ lệ rủi ro bị đổi mức, và độ ổn định của thứ tự gói bằng **Kendall tau-b** (viết bằng thư viện chuẩn, có xử lý trường hợp hòa và trường hợp không xác định) |
+| E4 | Quy mô | Dữ liệu tổng hợp khoảng 200 tài sản do `synth.py` sinh ra, với seed và phiên bản cố định. Gồm nhiều lớp tài sản, có bằng chứng bị thiếu, có dịch vụ dùng chung, có ca sát ranh giới. Ghi lại số tài sản, số kịch bản và thời gian chạy |
+| E5 | So với baseline | So mô hình với hai cách chọn đơn giản: chọn theo rủi ro cao nhất trước, và chọn theo effort thấp nhất trước. So ở cùng số hành động effort Low/Medium/High. Báo cáo family nào xuống dưới High hoặc Moderate. Kết quả **chỉ có ý nghĩa trong mô hình tổng hợp** |
+| E6 | Truy vết và bảo trì | Tỷ lệ rủi ro có đủ chuỗi giải thích. Chạy thử một chu kỳ Task 4-1 → 4-2 trên case portal, có diff trước/sau. Ví dụ đã sửa: R-02 phụ thuộc cả T-01 **và** T-06, nên phải kiểm chứng cả hai. Mọi bằng chứng kiểm chứng đều ghi rõ là mô phỏng |
+
+**Không thực hiện:**
+- **Nghiên cứu hai người chấm thật:** chỉ cung cấp bộ công cụ sẵn sàng chạy (đo phần trăm đồng thuận hoặc Cohen's kappa theo từng đầu vào), ghi rõ là **chưa thực hiện**. Dự án không tuyên bố đã đo được độ tin cậy giữa người chấm.
+- **Pilot dùng LLM làm người chấm thứ hai:** bị loại theo lập luận của Codex. Codex đã thấy các rating nên không thể chấm mù, và kết quả cũng không phải là đồng thuận giữa con người.
+
+### 9.6 Thứ tự công việc
+
+1. **Prepare v2:** cố định v1 bằng tag `v1`. Ánh xạ Task 1-1 → 1-5. Viết quy trình thu thập bằng chứng. Sửa lỗi COND-01 và các anchor còn hở.
+2. **Schema và quy tắc:** viết đặc tả quy tắc và schema. Chuyển 13 kịch bản sang mô hình mới. Mọi kết quả thay đổi so với v1 đều phải được giải thích.
+3. **Code:** mở rộng phần kiểm tra hợp lệ, phần tính điểm, chuỗi giải thích và báo cáo độ phủ trong `risk.py`.
+4. **Xếp hạng gói:** thêm `effects.csv` và phần xếp hạng ứng viên theo §9.4, kèm một self-check chạy được.
+5. **Thực nghiệm:** viết `synth.py` để chạy E1 → E5. Chạy thử một chu kỳ bảo trì (E6).
+6. **Viết lại báo cáo theo khung nghiên cứu:** Bài toán/RQ → Phương pháp và giả định → Giao thức đánh giá → Kết quả → Thảo luận và các mối đe dọa tới tính hợp lệ (threats to validity) → Kết luận. Các bảng đánh giá chi tiết của v1 chuyển xuống phụ lục. Kết quả đã chạy được tách riêng khỏi phần đánh giá với người thật (chỉ là đề xuất).
+
+### 9.7 Những gì đã thay đổi so với đề xuất ban đầu của mỗi bên
+
+- **Claude, xử lý quy mô:** đề xuất ban đầu là sinh kịch bản theo tài sản × template cho mọi kịch bản. Sau sửa: kịch bản toàn hệ thống chỉ tạo một lần, kèm `family_id` (Codex).
+- **Claude, đo nhất quán:** đề xuất ban đầu có pilot dùng LLM làm người chấm thứ hai. Sau sửa: bỏ, chỉ giữ bộ công cụ cho người chấm thật mà chưa chạy (Codex).
+- **Claude, ví dụ bảo trì:** đề xuất ban đầu là ví dụ "R-02 được kiểm chứng nhờ T-01". Sau sửa: phải kiểm chứng cả T-01 và T-06 (Codex).
+- **Claude, quy tắc impact:** đề xuất ban đầu tính C chỉ theo số bản ghi. Sau sửa: xét thêm độ nhạy của thông tin và phạm vi bị lộ. Còn I xét thêm hậu quả và thời điểm phát hiện (Codex).
+- **Codex, đo lợi ích:** đề xuất ban đầu đếm theo "decision units". Sau sửa: đếm theo family, có lọc Pareto, chọn tham lam và gắn nhãn incomplete (hai bên thống nhất).
+- **Codex, dữ liệu đầu vào:** đề xuất ban đầu dùng `inputs.csv` dạng dài, không ràng buộc. Sau sửa: mỗi quy tắc khai báo thuộc tính, và `--check` từ chối thuộc tính lạ (Claude).
+
+### 9.8 Hoãn lại
+
+- Nghiên cứu hai người chấm thật.
+- Ngân sách bằng số (người-ngày) và ROI tính bằng tiền.
+- FAIR.
+- Mọi UI, database và ML.
+- Kết luận về hiệu quả bảo mật thực tế, vì dữ liệu tổng hợp chỉ minh họa hành vi của mô hình.
+
+### 9.9 Rủi ro của bản v2
+
+| Rủi ro | Giảm thiểu |
+|---|---|
+| **Khách quan giả:** quy tắc chính xác có thể che đi các giả định chủ quan bên dưới | Hiện rõ nguồn gốc của từng bằng chứng, độ phủ của phán đoán và độ nhạy tại các ranh giới |
+| **Xếp hạng gói gây hiểu nhầm:** hiệu ứng thưa và effort thứ bậc có thể thiên vị các ứng viên được ghi chép đầy đủ hơn | Hiển thị phần còn thiếu (incomplete), giữ nguyên các trường hợp hòa, chỉ rút kết luận trên các so sánh có dữ liệu hỗ trợ |
+| **Vòng lặp tổng hợp:** bộ sinh dữ liệu dễ "thưởng" đúng những giả định mà mô hình đã cài sẵn | Cố định quy tắc trước khi viết `synth.py`. Thêm các phản ví dụ được đặc tả độc lập. Chỉ tuyên bố về hành vi của mô hình, không tuyên bố hiệu quả an ninh thực tế |
