@@ -198,7 +198,8 @@ python risk.py import kev|epss FILE [--url URL]
 - **Định dạng chấp nhận:**
   - KEV: file JSON. Trong mỗi mục phải có `cveID` và `knownRansomwareCampaignUse`. Phiên bản lấy từ `catalogVersion`, ngày phát hành lấy từ `dateReleased`.
   - EPSS: file CSV hoặc `.csv.gz`, có dòng đầu dạng `#model_version:…,score_date:…` và tiêu đề `cve,epss,percentile`.
-  - Tên các trường này là theo hiểu biết của dự án, **chưa đối chiếu với file thật**. Nếu sai định dạng thì lệnh import báo lỗi rõ ràng.
+  - **KEV đã được đối chiếu với file thật** ngày 2026-11-22. File có `catalogVersion` = 2026.11.20, `dateReleased` = 2026-11-20 và 1.790 mục, khớp với trường `count`. Trong đó 361 mục có `knownRansomwareCampaignUse = Known`, còn 1.429 mục là `Unknown`. Mỗi mục còn có các trường `forensicTriage`, `cwes`, `notes`; dự án chưa dùng các trường này.
+  - **Định dạng EPSS chưa được đối chiếu** với file thật. Nếu sai định dạng thì lệnh import báo lỗi rõ ràng.
 - **Khi import:**
   - File có SHA-256 trùng một snapshot đã có thì không lưu thêm.
   - File lỗi thì ghi một dòng `refresh_failed`, và giữ nguyên snapshot hợp lệ gần nhất.

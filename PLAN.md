@@ -445,7 +445,7 @@ Lý do: KEV và EPSS phản ánh hoạt động khai thác **toàn cầu** đố
 
 1. ✅ *(Xong ngày 2026-11-22. Kết quả là [SPEC.md](SPEC.md) và tag `v1`.)* **Prepare v2.1:** cố định v1 bằng tag `v1`. Định nghĩa chính sách KEV, hạn khắc phục và hợp đồng dữ liệu (data contract) cho ba bảng đầu vào cùng snapshot. Sửa COND-01 và các anchor còn hở.
 2. ✅ *(Xong ngày 2026-11-22. Xem [SPEC.md](SPEC.md) §7.2.)* **Quy tắc và schema:** chuyển 13 kịch bản sang mô hình mới, và giải thích mọi khác biệt so với v1.
-3. ✅ *(Xong ngày 2026-11-22. Phần code và self-check đã chạy trên dữ liệu thử. Snapshot thật chưa được import.)* **Kiểm tra dữ liệu:** kiểm tra hợp lệ của việc khớp CVE làm bằng tay. Viết bước import snapshot, có manifest và SHA-256.
+3. ✅ *(Xong ngày 2026-11-22. Phần code và self-check đã chạy trên dữ liệu thử. Snapshot KEV thật (phiên bản 2026.11.20) đã được import. EPSS chưa có.)* **Kiểm tra dữ liệu:** kiểm tra hợp lệ của việc khớp CVE làm bằng tay. Viết bước import snapshot, có manifest và SHA-256.
 4. **Báo cáo hành động:** sinh nghĩa vụ, chuỗi giải thích, xếp hạng gói, backlog vá lỗi và hàng đợi điều tra.
 5. **So sánh:** thêm chế độ so sánh giữa hai lần chạy, cho Task 4-1 và 4-2.
 6. **Thực nghiệm:** chạy E1 đến E6 và các kiểm tra mới ở §9.10.4. Dùng `synth.py` khoảng 200 tài sản.
