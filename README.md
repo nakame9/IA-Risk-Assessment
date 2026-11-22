@@ -12,7 +12,7 @@
 - [report.md](report.md): báo cáo đánh giá (v1, được cố định bằng tag `v1`).
 - [SPEC.md](SPEC.md): đặc tả đánh giá v2.1, tức bước Prepare. Gồm ánh xạ Task 1-1 → 1-5 của NIST, bộ quy tắc có mã, chính sách KEV, quy trình thu thập bằng chứng và data contract.
 
-**Tiến độ v2.1** (theo [PLAN.md](PLAN.md) §9.10.5): đã xong bước 1 (Prepare), bước 2 (quy tắc và schema, chuyển 13 kịch bản) bước 3 (kiểm tra khớp CVE và import snapshot) bước 4 (báo cáo hành động [out/action_report.md](out/action_report.md)) bước 5 (so sánh giữa hai lần chạy, ví dụ ở [examples/cycle2/](examples/cycle2/)) và bước 6 (thực nghiệm [out/experiments.md](out/experiments.md)). Đã có snapshot KEV thật: phiên bản 2026.11.20, lấy ngày 2026-11-22, giấy phép CC0, nằm ở `data/snapshots/`. Chưa có snapshot EPSS. Có 3 finding CVE minh họa, là giả định [GĐ] nhưng dùng mã CVE thật. Bước 7 (viết lại báo cáo) chưa làm.
+**Tiến độ v2.1** (theo [PLAN.md](PLAN.md) §9.10.5): đã xong bước 1 (Prepare), bước 2 (quy tắc và schema, chuyển 13 kịch bản) bước 3 (kiểm tra khớp CVE và import snapshot) bước 4 (báo cáo hành động [out/action_report.md](out/action_report.md)) bước 5 (so sánh giữa hai lần chạy, ví dụ ở [examples/cycle2/](examples/cycle2/)) và bước 6 (thực nghiệm [out/experiments.md](out/experiments.md)). Đã có snapshot KEV thật: phiên bản 2026.11.20, lấy ngày 2026-11-22, giấy phép CC0, nằm ở `data/snapshots/`. Chưa có snapshot EPSS. Có 3 finding CVE minh họa, là giả định [GĐ] nhưng dùng mã CVE thật. Bước 7 (viết lại báo cáo theo khung nghiên cứu) đã xong, nên **cả 7 bước của v2.1 đã hoàn thành**.
 
 **Dữ liệu v2.1** (`data/`):
 

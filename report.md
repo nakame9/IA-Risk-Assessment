@@ -1,21 +1,338 @@
-# Báo cáo đánh giá rủi ro IA: Cổng hồ sơ sinh viên (hệ thống hư cấu)
+# Mô hình đánh giá rủi ro Information Assurance nhất quán, giải thích được và ưu tiên biện pháp
 
-> **Lưu ý (2026-11-22):** các §1–5 dưới đây là **báo cáo v1**, được cố định bằng tag `v1`.
-> Kết quả hiện hành theo mô hình v2.1 nằm ở [out/](out/), gồm register, ma trận và trace. Khác biệt so với v1 được giải thích ở [SPEC.md](SPEC.md) §7.2: R-11 tăng lên High, R-08 giảm xuống Low. Báo cáo sẽ được viết lại ở bước 7 của plan v2.1.
->
-> **Trạng thái (v1):** Đã hoàn thành cả 5 giai đoạn. Kết luận cho người ra quyết định nằm ở [§5.4](#54-kết-luận-cho-người-ra-quyết-định).
-> **Phương pháp:** NIST SP 800-30 Rev.1 (Sep 2012). Xem [PLAN.md](PLAN.md).
-> **Lưu ý:** toàn bộ tổ chức, hệ thống, con số và phê duyệt trong báo cáo đều **hư cấu**, dùng cho mục đích học tập.
+> **Báo cáo nghiên cứu, bản v2.1 (ngày 2026-11-22).**
+> - Mô hình dựa trên NIST SP 800-30 Rev.1. Đặc tả của mô hình là [SPEC.md](SPEC.md) (`SPEC-2.1.0`). Kế hoạch nằm ở [PLAN.md](PLAN.md) §9.
+> - Bản v1 được cố định bằng tag `v1` và giữ nguyên văn ở **Phụ lục A**.
+> - **Toàn bộ tổ chức, hệ thống, tần suất, bằng chứng và phê duyệt đều hư cấu.** Chỉ có các nguồn [TK] và dữ liệu KEV là thật.
 
-**Quy ước nhãn dùng trong báo cáo:**
+**Quy ước nhãn:**
 
 | Nhãn | Ý nghĩa |
 |---|---|
-| **[GĐ]** | Giả định do nhóm đặt ra cho hệ thống hư cấu |
-| **[TK]** | Nội dung lấy từ tài liệu tham khảo bên ngoài, có ghi nguồn |
-| **[ĐG]** | Nhận định chuyên môn của nhóm đánh giá |
+| **[GĐ]** | Giả định cho hệ thống hư cấu |
+| **[TK]** | Nội dung từ nguồn ngoài đã đối chiếu (xem mục Tài liệu tham khảo) |
+| **[ĐG]** | Nhận định của nhóm đánh giá |
+| **[DA]** | Lựa chọn của dự án, có thể thay đổi, có phiên bản |
+
+## Tóm tắt
+
+**Bài toán:** một tổ chức có hàng trăm tài sản thông tin cần biết **việc gì phải làm trước**. Nếu đánh giá theo cảm tính thì không trả lời được câu hỏi này.
+
+**Mô hình được xây dựng:**
+- Giữ nguyên hai bảng tra G-5 và I-2 của NIST SP 800-30 Rev.1.
+- Thêm **quy tắc có mã và phiên bản** để chấm các đầu vào.
+- Mỗi đầu vào ghi rõ là **bằng chứng hay phán đoán**.
+- Mỗi rủi ro có một **chuỗi giải thích**, đi từ đầu vào tới yêu cầu chính sách.
+- Có cách **xếp hạng gói biện pháp** theo số nhóm rủi ro vượt xuống dưới ngưỡng, không làm phép tính trên nhãn thứ bậc.
+- Có cơ chế **duy trì**: so sánh hai lần chạy và giải thích nguyên nhân của mỗi thay đổi.
+
+**Đánh giá mô hình:** trên một case minh họa (13 kịch bản) và một tổ chức tổng hợp (200 tài sản, 210 kịch bản).
+
+**Kết quả:**
+- **Tính toán:** tất định và chạy nhanh. Quy mô 200 tài sản chạy dưới 0,1 giây.
+- **Giải thích:** mọi rủi ro có đủ dữ liệu đều có chuỗi giải thích hoàn chỉnh.
+- **Xếp hạng biện pháp:** ở case minh họa, mô hình chọn được 3 gói kéo 4 nhóm rủi ro xuống dưới Moderate. Hai cách chọn đơn giản, dùng cùng mức công sức, không kéo được nhóm nào.
+- **Giới hạn lớn nhất:** khả năng gây tác động (G-4) vẫn **97–100% là phán đoán**. Nâng hoặc hạ một đầu vào một mức làm đổi mức của ít nhất một rủi ro trong **14–25%** trường hợp.
+- Mô hình không xóa được tính chủ quan. Nó làm cho tính chủ quan **hiện rõ, nhất quán và kiểm tra được**.
+
+## I. Bài toán và câu hỏi nghiên cứu
+
+**Bài toán:** mỗi tài sản (cơ sở dữ liệu, máy chủ, email, tài liệu…) đối mặt với các rủi ro khác nhau. Khi đánh giá theo cảm tính, cùng một tình huống có thể được chấm khác nhau, lý do không truy lại được, và không có căn cứ để chọn biện pháp nào làm trước.
+
+**Câu hỏi nghiên cứu (RQ):** làm thế nào để xây dựng một mô hình đánh giá rủi ro **nhất quán**, **giải thích được**, và **hỗ trợ ưu tiên biện pháp** bảo đảm thông tin?
+
+RQ được tách thành ba câu hỏi con có thể kiểm chứng:
+
+| | Câu hỏi con | Phép đo (mục III) |
+|---|---|---|
+| RQ1 Nhất quán | Cùng bằng chứng có luôn cho cùng kết quả không? Bao nhiêu phần đầu vào đến từ quy tắc, bao nhiêu phần còn là phán đoán? Kết quả nhạy đến đâu khi phán đoán thay đổi? | E1, E2, E3 |
+| RQ2 Giải thích được | Mọi mức rủi ro có lần ngược được về bằng chứng, quy tắc và ô của bảng tra không? | E6 |
+| RQ3 Ưu tiên biện pháp | Mô hình có xếp hạng được gói biện pháp, và chọn tốt hơn các cách chọn đơn giản không? | E4, E5 |
+
+**[TK] Vị trí trong quy trình của NIST SP 800-30 Rev.1:**
+
+| Bước của NIST | Ở dự án này |
+|---|---|
+| Bước 1 Prepare (Task 1-1 → 1-5) | [SPEC.md](SPEC.md) §1–6 |
+| Bước 2 Conduct (Task 2-1 → 2-6) | Phần dữ liệu và `risk.py` |
+| Bước 3 Communicate | Báo cáo hành động |
+| Bước 4 Maintain (Task 4-1 → 4-2) | So sánh giữa hai lần chạy |
+
+## II. Phương pháp
+
+### II.1 Nền tảng
+
+- **[TK] Bảng tra:** dùng nguyên văn hai bảng G-5 (overall likelihood) và I-2 (level of risk) của SP 800-30 Rev.1. Các bảng được chép ở [PLAN.md](PLAN.md) §2. Self-check so từng ô trong code với bản chép đó.
+- **[TK] Hồ sơ tài sản:** hồ sơ C/I/A của tài sản theo FIPS 199, lấy mức cao nhất (high water mark) cho cả hệ thống.
+- **[TK] Biện pháp:** gắn mã control của SP 800-53 Rev.5. Tên control đã được đối chiếu với bản PDF chính thức.
+- **[TK] Dữ liệu khai thác:**
+  - CISA KEV, giấy phép CC0, được dùng như **chính sách khắc phục có hạn** (KEV-POL-01).
+  - FIRST EPSS chỉ dùng để **xếp thứ tự trong backlog vá lỗi**.
+  - Cả hai **không** tự gán likelihood. Lý do: chúng phản ánh hoạt động khai thác toàn cầu của từng CVE, không phải khả năng một tổ chức cụ thể bị tấn công. FAQ của EPSS cũng ghi rằng EPSS không phải là điểm rủi ro đầy đủ.
+
+### II.2 Dữ liệu
+
+| Ai sửa | File |
+|---|---|
+| Người vận hành (lưu từ Excel ra CSV) | `assets.csv`, `inputs.csv` (mỗi dòng ghi rõ bằng chứng hay phán đoán, confidence, nguồn hoặc lý do), `controls.csv` |
+| Người phụ trách mô hình | `templates.csv`, `packages.csv`, `effects.csv` |
+| Cả hai | `risk_register.csv`. Snapshot KEV/EPSS lưu nguyên vẹn, kèm SHA-256 và giấy phép |
+
+Định dạng chi tiết ở [SPEC.md](SPEC.md) §6. Script `risk.py` từ chối mọi thuộc tính chưa khai báo, mọi giá trị sai kiểu và mọi tham chiếu không tồn tại. Đầu vào `unknown` không bao giờ được coi là 0.
+
+### II.3 Quy tắc có mã
+
+Chi tiết ở [SPEC.md](SPEC.md) §3.
+
+- **Rating:**
+  - F2-01: mức nghiêm trọng của lỗ hổng, theo tình trạng control.
+  - G3-01: khả năng xảy ra theo tần suất, ranh giới rõ ràng.
+  - C-01: tác động bảo mật, theo độ nhạy và số bản ghi bị lộ.
+  - I-01: tác động toàn vẹn. Nếu có sửa sai trước khi dữ liệu được dùng thì tối đa là Low.
+  - A-01: tác động sẵn sàng, theo số giờ gián đoạn và khung thời gian then chốt.
+  - IMP-01: impact là mức cao nhất trong C/I/A. Very High chỉ khi có nhiều hậu quả nặng khác nhau.
+  - COND-01: điều kiện thời điểm chỉ được xét một lần.
+- **Anchor cho G-4:** dựa trên số rào chắn và việc chúng đã được kiểm thử hay chưa.
+- **Dữ liệu khai thác:** CVE-APP-01, G2-TI-01, G4-LOCAL-01, TI-ABS-01, TI-RANSOM-01, TI-REV-01, KEV-POL-01, EPSS-ORDER-01.
+- **Effects:**
+  - EFF-01: G-4 dự kiến không được là Very Low khi rào chắn chưa được kiểm thử.
+  - EFF-02: thêm gói không được làm kết quả tệ hơn.
+- **Hiệu ứng thưa 1.1:** xem II.5.
+
+### II.4 Chuỗi giải thích
+
+Với mỗi rủi ro, [out/trace.md](out/trace.md) ghi lại chuỗi sau:
+
+1. Từng đầu vào: giá trị, loại (bằng chứng/phán đoán), confidence, nguồn hoặc lý do.
+2. Quy tắc được áp dụng, kèm phiên bản.
+3. Ô bảng G-5 → ô bảng I-2 → yêu cầu chính sách.
+4. Cơ sở của residual: effect nào, đã được kiểm chứng hay chưa.
+
+### II.5 Ưu tiên biện pháp
+
+1. **Nghĩa vụ trước:** các nghĩa vụ KEV có hạn và các escalation luôn đứng trước mọi xếp hạng.
+2. **Đo lợi ích theo family:** lợi ích của một ứng viên là số **family** (nhóm kịch bản liên quan nhau) có rủi ro nặng nhất **vượt xuống dưới High**, và số family **vượt xuống dưới Moderate**. Đếm theo family để không tính trùng các kịch bản nằm trong cùng một chuỗi tấn công.
+3. **Hiệu ứng thưa:** chỉ dùng hiệu ứng đã được đánh giá cho **đúng** tập gói. Không ghép factor từ nhiều dòng, không đoán.
+   - Ứng viên chỉ là *incomplete* khi family chưa biết hiệu ứng **còn có thể vượt ngưỡng**.
+   - Ứng viên incomplete được xếp ở danh sách riêng, với lợi ích là cận dưới (≥).
+4. **Xếp hạng:**
+   - Gói đơn được lọc Pareto giữa lợi ích và effort, rồi xếp theo thứ tự cố định.
+   - Bundle được liệt kê riêng. Effort tier **không bao giờ được cộng** lại.
+
+### II.6 Duy trì (Task 4-1/4-2)
+
+- Mỗi lần chạy ghi `state.json`, là một bản tất định có SHA-256.
+- Khi chạy với `--baseline`, báo cáo liệt kê thay đổi so với lần trước, và **quy mỗi thay đổi về đúng đầu vào đã đổi**. Nếu quy tắc hoặc đặc tả đã đổi thì báo cáo cảnh báo.
+- Khi mọi gói đã chọn cho một rủi ro đều đã được kiểm chứng (`implemented_assessed_effective`), residual chuyển từ `projected` sang `verified`. Nếu kết quả sau kiểm chứng tệ hơn dự kiến thì có cảnh báo.
+
+### II.7 Giả định chính
+
+- **A-01 → A-06:** giả định của case portal (Phụ lục A §1.3).
+- **A-07:** không làm phép tính trên nhãn.
+- **A-08:** chỉ đọc feed từ snapshot lưu sẵn.
+- **A-09:** khớp CVE bằng tay, có bằng chứng.
+- **A-10:** dữ liệu tổng hợp chỉ cho thấy hành vi của mô hình.
+- **A-11:** script không bao giờ tự chấp nhận rủi ro.
+
+## III. Giao thức đánh giá
+
+| Mã | Phép đo | Cách làm |
+|---|---|---|
+| E1 | Độ phủ quy tắc | Tỷ lệ initiation, adverse, impact đến từ "quy tắc trên bằng chứng", "quy tắc trên phán đoán", "phán đoán", hay "unknown" |
+| E2 | Tính tất định | Chạy hai lần phải ra cùng SHA-256 của state. Sinh lại dữ liệu tổng hợp với cùng seed phải ra file giống hệt |
+| E3 | Độ nhạy | Nâng hoặc hạ mỗi phán đoán một mức. Nhân 0,5 hoặc 2 mỗi đầu vào dạng số. Đo tỷ lệ nhiễu làm đổi mức rủi ro, tỷ lệ khuyến nghị đứng đầu bị đổi, và tỷ lệ cặp bị đảo thứ tự |
+| E4 | Quy mô | Đếm số tài sản, kịch bản, đầu vào, effects, và đo thời gian chạy |
+| E5 | So với baseline | Mô hình so với chọn theo rủi ro cao nhất trước và chọn theo effort thấp nhất trước, với **cùng tập effort tier**. Đo số family vượt xuống dưới High và dưới Moderate |
+| E6 | Truy vết và duy trì | Tỷ lệ rủi ro có đủ chuỗi giải thích. Chạy thử một chu kỳ cập nhật |
+
+**Bộ dữ liệu:**
+- **Case portal:** 10 tài sản, 13 kịch bản, 3 finding minh họa dùng mã CVE thật trong KEV.
+- **Tổ chức tổng hợp:** do `synth.py` sinh ra (`SYNTH-1.0`, seed 20261122), gồm 200 tài sản, 210 kịch bản, 5 hệ thống.
+  - Các quy tắc đã được cố định **trước** khi viết bộ sinh.
+  - Phản ví dụ được thêm độc lập: 3% đầu vào `unknown`, 5% effect bị thiếu, giá trị nằm đúng ranh giới của quy tắc.
+
+**Giao thức hai người chấm (đã chuẩn bị, CHƯA THỰC HIỆN):**
+1. Hai người đánh giá độc lập chấm cùng một gói bằng chứng cho N kịch bản. Mỗi người có bộ anchor trong [SPEC.md](SPEC.md) §3.1.
+2. Đo **phần trăm đồng thuận** và **Cohen's kappa** cho từng đầu vào (initiation, adverse, các thuộc tính impact), và cho **lớp quyết định** cuối cùng (owner / delegated / senior / escalate).
+3. Hai người cùng xem lại các chỗ khác nhau, và ghi lại lý do của từng chỗ.
+4. Nếu muốn so có dùng rubric hay không, chia ca theo thứ tự đối xứng (counterbalanced).
+
+Dự án **không tuyên bố** đã đo được độ tin cậy giữa người chấm.
+
+## IV. Kết quả
+
+### IV.1 Case portal
+
+Số liệu dưới đây là bản chạy ngày 2026-11-22. Kết quả đầy đủ ở [out/action_report.md](out/action_report.md), [out/register.md](out/register.md) và [out/trace.md](out/trace.md).
+
+**Mức rủi ro:**
+
+| | High | Moderate | Low |
+|---|---|---|---|
+| Rủi ro hiện tại | 2 (R-01, R-11) | 6 | 5 |
+| Residual dự kiến, sau các gói đã chọn | 0 | 2 (R-02, R-11) | 11 |
+
+**Việc gấp:**
+- Nghĩa vụ KEV của F-001 (CVE-2025-24813 trên AS-06, mở ra internet), **hạn 2026-12-02**.
+- R-01 cần escalate (impact Very High).
+- R-01 và R-11 cần Risk executive quyết định.
+
+**Xếp hạng gói:**
+- **Nhóm Pareto của gói đơn:**
+  - **T-04** (duyệt hai người và đối soát): kéo 2 family xuống dưới Moderate, effort Medium.
+  - **T-09** (baseline cấu hình cloud): kéo 1 family, effort Low.
+  - **T-10** (giới hạn xuất dữ liệu): kéo 1 family, effort Low.
+  - T-07 bị loại khỏi nhóm này: cùng lợi ích nhưng effort cao hơn.
+- **Family ransomware (R-01 + R-11):**
+  - **Không gói đơn nào** kéo được family này xuống dưới High.
+  - Chỉ bundle đầy đủ {T-01, T-02, T-03, T-08, T-12, T-13} làm được.
+  - Các tổ hợp nhỏ hơn đang là *incomplete*, vì effect của chúng lên R-01 chưa được đánh giá.
+
+**Hàng đợi điều tra:** 12 việc, mỗi việc là một đầu vào mà nếu chấm lệch một mức thì thẩm quyền quyết định sẽ đổi. Ví dụ:
+- Tần suất của R-07: nếu là 1 lần/năm thay vì 0,5 thì phải lên cấp senior.
+- Các phán đoán có confidence Low của R-03, R-04, R-05, R-06, R-12.
+- Phiên bản thực tế của F-002.
+- Tình trạng của T-12.
+
+**Bằng chứng:** trong các đầu vào của kịch bản, 5 là bằng chứng và 112 là phán đoán. Có snapshot KEV 2026.11.20. Chưa có EPSS.
+
+### IV.2 Những gì mô hình phát hiện ở bản v1
+
+Đây là các khác biệt so với v1, được giải thích chi tiết ở [SPEC.md](SPEC.md) §7.
+
+- **Không nhất quán ở v1:** R-01 và R-11 có cùng rào chắn, nhưng v1 chấm G-4 khác nhau. Áp anchor chung thì **R-11 tăng từ Moderate lên High**. R-08 giảm xuống Low, vì "backup chưa thử" là một rào chắn chưa được kiểm thử, tương ứng mức Moderate.
+- **Đếm hai lần ở v1 (COND-01):** R-09 và R-13 xét điều kiện thời điểm ở cả định nghĩa sự kiện lẫn G-4. Đã sửa. Rating không đổi.
+- **Effects của v1 chưa nhất quán với anchor:** sau khi chấm lại, residual của R-01 giảm xuống Low, R-02 tăng lên Moderate (vì MFA chưa được kiểm thử, theo EFF-01), R-03 giảm xuống Low.
+
+### IV.3 Thực nghiệm E1–E6
+
+Số liệu đầy đủ ở [out/experiments.md](out/experiments.md).
+
+| Phép đo | Case portal | Tổng hợp (200 tài sản) |
+|---|---|---|
+| E2 Chạy hai lần ra cùng state | Có | Có. Sinh lại dữ liệu cũng ra file giống hệt |
+| E4 Quy mô / thời gian chạy | 13 kịch bản / khoảng 0,02 s | 210 kịch bản / khoảng 0,05 s |
+| E1 Initiation: quy tắc trên bằng chứng / phán đoán / unknown | 38,5% / 61,5% / 0% | 34,8% / 62,9% / 2,4% |
+| E1 Adverse (G-4) là phán đoán | 100% | 97,1% (2,9% unknown) |
+| E1 Impact: quy tắc trên phán đoán / unknown | 100% / 0% | 81,9% / 16,7% (1,4% quy tắc trên bằng chứng) |
+| E3 Tỷ lệ nhiễu làm đổi mức của ít nhất một rủi ro | 25,4% (71 nhiễu) | 14,3% (300 nhiễu) |
+| E3 Khuyến nghị đứng đầu bị đổi | 8,5% | 0,0% |
+| E3 Cặp bị đảo thứ tự | 0,9% | 0,1% |
+| E5 Số family xuống dưới Moderate: mô hình / chọn theo rủi ro / chọn theo effort | 4 / 0 / 0 | 34 / 19 / 22 |
+| E5 Số family xuống dưới High: mô hình / chọn theo rủi ro / chọn theo effort | 0 / 0 / 0 | 17 / 15 / 16 |
+| E6 Có đủ chuỗi giải thích | 13/13 | 167/210. Các rủi ro còn lại có đầu vào `unknown` và nằm trong hàng đợi điều tra |
+
+**Thực nghiệm lộ ra một vấn đề và dẫn tới sửa mô hình:**
+- Với quy tắc hiệu ứng thưa bản 1.0, ở quy mô 200 tài sản **không còn ứng viên nào** được xếp hạng. Mỗi gói chạm vào rất nhiều kịch bản, nên chỉ cần thiếu một effect là gói bị loại.
+- Bản 1.1 sửa lại như sau:
+  - Chỉ đánh dấu incomplete khi phần thiếu **thực sự có thể làm đổi kết quả**.
+  - Xếp các ứng viên incomplete theo lợi ích cận dưới.
+  - Liệt kê các family còn thiếu effect, để người phụ trách mô hình đánh giá bổ sung.
+
+### IV.4 Chu kỳ cập nhật (mô phỏng)
+
+Ví dụ nằm ở [examples/cycle2/](examples/cycle2/), ngày đánh giá 2026-12-05. Các thay đổi giả định: T-01 (MFA) và T-06 (alert) được kiểm thử, F-001 được vá, F-002 được xác nhận áp dụng.
+
+Mục 2 của báo cáo chu kỳ 2 tự liệt kê các thay đổi, kèm nguyên nhân:
+- **R-02** giảm từ Moderate xuống Low, và residual chuyển sang `verified`. Nguyên nhân: G-4 giảm từ Moderate xuống Very Low.
+- **R-11** giảm từ High xuống Moderate. Nguyên nhân: G-4 giảm từ High xuống Moderate.
+- **Nghĩa vụ KEV:** F-001 đóng lại. F-002 mới mở, hạn 2026-12-16.
+- **Snapshot KEV** bị cảnh báo là đã cũ.
+- **T-02 vào nhóm Pareto.** Khi R-11 đã xuống Moderate, riêng T-02 đủ kéo family ransomware xuống dưới High.
+
+## V. Thảo luận
+
+### V.1 Trả lời câu hỏi nghiên cứu
+
+**RQ1 Nhất quán: có, trong giới hạn.**
+- **Đạt được:**
+  - Tính toán tất định.
+  - Đầu vào được kiểm tra hợp lệ.
+  - Quy tắc có ranh giới rõ ràng, nên cùng phán đoán luôn cho cùng mức rủi ro.
+  - Mô hình phát hiện được chỗ không nhất quán của v1 (R-01 và R-11).
+- **Chưa đạt được:**
+  - G-4 vẫn gần như hoàn toàn là phán đoán.
+  - Kết quả nhạy ở ranh giới: 14–25% nhiễu một mức làm đổi mức của ít nhất một rủi ro.
+- **Câu trả lời của mô hình** là đưa những chỗ nhạy này vào **hàng đợi điều tra** (VOI-01), thay vì che giấu chúng.
+
+**RQ2 Giải thích được: có.**
+- Mọi rủi ro có đủ dữ liệu đều có chuỗi giải thích từ đầu vào tới yêu cầu chính sách.
+- Mọi rủi ro thiếu dữ liệu đều được nêu ra thay vì bị đoán.
+- Khi đánh giá lại, mỗi thay đổi được quy về đúng đầu vào đã đổi.
+
+**RQ3 Ưu tiên biện pháp: có, kèm điều kiện.**
+- **Kết quả:** ở cả hai bộ dữ liệu, mô hình chọn được gói vượt nhiều ngưỡng hơn hai cách chọn đơn giản. Riêng case portal là 4 family so với 0.
+- **Điều kiện:**
+  - Lợi ích chỉ được đo bằng **effects mà nhóm tự đánh giá**. Mọi phương pháp đều được chấm bằng cùng dữ liệu đó, nên đây là so sánh **bên trong** mô hình.
+  - Lợi ích của các tổ hợp chưa được đánh giá vẫn ghi là "chưa biết". Ở case portal, tổ hợp nhỏ nhất đủ cho family ransomware vẫn chưa biết.
+
+### V.2 Các mối đe dọa tới tính hợp lệ
+
+| Loại | Mối đe dọa | Cách giảm |
+|---|---|---|
+| Cấu trúc (construct) | "Vượt ngưỡng" là một thước đo lợi ích thô. Cách chia family ảnh hưởng tới số đếm | Đếm theo family đã khai báo, giữ nguyên trường hợp hòa, ghi rõ incomplete |
+| Nội tại (internal) | Cùng một nhóm vừa đặt anchor, vừa chấm phán đoán, vừa đánh giá effects. Dữ liệu tổng hợp có nguy cơ vòng lặp | Cố định quy tắc trước khi sinh dữ liệu. Có phản ví dụ độc lập. Không tuyên bố hiệu quả thực tế |
+| Bên ngoài (external) | Chỉ có một case hư cấu và một tổ chức tổng hợp | Cần một pilot với workflow thật (PLAN §9.10.4) |
+| Độ tin cậy (reliability) | Chưa đo đồng thuận giữa người chấm | Giao thức đã sẵn sàng (mục III) nhưng chưa thực hiện |
+| Nguồn | Chưa có snapshot EPSS và chưa đọc điều khoản sử dụng của FIRST. Chưa xác minh bản SP 800-53 5.2.0 | Đã ghi trong [SPEC.md](SPEC.md) §6.5 và [PLAN.md](PLAN.md) §7 |
+
+### V.3 Cách một tổ chức dùng mô hình
+
+1. Điền ba bảng tính: tài sản, bằng chứng/phán đoán, tình trạng control.
+2. Import snapshot KEV (và EPSS nếu có).
+3. Chạy `python risk.py --as-of <ngày>`, rồi đọc báo cáo hành động theo thứ tự: việc gấp → gói biện pháp → backlog vá lỗi → hàng đợi điều tra.
+4. Thu thập bằng chứng theo hàng đợi điều tra. Cập nhật bảng tính.
+5. Chạy lại với `--baseline` để thấy cái gì đã thay đổi và vì sao.
+
+## VI. Kết luận: việc gì làm trước (case portal, ngày 2026-11-22)
+
+1. **Khắc phục F-001 trước 2026-12-02.** Đây là nghĩa vụ KEV, và đứng trên mọi thứ hạng.
+2. **Risk executive quyết định cho R-01 (đã escalate) và R-11** (mức High).
+3. **Family ransomware cần một tổ hợp gói.**
+   - Với dữ liệu hiện tại, chỉ bundle đầy đủ {T-01, T-02, T-03, T-08, T-12, T-13} kéo được family này xuống dưới High.
+   - **Đánh giá effect của các tổ hợp nhỏ hơn** là việc của người phụ trách mô hình, nằm trong danh sách incomplete.
+   - Chu kỳ mô phỏng cho thấy *một* con đường có thể: kiểm chứng T-01, sau đó làm T-02. Đây chỉ là minh họa, chưa phải kết quả đo được.
+4. **Trong các gói đơn, làm T-04, T-09, T-10 trước.**
+   - T-04 cho lợi ích lớn nhất: kéo 2 family xuống dưới Moderate.
+   - T-09 và T-10 có effort Low.
+5. **Thu thập bằng chứng theo hàng đợi điều tra.** Ưu tiên:
+   - Tần suất của R-07.
+   - Các phán đoán có confidence Low của R-03, R-04, R-05, R-06, R-12.
+   - Phiên bản thực tế của F-002.
+   - Tình trạng của T-12.
+   - Bổ sung snapshot EPSS, sau khi đã đọc điều khoản sử dụng của FIRST.
+
+Mọi mức residual là `projected` cho tới khi có bằng chứng kiểm chứng (Phụ lục A §4.5). Các giới hạn được nêu ở V.2.
+
+## Tài liệu tham khảo
+
+Các nguồn dưới đây đã được đối chiếu trong quá trình làm dự án. Chi tiết ở [PLAN.md](PLAN.md) §7 và [SPEC.md](SPEC.md).
+
+- NIST SP 800-30 Rev.1, *Guide for Conducting Risk Assessments* (2012): https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-30r1.pdf
+- NIST FIPS 199, *Standards for Security Categorization of Federal Information and Information Systems* (2004): https://csrc.nist.gov/pubs/fips/199/final
+- NIST SP 800-53 Rev.5, *Security and Privacy Controls for Information Systems and Organizations*: https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final
+- ISO/IEC 27005:2022, chỉ dùng làm nguồn hỗ trợ. Trang iso.org trả về lỗi 403, nên đã đối chiếu qua https://en.wikipedia.org/wiki/ISO/IEC_27005
+- FIRST, *CVSS v4.0 User Guide*: https://www.first.org/cvss/v4.0/user-guide
+- CISA, *Known Exploited Vulnerabilities Catalog*: https://www.cisa.gov/known-exploited-vulnerabilities-catalog, giấy phép CC0 tại https://github.com/cisagov/kev-data/blob/develop/LICENSE
+- CISA, BOD 22-01, đã bị thu hồi và thay bằng BOD 26-04: https://www.cisa.gov/news-events/directives/bod-22-01-reducing-significant-risk-known-exploited-vulnerabilities
+- FIRST, *EPSS FAQ*: https://www.first.org/epss/faq
+
+## Phụ lục
+
+| Phụ lục | Nội dung |
+|---|---|
+| **A** | Báo cáo đánh giá v1 của case portal, nguyên văn (ngay bên dưới) |
+| **B** | Đặc tả mô hình: [SPEC.md](SPEC.md) |
+| **C** | Kết quả được sinh ra: [out/action_report.md](out/action_report.md), [out/register.md](out/register.md), [out/matrix.md](out/matrix.md), [out/trace.md](out/trace.md), [out/experiments.md](out/experiments.md) |
+| **D** | Chu kỳ cập nhật mô phỏng: [examples/cycle2/out/action_report.md](examples/cycle2/out/action_report.md) |
 
 ---
+
+# Phụ lục A: Báo cáo đánh giá v1, case portal (nguyên văn)
+
+> Đây là nguyên văn báo cáo v1, được cố định bằng tag `v1`. Từ đó tới nay chỉ có hai sửa đổi: COND-01 cho R-09/R-13, và anchor của tính sẵn sàng.
+> - Các số liệu ở §3–§5 bên dưới là kết quả **v1**. Kết quả hiện hành nằm ở mục IV phía trên.
+> - Các tham chiếu dạng "report.md §x" và các anchor `#r-xx` / `#d-rxx` trong `data/` và [SPEC.md](SPEC.md) trỏ vào phụ lục này.
 
 ## 1. Frame (Khung đánh giá)
 
