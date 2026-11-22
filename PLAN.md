@@ -449,7 +449,7 @@ Lý do: KEV và EPSS phản ánh hoạt động khai thác **toàn cầu** đố
 4. ✅ *(Xong ngày 2026-11-22. Kết quả ở [out/action_report.md](out/action_report.md), xem [SPEC.md](SPEC.md) §7.3.)* **Báo cáo hành động:** sinh nghĩa vụ, chuỗi giải thích, xếp hạng gói, backlog vá lỗi và hàng đợi điều tra.
 5. ✅ *(Xong ngày 2026-11-22. Xem [SPEC.md](SPEC.md) §7.4 và [examples/cycle2/](examples/cycle2/). Ví dụ này cũng là phần chạy thử chu kỳ bảo trì của E6.)* **So sánh:** thêm chế độ so sánh giữa hai lần chạy, cho Task 4-1 và 4-2.
 6. ✅ *(Xong ngày 2026-11-22. Kết quả ở [out/experiments.md](out/experiments.md), xem [SPEC.md](SPEC.md) §7.5.)* **Thực nghiệm:** chạy E1 đến E6 và các kiểm tra mới ở §9.10.4. Dùng `synth.py` khoảng 200 tài sản.
-7. **Viết lại báo cáo:** theo khung nghiên cứu, với kết luận theo hướng "việc gì làm trước".
+7. ✅ *(Xong ngày 2026-11-22. Xem [report.md](report.md) mục I–VI. Bản v1 nằm ở Phụ lục A.)* **Viết lại báo cáo:** theo khung nghiên cứu, với kết luận theo hướng "việc gì làm trước".
 
 #### 9.10.6 Bổ sung vào phần hoãn lại và rủi ro
 
