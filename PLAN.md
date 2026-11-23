@@ -469,3 +469,158 @@ Lý do: KEV và EPSS phản ánh hoạt động khai thác **toàn cầu** đố
 | Khớp CVE sai (false applicability) | Chỉ khớp khi có bằng chứng (CVE-APP-01). Trường hợp không chắc chắn chuyển thành việc điều tra |
 | Tạo cảm giác khẩn cấp giả (manufactured urgency) | Chính sách phải có thẩm quyền rõ ràng, và hạn không bị đặt lại khi import lại feed |
 | Chỉ nhìn vào lỗ hổng (vulnerability tunnel vision) | Giữ các kịch bản không có CVE và giữ phần so sánh gói biện pháp |
+
+## 10. Kế hoạch v3: bộ công cụ đánh giá có hỗ trợ cho doanh nghiệp vừa và nhỏ (SME)
+
+> Plan chung sau 3 lượt thảo luận Claude ↔ Codex, ngày 2026-11-23. **Chưa triển khai.**
+> **Mục tiêu của người dùng:** chạy được cho một doanh nghiệp vừa và nhỏ thật. Yêu cầu bắt buộc vẫn là thiết thực, chính xác, hữu dụng.
+
+### 10.1 Đối tượng và vai trò
+
+**Giả định mặc định [DA]:** SME Việt Nam từ 10 đến 200 nhân sự, không có đội an ninh riêng, chỉ có một người IT bán thời gian hoặc thuê ngoài. Hạ tầng điển hình:
+- Microsoft 365 hoặc Google Workspace.
+- Một website.
+- Phần mềm kế toán, ERP hoặc POS.
+- Kho tài liệu dùng chung.
+- Laptop và điện thoại.
+- Backup.
+
+**Vai trò:**
+- **Người IT hoặc nhà cung cấp IT** chạy công cụ.
+- **Giám đốc** cung cấp ưu tiên kinh doanh và ra quyết định.
+
+**Ngoài phạm vi ban đầu:** y tế, tài chính, xử lý dữ liệu nhạy cảm quy mô lớn, hệ thống công nghiệp. Các ngành này cần mở rộng phạm vi riêng.
+
+### 10.2 Các khoảng trống phải lấp (rút ra từ lần mô phỏng đầu cuối ngày 2026-11-23)
+
+1. **Effects bị cũ:** effects là các rating tuyệt đối. Khi đầu vào hiện tại thay đổi, script không cảnh báo.
+2. **Lỗi bị che:** một finding thiếu trường bắt buộc sẽ che các lỗi khác của nó.
+3. **Rơi về dữ liệu demo:** tùy chọn `--data` lặng lẽ lấy dữ liệu của trường đại học khi workspace thiếu file.
+4. **Nhập liệu đòi hỏi chuyên môn:** người vận hành phải tự viết phán đoán và effects. Đây là việc của người đánh giá, không phải nhập bảng tính bình thường.
+5. **Báo cáo khó dùng cho chủ doanh nghiệp:** báo cáo bằng tiếng Anh, chỉ có mã gói, chỉ đếm family.
+6. **Bỏ sót biện pháp nền tảng:** "không vượt ngưỡng" đang bị hiểu ngầm là "không cần làm".
+
+### 10.3 Những gì đã thống nhất
+
+**Độ tin cậy (làm trước mọi thứ khác):**
+- **Effects cũ:**
+  - Mỗi effect ghi lại nó được đánh giá dựa trên cái gì: các đầu vào liên quan, phạm vi control, phiên bản thư viện và quy tắc.
+  - Khi bối cảnh đã đổi, effect chuyển sang **needs review** và bị **loại khỏi lợi ích được tính**, cho tới khi được đánh giá lại.
+  - Có một kiểm tra hồi quy cho việc này.
+- **Báo lỗi gộp:** báo tất cả lỗi một lần, chỉ bỏ qua các kiểm tra phụ thuộc vào trường đang thiếu.
+- **Workspace cô lập:** `python risk.py init <dir>` tạo một workspace đầy đủ cho từng công ty, kèm thư viện có phiên bản được ghim. Lần chạy thật **không bao giờ** rơi về `data/`. Cơ chế overlay chỉ dùng cho ví dụ, và phải bật bằng cờ riêng.
+- **Kiểm chứng và ngoại lệ:** kiểm chứng control theo đúng phạm vi. Ngoại lệ phải có người duyệt và ngày hết hạn.
+
+**Thư viện SME** (`library/sme/`, có phiên bản):
+- **Khung chính:** **CIS Controls v8.1 IG1**. [TK] Trang [IG1](https://www.cisecurity.org/controls/implementation-groups/ig1) mô tả IG1 gồm 56 safeguard, là "essential cyber hygiene" cho doanh nghiệp "typically small to medium-sized with limited IT and cybersecurity expertise". IG1 không đủ cho mọi SME, nên có thêm các bổ sung kèm lý do.
+- **Mapping:** mapping sang SP 800-53 chỉ là tham chiếu tùy chọn. **Mã safeguard của CIS sẽ được đối chiếu với tài liệu CIS khi xây thư viện**, không lấy từ trí nhớ.
+- **Effect mặc định** là phán đoán có điều kiện, không phải lời hứa giảm rủi ro. Mỗi effect ghi rõ tác giả, phiên bản, giả định, confidence, môi trường áp dụng và bằng chứng kiểm chứng.
+
+**12 kịch bản mục tiêu:**
+
+| # | Kịch bản | Loại tài sản chính | Nguồn |
+|---|---|---|---|
+| 1 | Chiếm tài khoản email/SaaS | identity/email | Có chủ đích |
+| 2 | Đổi tài khoản ngân hàng của nhà cung cấp để lừa chuyển tiền | finance/ERP | Có chủ đích |
+| 3 | Ransomware làm gián đoạn kinh doanh | dịch vụ kinh doanh | Có chủ đích |
+| 4 | Mất laptop hoặc điện thoại chưa mã hóa | endpoint/mobile | Không chủ đích |
+| 5 | Vô tình chia sẻ công khai tài liệu mật | kho tài liệu | Không chủ đích |
+| 6 | Vô tình xóa hoặc hỏng dữ liệu ERP/POS | ứng dụng kinh doanh | Không chủ đích |
+| 7 | Backup không dùng được khi cần khôi phục | backup | Không chủ đích |
+| 8 | Khai thác website hoặc plugin mở ra internet | web service | Có chủ đích |
+| 9 | Nhân viên đã nghỉ vẫn dùng được tài khoản | identity | Có chủ đích |
+| 10 | Truy cập từ xa của nhà cung cấp IT bị chiếm hoặc lạm dụng | remote access | Có chủ đích |
+| 11 | Dịch vụ SaaS gặp sự cố làm ngưng việc | SaaS | Không chủ đích |
+| 12 | Nhân viên xuất trái phép dữ liệu khách hàng | CSDL khách hàng | Có chủ đích |
+
+Thiết bị tương đương được đánh giá theo nhóm. Ransomware và sự cố dịch vụ dùng chung được tạo một lần cho mỗi phạm vi.
+
+**Đầu vào qua phỏng vấn, không qua chấm điểm:**
+- **Bảng câu hỏi tiếng Việt** (`answers.csv`). Mỗi câu hỏi có lựa chọn cố định và cụ thể, ví dụ: "Ai được duyệt đổi tài khoản ngân hàng của nhà cung cấp?", "Lần gần nhất thử khôi phục backup là khi nào?", "Bán hàng ngừng tối đa bao lâu thì chịu được?".
+- **Quy tắc ANS-xx** chuyển câu trả lời thành đầu vào có kiểu, và phân biệt ba loại:
+  - **Quan sát:** cấu hình hoặc kết quả kiểm thử thấy tận mắt, được coi là bằng chứng.
+  - **Tự khai** (attestation): vẫn là phán đoán cho tới khi được kiểm tra.
+  - **Dự báo:** luôn là phán đoán.
+- Câu trả lời gốc, nguồn, ngày và người rà soát đều được giữ trong trace.
+- Câu trả lời `unknown` vẫn là `unknown`.
+- Người vận hành **không** tự viết residual.
+
+**Hệ quả kinh doanh:**
+- Thêm **BUS-01**: hệ quả kinh doanh theo ngưỡng chịu đựng mà chủ doanh nghiệp đồng ý. Ngưỡng tính theo tổn thất và theo khả năng thanh khoản, không chỉ theo tỷ lệ doanh thu.
+- **IMP-01 v2** lấy mức cao nhất giữa C/I/A và BUS. Mỗi hệ quả chỉ được tính một lần.
+- Các anchor của trường đại học được thay bằng ngưỡng chịu đựng thu thập lúc onboarding: thời gian ngừng tối đa theo từng dịch vụ, khung thời gian then chốt, độ nhạy dữ liệu.
+
+**G-4:**
+- Dùng **bảng quyết định nhỏ theo từng kịch bản**: độ phủ, điều kiện tiên quyết, cách vượt qua, các đường tấn công còn lại. Bảng chỉ **gợi ý** một rating, và rating đó được khai báo là phán đoán của mô hình.
+- Cho phép ghi đè, kèm lý do. Cho phép `unknown`.
+- **Không** dùng cách đếm số rào chắn. Đây là thay đổi so với đề xuất của Claude: Codex chỉ ra rằng kiểm chứng chỉ chứng minh một phép thử cụ thể, và việc liệt kê nhiều gói khác nhau không chứng minh chúng độc lập với nhau.
+
+**Đầu ra cho chủ doanh nghiệp:**
+- **Báo cáo HTML tiếng Việt, mở offline.** Gồm **3 việc cần làm tiếp**, mỗi việc ghi lý do kinh doanh, người phụ trách, hạn, effort, cách chứng minh đã làm xong.
+- **Khoảng hở nền tảng** vẫn được hiển thị, kể cả khi không vượt ngưỡng nào.
+- Trace kỹ thuật nằm sau các tham chiếu.
+- **Chi phí:** chỉ ghi khi có ngày, có phạm vi, và tách chi phí một lần với chi phí định kỳ. Báo giá thật của công ty được ưu tiên. Nếu không có căn cứ thì ghi **"chưa ước tính"**.
+
+**Vận hành:**
+- Python 3 cùng `run.bat`, đường dẫn có dấu ngoặc kép, thông báo lỗi dễ hiểu. Chưa đóng gói thành file exe.
+- **Định dạng CSV:** header máy dùng ASCII, nhãn hiển thị bằng tiếng Việt. Ghi UTF-8 **có BOM** và đọc bằng `utf-8-sig`, để Excel trên Windows hiển thị đúng tiếng Việt. Có tài liệu về dấu phân cách, ngày và số.
+- **Nhịp làm việc:** xem lại hành động hằng tháng. Đánh giá lại hằng quý, và sau mỗi sự cố hoặc thay đổi lớn.
+- **KEV/EPSS:** không bắt buộc. Làm mới thủ công, không bao giờ gửi danh mục tài sản ra ngoài.
+- **Dữ liệu công ty nằm ngoài Git.** Chỉ lưu metadata tối thiểu và tham chiếu bằng chứng đã che thông tin nhạy cảm. Không lưu mật khẩu hay dữ liệu khách hàng. Thư mục có phân quyền truy cập và được backup.
+
+**Pháp lý:**
+- [TK] Luật Bảo vệ dữ liệu cá nhân số **91/2025/QH15**, Quốc hội ban hành ngày 26/06/2025, **có hiệu lực từ 01/01/2026** ([chinhphu.vn](https://chinhphu.vn/?docid=214590&pageid=27160)).
+- Bảng câu hỏi sẽ có thêm câu hỏi về xử lý dữ liệu cá nhân, nhà cung cấp và chuyển dữ liệu ra nước ngoài.
+- **Nghĩa vụ pháp lý cụ thể chưa được mã hóa thành quy tắc.** Trước đó phải xác minh văn bản hướng dẫn, nghĩa vụ theo ngành, các trường hợp miễn trừ và thời hạn.
+
+### 10.4 Các giai đoạn và tiêu chí nghiệm thu
+
+| Giai đoạn | Nội dung | Tiêu chí nghiệm thu (kiểm thử được) |
+|---|---|---|
+| **P1 Độ tin cậy** | Bốn sửa đổi độ tin cậy ở §10.3 | Kiểm tra hồi quy cho thấy effect cũ không thể đóng góp lợi ích được tính. Finding có nhiều lỗi được báo đủ. Workspace thiếu file không bao giờ mượn dữ liệu demo. Phạm vi control và hạn ngoại lệ được tôn trọng |
+| **P2a Bản phát hành nhỏ nhất có ích** | `init`, các vai trò, **3 nhánh câu hỏi**: chiếm email, lừa chuyển tiền, khôi phục thất bại. ANS → đầu vào có kiểu. Báo cáo HTML tiếng Việt có 3 việc cần làm. Lưu baseline. Chạy lại lần hai sau khi hoàn thành một hành động | Một nhà cung cấp IT khởi tạo và chạy được workspace chỉ bằng tài liệu hướng dẫn. Báo cáo nêu rõ hành động, người làm, lý do, hạn, effort, cách kiểm chứng. Phạm vi ghi rõ là 3 dịch vụ. Rating thiếu dữ liệu vẫn là `unknown` |
+| **P2b Mở rộng** | Hiệu chỉnh ngưỡng chịu đựng (BUS-01), effect có điều kiện, 9 kịch bản còn lại. Thêm onboarding KEV khi SME có phần mềm tự quản lý | Câu trả lời sinh ra đúng các kịch bản áp dụng được, có thể truy vết. Ngưỡng chịu đựng ảnh hưởng đúng hệ quả cần ảnh hưởng |
+| **P3 Pilot và chỉnh sửa** | Một SME đồng ý tham gia. Một lần baseline và một lần theo dõi | Đo được: thời gian onboarding, mức hỗ trợ cần thêm, số lỗi kiểm tra hợp lệ, độ đầy đủ của bằng chứng, mức hiểu báo cáo của chủ doanh nghiệp, các quyết định đã đưa ra, các hành động được kiểm chứng độc lập. Chỉ sửa những vấn đề đã được chứng minh |
+
+**Giao thức pilot:**
+- Có văn bản đồng ý của tổ chức.
+- Chỉ định một người vận hành và một người ra quyết định.
+- Thống nhất phạm vi, quyền truy cập, thời gian lưu trữ và việc xóa dữ liệu, cũng như sự đồng ý công bố.
+- Dữ liệu định danh công ty chỉ nằm trên máy cục bộ. Chỉ công bố kết quả đã ẩn danh và đã được duyệt.
+- **Không** suy ra rằng xác suất sự cố đã giảm chỉ từ một pilot ngắn.
+
+### 10.5 Rủi ro của kế hoạch
+
+| Rủi ro | Giảm thiểu |
+|---|---|
+| Tự tin sai vào rating và effect được gợi ý | Hiện rõ các giả định và các đường tấn công còn lại. Bắt buộc rà soát theo bối cảnh. Effect cũ bị loại khỏi lợi ích được tính |
+| Đánh giá biến thành giấy tờ định kỳ | Pilot luồng 3 nhánh trước. Đo công sức của người vận hành và mức hiểu của chủ doanh nghiệp. Bỏ các câu hỏi không phục vụ quyết định |
+| Lộ thông tin nhạy cảm của công ty qua workspace hoặc báo cáo | Thu thập ở mức tối thiểu. Che thông tin trong bằng chứng. Cô lập từng công ty, giới hạn quyền truy cập, thống nhất việc lưu trữ và xóa |
+
+### 10.6 Không làm hoặc hoãn lại
+
+- Web nhiều người dùng, server, database.
+- Tự phát hiện tài sản và tự khớp CPE.
+- Chứng nhận tuân thủ.
+- Tuyên bố về độ chính xác dự báo.
+- Mở rộng sang nhiều ngành.
+- Bảng giá VND cho toàn bộ thư viện.
+- Bắt buộc thiết lập KEV/EPSS.
+- Nhiều định dạng báo cáo.
+- Đóng gói thành file exe.
+
+**12 kịch bản là danh mục mục tiêu, không phải điều kiện để phát hành.** `synth.py` được giữ lại làm công cụ kiểm thử hồi quy và quy mô.
+
+### 10.7 Ghi nhận thảo luận
+
+**Thay đổi so với đề xuất của Claude:**
+- **G-4:** bỏ cách đếm "số rào chắn đã kiểm chứng", chuyển sang bảng quyết định theo từng kịch bản.
+- **Câu trả lời có trích dẫn tài liệu:** không tự động thành bằng chứng, mà vẫn là tự khai.
+- **Tổn thất tài chính:** không gộp vào I-01, mà tách thành BUS-01 riêng.
+- **Bảng giá:** không đưa giá VND chung vào thư viện.
+
+**Thay đổi so với đề xuất của Codex:** Claude bổ sung các điểm sau và Codex đồng ý:
+- Lệnh `init`, cùng nguyên tắc không bao giờ rơi về dữ liệu demo.
+- Quy tắc ANS-xx.
+- UTF-8 có BOM.
+- `run.bat`.
