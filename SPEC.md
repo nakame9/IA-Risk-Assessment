@@ -473,3 +473,40 @@ Effects được tính lại ở **mỗi lần chạy** từ rating hiện tại
 4. Câu hỏi chưa có câu trả lời.
 
 **Hạn đề xuất:** 14 / 30 / 60 ngày, theo effort Low / Medium / High.
+
+### 8.6 P2b (`SME-LIB-0.2`, `ANS-0.2`, IMP-01 v2, BUS-01 v1.0, ngày 2026-11-23)
+
+**Thư viện dạng dữ liệu.** Mọi phần riêng của từng kịch bản nằm trong `library/sme/`, còn `sme.py` chỉ là engine chung:
+
+| File | Nội dung |
+|---|---|
+| `scenarios.csv` | Danh sách kịch bản. Cột `applies_if` là điều kiện áp dụng. Nếu câu trả lời là `unknown` thì kịch bản vẫn được tính là áp dụng (thận trọng) |
+| `mappings.csv` | Ánh xạ câu trả lời sang đầu vào. Có các dạng: `code=value`, `DT:<bảng>`, `TOL`, hoặc giá trị mặc định |
+| `decision_tables.csv` | Các bảng quyết định. Điều kiện viết dạng `Q=a,b&Q2=c`. Dòng khớp đầu tiên theo thứ tự `order` được chọn |
+| `controls_map.csv` | Trạng thái của từng gói, suy ra từ câu trả lời |
+| `effects_lib.csv` | Effect mặc định của từng gói hoặc tổ hợp gói. Có thể kết hợp nhiều kiểu bằng dấu phẩy, ví dụ `adv=L,impact-1` |
+
+**BUS-01:**
+- Thuộc tính `business_consequence` là tùy chọn. Các mức negligible / limited / serious / severe ứng với VL / L / M / H.
+- IMP-01 v2 lấy mức cao nhất trong C, I, A và BUS.
+- Quy tắc **BUS-TOL** so khoản tổn thất ước tính với ba ngưỡng do giám đốc đặt:
+  - Các ngưỡng là TOL-01 < TOL-02 < TOL-03. Nếu không tăng dần thì báo lỗi.
+  - Tổn thất dưới TOL-01 là negligible, dưới TOL-02 là limited, dưới TOL-03 là serious, còn lại là severe.
+
+**12 kịch bản:**
+
+| Bản | Kịch bản |
+|---|---|
+| P2a | R-EMAIL, R-PAY, R-RECOVERY |
+| P2b | R-RANSOM, R-DEVICE, R-SHARE, R-ERPDATA, R-WEB (áp dụng khi WEB-01=yes), R-OFFBOARD, R-VENDOR (áp dụng khi VEN-01=yes, cùng family với R-RANSOM), R-SAAS, R-EXPORT |
+
+- Bộ câu hỏi có 57 câu, gói biện pháp có 15 gói.
+- **Mọi bảng quyết định, mức khởi phát mặc định và effects đều là [DA].** Đây là phán đoán của thư viện, chưa được hiệu chỉnh bằng một doanh nghiệp thật.
+- Mức khởi phát mặc định của R-VENDOR là Moderate, và của R-WEB là High (thành phần mở ra internet).
+
+**Onboarding KEV:**
+- `python sme.py import-kev <workspace> <file KEV JSON>` lưu snapshot vào `<workspace>/snapshots`.
+- `findings.csv` của workspace liệt kê các CVE trên phần mềm tự quản lý, ví dụ `component_id = AS-WEB`.
+- Finding nằm trong KEV và đã xác nhận áp dụng sẽ tạo nghĩa vụ theo KEV-POL-01, và đứng đầu "3 việc nên làm tiếp".
+
+**Mapping CIS:** mọi gói vẫn ghi "unverified". P-PAYVERIFY và P-CONTINUITY ghi là bổ sung riêng cho SME, mapping CIS chưa được xác minh.

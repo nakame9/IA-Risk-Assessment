@@ -5,8 +5,17 @@
 | # | Risk | Family | Assets | Overall likelihood | Impact | Risk | Policy flags | Confidence | Option | Residual risk |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 1 | R-PAY | FAM-PAY | AS-PAY | High | High | **High** | treat or senior exception | Medium | mitigate | Moderate |
-| 2 | R-RECOVERY | FAM-RECOVERY | AS-DATA | Moderate | High | **Moderate** | treat or delegated acceptance | Medium | mitigate | Low |
-| 3 | R-EMAIL | FAM-EMAIL | AS-EMAIL | High | Moderate | **Moderate** | treat or delegated acceptance | Medium | mitigate | Moderate |
+| 2 | R-RANSOM | FAM-RANSOM | AS-BUSINESS | High | High | **High** | treat or senior exception | Medium | mitigate | Moderate |
+| 3 | R-VENDOR | FAM-RANSOM | AS-REMOTE | High | High | **High** | treat or senior exception | Medium | mitigate | Low |
+| 4 | R-RECOVERY | FAM-RECOVERY | AS-DATA | Moderate | High | **Moderate** | treat or delegated acceptance | Medium | mitigate | Low |
+| 5 | R-EMAIL | FAM-EMAIL | AS-EMAIL | High | Moderate | **Moderate** | treat or delegated acceptance | Medium | mitigate | Moderate |
+| 6 | R-DEVICE | FAM-DEVICE | AS-DEVICE | Moderate | Moderate | **Moderate** | treat or delegated acceptance | Medium | mitigate | Low |
+| 7 | R-ERPDATA | FAM-ERPDATA | AS-DATA | Moderate | Moderate | **Moderate** | treat or delegated acceptance | Medium | mitigate | Low |
+| 8 | R-EXPORT | FAM-EXPORT | AS-CUSTDATA | Moderate | Moderate | **Moderate** | treat or delegated acceptance | Medium | mitigate | Low |
+| 9 | R-OFFBOARD | FAM-OFFBOARD | AS-EMAIL | Moderate | Moderate | **Moderate** | treat or delegated acceptance | Medium | mitigate | Low |
+| 10 | R-SAAS | FAM-SAAS | AS-SAAS | Moderate | Moderate | **Moderate** | treat or delegated acceptance | Medium | mitigate | Low |
+| 11 | R-SHARE | FAM-SHARE | AS-DOCS | Moderate | Moderate | **Moderate** | treat or delegated acceptance | Medium | mitigate | Low |
+| 12 | R-WEB | FAM-WEB | AS-WEB | Moderate | Moderate | **Moderate** | treat or delegated acceptance | Medium | mitigate | Moderate |
 
 ## Findings (CVE)
 

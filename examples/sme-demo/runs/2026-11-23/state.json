@@ -1,27 +1,72 @@
 {
  "as_of": "2026-11-23",
  "bundles": [
+  "P-ADMINSEP + P-BACKUP + P-EDR + P-MFA + P-PATCH + P-RESTORE-TEST",
+  "P-ADMINSEP + P-VENDOR",
   "P-AWARE + P-PAYVERIFY",
-  "P-BACKUP + P-RESTORE-TEST"
+  "P-APPROLE + P-BACKUP",
+  "P-MFA + P-OFFBOARD"
  ],
  "controls": {
+  "P-ADMINSEP@SYS-SME": "partial",
+  "P-APPROLE@SYS-SME": "partial",
   "P-AWARE@SYS-SME": "absent_unplanned",
   "P-BACKUP@SYS-SME": "partial",
+  "P-CONTINUITY@SYS-SME": "absent_unplanned",
+  "P-DATAACCESS@SYS-SME": "absent_unplanned",
+  "P-DEVICE@SYS-SME": "partial",
+  "P-EDR@SYS-SME": "partial",
   "P-MFA@SYS-SME": "partial",
+  "P-OFFBOARD@SYS-SME": "partial",
+  "P-PATCH@SYS-SME": "partial",
   "P-PAYVERIFY@SYS-SME": "absent_unplanned",
-  "P-RESTORE-TEST@SYS-SME": "absent_unplanned"
+  "P-RESTORE-TEST@SYS-SME": "absent_unplanned",
+  "P-SHARE@SYS-SME": "absent_unplanned",
+  "P-VENDOR@SYS-SME": "absent_unplanned"
  },
  "feeds": {},
  "findings": {},
  "front": [
-  "P-PAYVERIFY"
+  "P-ADMINSEP",
+  "P-PAYVERIFY",
+  "P-APPROLE",
+  "P-CONTINUITY",
+  "P-DATAACCESS",
+  "P-OFFBOARD",
+  "P-SHARE"
  ],
- "incomplete": [],
+ "incomplete": [
+  "P-BACKUP + P-RESTORE-TEST",
+  "P-BACKUP + P-PATCH"
+ ],
  "obligations": {},
  "queue": [
+  "R-ERPDATA: annual_frequency = 1.0 (confidence Medium)",
   "R-RECOVERY: annual_frequency = 1.0 (confidence Medium)"
  ],
  "risks": {
+  "R-DEVICE": {
+   "adverse": "High",
+   "decision_class": "delegated",
+   "impact": "Moderate",
+   "initiation": "Moderate",
+   "inputs": {
+    "adverse_impact_likelihood": "High",
+    "annual_frequency": "1",
+    "corrected_before_use": "no",
+    "in_critical_window": "no",
+    "info_class": "nonpublic",
+    "integrity_consequence": "negligible",
+    "multiple_severe_documented": "no",
+    "outage_hours": "0",
+    "records_disclosed": "500"
+   },
+   "residual": "Low",
+   "residual_status": "projected",
+   "risk": "Moderate",
+   "status": "proposed",
+   "treatment_option": "mitigate"
+  },
   "R-EMAIL": {
    "adverse": "High",
    "decision_class": "delegated",
@@ -40,6 +85,72 @@
     "records_disclosed": "500"
    },
    "residual": "Moderate",
+   "residual_status": "projected",
+   "risk": "Moderate",
+   "status": "proposed",
+   "treatment_option": "mitigate"
+  },
+  "R-ERPDATA": {
+   "adverse": "Moderate",
+   "decision_class": "delegated",
+   "impact": "Moderate",
+   "initiation": "Moderate",
+   "inputs": {
+    "adverse_impact_likelihood": "Moderate",
+    "annual_frequency": "1",
+    "corrected_before_use": "no",
+    "in_critical_window": "no",
+    "info_class": "public",
+    "integrity_consequence": "serious",
+    "multiple_severe_documented": "no",
+    "outage_hours": "0",
+    "records_disclosed": "0"
+   },
+   "residual": "Low",
+   "residual_status": "projected",
+   "risk": "Moderate",
+   "status": "proposed",
+   "treatment_option": "mitigate"
+  },
+  "R-EXPORT": {
+   "adverse": "High",
+   "decision_class": "delegated",
+   "impact": "Moderate",
+   "initiation": "Moderate",
+   "inputs": {
+    "adverse_impact_likelihood": "High",
+    "corrected_before_use": "no",
+    "in_critical_window": "no",
+    "info_class": "nonpublic",
+    "initiation_likelihood": "Moderate",
+    "integrity_consequence": "negligible",
+    "multiple_severe_documented": "no",
+    "outage_hours": "0",
+    "records_disclosed": "500"
+   },
+   "residual": "Low",
+   "residual_status": "projected",
+   "risk": "Moderate",
+   "status": "proposed",
+   "treatment_option": "mitigate"
+  },
+  "R-OFFBOARD": {
+   "adverse": "Moderate",
+   "decision_class": "delegated",
+   "impact": "Moderate",
+   "initiation": "Moderate",
+   "inputs": {
+    "adverse_impact_likelihood": "Moderate",
+    "corrected_before_use": "no",
+    "in_critical_window": "no",
+    "info_class": "nonpublic",
+    "initiation_likelihood": "Moderate",
+    "integrity_consequence": "negligible",
+    "multiple_severe_documented": "no",
+    "outage_hours": "0",
+    "records_disclosed": "500"
+   },
+   "residual": "Low",
    "residual_status": "projected",
    "risk": "Moderate",
    "status": "proposed",
@@ -68,6 +179,28 @@
    "status": "proposed",
    "treatment_option": "mitigate"
   },
+  "R-RANSOM": {
+   "adverse": "High",
+   "decision_class": "senior",
+   "impact": "High",
+   "initiation": "High",
+   "inputs": {
+    "adverse_impact_likelihood": "High",
+    "corrected_before_use": "no",
+    "in_critical_window": "yes",
+    "info_class": "public",
+    "initiation_likelihood": "High",
+    "integrity_consequence": "serious",
+    "multiple_severe_documented": "no",
+    "outage_hours": "168",
+    "records_disclosed": "0"
+   },
+   "residual": "Moderate",
+   "residual_status": "projected",
+   "risk": "High",
+   "status": "proposed",
+   "treatment_option": "mitigate"
+  },
   "R-RECOVERY": {
    "adverse": "Moderate",
    "decision_class": "delegated",
@@ -85,6 +218,95 @@
     "records_disclosed": "0"
    },
    "residual": "Low",
+   "residual_status": "projected",
+   "risk": "Moderate",
+   "status": "proposed",
+   "treatment_option": "mitigate"
+  },
+  "R-SAAS": {
+   "adverse": "High",
+   "decision_class": "delegated",
+   "impact": "Moderate",
+   "initiation": "Moderate",
+   "inputs": {
+    "adverse_impact_likelihood": "High",
+    "annual_frequency": "1",
+    "corrected_before_use": "no",
+    "in_critical_window": "yes",
+    "info_class": "public",
+    "integrity_consequence": "negligible",
+    "multiple_severe_documented": "no",
+    "outage_hours": "4",
+    "records_disclosed": "0"
+   },
+   "residual": "Low",
+   "residual_status": "projected",
+   "risk": "Moderate",
+   "status": "proposed",
+   "treatment_option": "mitigate"
+  },
+  "R-SHARE": {
+   "adverse": "High",
+   "decision_class": "delegated",
+   "impact": "Moderate",
+   "initiation": "Moderate",
+   "inputs": {
+    "adverse_impact_likelihood": "High",
+    "annual_frequency": "1",
+    "corrected_before_use": "no",
+    "in_critical_window": "no",
+    "info_class": "nonpublic",
+    "integrity_consequence": "negligible",
+    "multiple_severe_documented": "no",
+    "outage_hours": "0",
+    "records_disclosed": "500"
+   },
+   "residual": "Low",
+   "residual_status": "projected",
+   "risk": "Moderate",
+   "status": "proposed",
+   "treatment_option": "mitigate"
+  },
+  "R-VENDOR": {
+   "adverse": "Very High",
+   "decision_class": "senior",
+   "impact": "High",
+   "initiation": "Moderate",
+   "inputs": {
+    "adverse_impact_likelihood": "Very High",
+    "corrected_before_use": "no",
+    "in_critical_window": "yes",
+    "info_class": "public",
+    "initiation_likelihood": "Moderate",
+    "integrity_consequence": "negligible",
+    "multiple_severe_documented": "no",
+    "outage_hours": "168",
+    "records_disclosed": "0"
+   },
+   "residual": "Low",
+   "residual_status": "projected",
+   "risk": "High",
+   "status": "proposed",
+   "treatment_option": "mitigate"
+  },
+  "R-WEB": {
+   "adverse": "Moderate",
+   "decision_class": "delegated",
+   "impact": "Moderate",
+   "initiation": "High",
+   "inputs": {
+    "adverse_impact_likelihood": "Moderate",
+    "business_consequence": "limited",
+    "corrected_before_use": "no",
+    "in_critical_window": "no",
+    "info_class": "nonpublic",
+    "initiation_likelihood": "High",
+    "integrity_consequence": "negligible",
+    "multiple_severe_documented": "no",
+    "outage_hours": "0",
+    "records_disclosed": "500"
+   },
+   "residual": "Moderate",
    "residual_status": "projected",
    "risk": "Moderate",
    "status": "proposed",

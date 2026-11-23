@@ -7,12 +7,12 @@
 | Likelihood \ Impact | Very Low | Low | Moderate | High | Very High |
 |---|---|---|---|---|---|
 | **Very High** |  |  |  |  |  |
-| **High** |  |  | R-EMAIL | R-PAY |  |
-| **Moderate** |  |  |  | R-RECOVERY |  |
+| **High** |  |  | R-EMAIL | R-PAY, R-RANSOM, R-VENDOR |  |
+| **Moderate** |  |  | R-DEVICE, R-ERPDATA, R-EXPORT, R-OFFBOARD, R-SAAS, R-SHARE, R-WEB | R-RECOVERY |  |
 | **Low** |  |  |  |  |  |
 | **Very Low** |  |  |  |  |  |
 
-Risk levels: Very Low 0, Low 0, Moderate 2, High 1, Very High 0
+Risk levels: Very Low 0, Low 0, Moderate 9, High 3, Very High 0
 
 ### Residual risk (projected unless verified)
 
@@ -20,8 +20,8 @@ Risk levels: Very Low 0, Low 0, Moderate 2, High 1, Very High 0
 |---|---|---|---|---|---|
 | **Very High** |  |  |  |  |  |
 | **High** |  |  |  |  |  |
-| **Moderate** |  |  | R-EMAIL | R-PAY |  |
-| **Low** |  |  |  | R-RECOVERY |  |
+| **Moderate** |  |  | R-RANSOM, R-EMAIL, R-WEB | R-PAY |  |
+| **Low** |  |  | R-DEVICE, R-ERPDATA, R-EXPORT, R-OFFBOARD, R-SAAS, R-SHARE | R-VENDOR, R-RECOVERY |  |
 | **Very Low** |  |  |  |  |  |
 
-Risk levels: Very Low 0, Low 1, Moderate 2, High 0, Very High 0
+Risk levels: Very Low 0, Low 8, Moderate 4, High 0, Very High 0

@@ -2,3 +2,12 @@
 R-EMAIL,TPL-SME-EMAIL,Kẻ gian chiếm tài khoản email/SaaS,AS-EMAIL,Email và tài khoản SaaS,identity_service,internet,adversarial,G2-JUDG,P-AWARE;P-MFA,*,FAM-EMAIL
 R-PAY,TPL-SME-PAY,Lừa đổi tài khoản ngân hàng của nhà cung cấp để chiếm tiền thanh toán,AS-PAY,Thanh toán cho nhà cung cấp,finance,internal,adversarial,G2-JUDG,P-AWARE;P-PAYVERIFY,*,FAM-PAY
 R-RECOVERY,TPL-SME-RECOVERY,Mất dữ liệu kinh doanh và không khôi phục được từ sao lưu,AS-DATA,Dữ liệu kế toán/bán hàng và bản sao lưu,pii_database,internal,non_adversarial,G3-01,P-BACKUP;P-RESTORE-TEST,*,FAM-RECOVERY
+R-RANSOM,TPL-SME-RANSOM,Mã độc tống tiền (ransomware) làm ngừng hoạt động kinh doanh,AS-BUSINESS,"Máy tính, máy chủ và file chung",business_service,internal,adversarial,G2-JUDG,P-ADMINSEP;P-BACKUP;P-EDR;P-MFA;P-PATCH;P-RESTORE-TEST,*,FAM-RANSOM
+R-DEVICE,TPL-SME-DEVICE,Mất laptop/điện thoại chưa mã hóa làm lộ dữ liệu,AS-DEVICE,Laptop và điện thoại công việc,endpoint,internal,non_adversarial,G3-01,P-DEVICE,*,FAM-DEVICE
+R-SHARE,TPL-SME-SHARE,Vô tình chia sẻ công khai tài liệu mật,AS-DOCS,Kho tài liệu chung,document_store,internet,non_adversarial,G3-01,P-SHARE,*,FAM-SHARE
+R-ERPDATA,TPL-SME-ERPDATA,Xóa nhầm hoặc làm hỏng dữ liệu kế toán/bán hàng,AS-DATA,Dữ liệu kế toán/bán hàng và bản sao lưu,pii_database,internal,non_adversarial,G3-01,P-APPROLE;P-BACKUP,*,FAM-ERPDATA
+R-WEB,TPL-SME-WEB,Website hoặc plugin bị khai thác,AS-WEB,Website công ty,web_service,internet,adversarial,G2-JUDG,P-BACKUP;P-PATCH,WEB-01=yes,FAM-WEB
+R-OFFBOARD,TPL-SME-OFFBOARD,Nhân viên đã nghỉ vẫn dùng được tài khoản,AS-EMAIL,Email và tài khoản SaaS,identity_service,internet,adversarial,G2-JUDG,P-MFA;P-OFFBOARD,*,FAM-OFFBOARD
+R-VENDOR,TPL-SME-VENDOR,Truy cập từ xa của nhà cung cấp IT bị chiếm hoặc lạm dụng,AS-REMOTE,Truy cập từ xa của nhà cung cấp IT,remote_access,internet,adversarial,G2-JUDG,P-ADMINSEP;P-VENDOR,VEN-01=yes,FAM-RANSOM
+R-SAAS,TPL-SME-SAAS,Dịch vụ SaaS chính ngừng làm gián đoạn công việc,AS-SAAS,Dịch vụ SaaS chính,saas,internet,non_adversarial,G3-01,P-CONTINUITY,*,FAM-SAAS
+R-EXPORT,TPL-SME-EXPORT,Nhân viên xuất trái phép dữ liệu khách hàng,AS-CUSTDATA,Dữ liệu khách hàng (CRM/bán hàng),customer_database,internal,adversarial,G2-JUDG,P-DATAACCESS,*,FAM-EXPORT

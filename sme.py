@@ -34,6 +34,8 @@ DUE_DAYS = {'Low': 14, 'Medium': 30, 'High': 60}           # suggested deadline 
 SOURCES = {'observed', 'attested', 'forecast', 'unknown'}
 ANSWER_FIELDS = ['question_id', 'path', 'text_vi', 'options', 'answer', 'source', 'evidence_ref', 'answered_by',
                  'answered_on', 'note']
+FINDING_FIELDS = ['finding_id', 'cve_id', 'component_id', 'applicability', 'remediation_state', 'first_confirmed_on',
+                  'evidence_ref', 'exception_approved_by', 'exception_expires_on']
 LIB_FILES = ('questions', 'scenarios', 'mappings', 'decision_tables', 'controls_map', 'effects_lib', 'packages')
 SYSTEM = 'SYS-SME'
 CONSEQUENCES = ['negligible', 'limited', 'serious', 'severe']
@@ -184,6 +186,19 @@ def compile_model(ws, as_of, lib):
         else:
             value = m['default_value']
         add(m['risk_id'], m['attribute'], value, qids, m['rule_id'], default=not qids)
+    # optional CVE findings reported by the IT person for self-managed software (KEV onboarding, SPEC 8.6)
+    if (ws / 'findings.csv').exists():
+        for f in read_csv(ws / 'findings.csv'):
+            if not (f.get('finding_id') or '').strip():
+                continue
+            ref = (f.get('evidence_ref') or '').strip()
+            for attr in ('cve_id', 'component_id', 'applicability', 'remediation_state', 'first_confirmed_on',
+                         'exception_approved_by', 'exception_expires_on'):
+                if (f.get(attr) or '').strip():
+                    inputs.append({'subject_id': f['finding_id'].strip(), 'attribute': attr, 'value': f[attr].strip(),
+                                   'mode': 'evidence' if ref else 'judgment', 'evidence_ref': ref,
+                                   'rationale': '' if ref else 'reported in findings.csv without evidence',
+                                   'confidence': 'High' if ref else 'Low', 'assessor': 'sme.py', 'observed_on': as_of.isoformat()})
     present = {(i['subject_id'], i['attribute']) for i in inputs}
     for s in applicable:
         for attr, value in DEFAULT_IMPACT:
@@ -246,6 +261,11 @@ def compile_model(ws, as_of, lib):
 
 
 def apply_effect(kind, ini, adv, imp):
+    """Apply one or more comma-separated effect kinds (e.g. 'adv-1,impact-1')."""
+    if ',' in kind:
+        for k in kind.split(','):
+            ini, adv, imp = apply_effect(k.strip(), ini, adv, imp)
+        return ini, adv, imp
     shift = lambda lv, n: risk.LEVELS[max(0, min(4, risk.LEVELS.index(lv) + n))]
     if kind == 'adv=L':
         adv = L
@@ -454,6 +474,7 @@ def init(ws, company):
     rows = [{**{k: q[k] for k in ('question_id', 'path', 'text_vi', 'options')}, 'answer': '', 'source': '', 'evidence_ref': '',
              'answered_by': '', 'answered_on': '', 'note': ''} for q in read_csv(LIB / 'questions.csv')]
     write_csv(ws / 'answers.csv', rows, ANSWER_FIELDS, bom=True)
+    write_csv(ws / 'findings.csv', [], FINDING_FIELDS, bom=True)
     print(f'created workspace {ws} ({len(rows)} questions in answers.csv). Next: fill answers.csv, then: '
           f'python sme.py run "{ws}"')
 
@@ -484,7 +505,14 @@ DEMO = {'PRO-01': 'IT thuê ngoài', 'PRO-02': 'Kế toán trưởng', 'PRO-03':
         'EML-01': 'm365', 'EML-02': 'some', 'EML-03': 'unknown', 'EML-04': 'often', 'EML-05': 'nonpublic',
         'EML-06': 'to1000', 'EML-07': 'serious', 'PAY-01': 'yes', 'PAY-02': 'none', 'PAY-03': 'recent',
         'PAY-04': '800000000', 'PAY-05': 'no', 'REC-01': 'auto', 'REC-02': 'same', 'REC-03': 'never',
-        'REC-04': 'once', 'REC-05': 'd3', 'REC-06': 'yes', 'REC-07': 'serious'}
+        'REC-04': 'once', 'REC-05': 'd3', 'REC-06': 'yes', 'REC-07': 'serious',
+        'RAN-01': 'some', 'RAN-02': 'manual', 'RAN-03': 'basic', 'RAN-04': 'w1',
+        'DEV-01': 'once', 'DEV-02': 'some', 'DEV-03': 'nonpublic', 'DEV-04': 'to1000',
+        'SHR-01': 'allowed', 'SHR-02': 'once', 'SHR-03': 'nonpublic', 'SHR-04': 'to1000', 'ERP-01': 'once', 'ERP-02': 'one',
+        'WEB-01': 'yes', 'WEB-02': 'monthly', 'WEB-03': 'nonpublic', 'WEB-04': 'to1000', 'WEB-05': 'limited',
+        'OFF-01': 'week', 'OFF-02': 'never', 'OFF-03': 'few', 'VEN-01': 'yes', 'VEN-02': 'shared_password', 'VEN-03': 'no',
+        'SAS-01': 'once', 'SAS-02': 'none', 'SAS-03': 'h4',
+        'EXP-01': 'many', 'EXP-02': 'no', 'EXP-03': 'nonpublic', 'EXP-04': 'to1000'}
 
 
 def fill(ws, values, day='2026-11-23'):
@@ -557,6 +585,24 @@ def check():
         except SystemExit:
             pass
         assert not match('A=x', lambda q: UNK) and match('A=x', lambda q: UNK, unknown_matches=True)
+        # P2b: all 12 scenarios rated with full answers; applies_if excludes what does not apply
+        fill(ws, DEMO)
+        res3 = run(ws, day)[0]
+        assert len(res3['rows']) == 12 and all(r['risk'] != UNK for r in res3['rows']), [(r['risk_id'], r['risk']) for r in res3['rows']]
+        fill(ws, {**DEMO, 'WEB-01': 'no', 'VEN-01': 'no'})
+        res4, _, out4 = run(ws, day)
+        assert {r['risk_id'] for r in res4['rows']} == {r['risk_id'] for r in res3['rows']} - {'R-WEB', 'R-VENDOR'}
+        assert 'Không áp dụng theo câu trả lời' in (out4 / 'bao_cao.html').read_text(encoding='utf-8')
+        # KEV onboarding: an applicable KEV finding on the website becomes the first time-sensitive action
+        kev_files = sorted((risk.DATA / 'snapshots' / 'kev').glob('*/*.json'))
+        if kev_files:
+            fill(ws, DEMO)
+            risk.import_snapshot('kev', kev_files[-1], today='2026-11-23', root=ws)
+            write_csv(ws / 'findings.csv', [{'finding_id': 'F-101', 'cve_id': 'CVE-2025-24813', 'component_id': 'AS-WEB',
+                                             'applicability': 'confirmed', 'remediation_state': 'open',
+                                             'first_confirmed_on': '2026-11-20', 'evidence_ref': 'scan: test'}], FINDING_FIELDS, bom=True)
+            res5, acts5, _ = run(ws, day)
+            assert acts5[0]['title'].startswith('Khắc phục CVE-2025-24813') and acts5[0]['due'] == '2026-12-04', acts5[0]
     print('sme self-check passed')
 
 
@@ -566,6 +612,9 @@ def main(argv):
     opt = lambda name, default: argv[argv.index(name) + 1] if name in argv else default
     if argv[:1] == ['init'] and len(argv) >= 2:
         return init(Path(argv[1]), opt('--company', Path(argv[1]).name))
+    if argv[:1] == ['import-kev'] and len(argv) >= 3:      # store a downloaded CISA KEV JSON in the workspace
+        risk.import_snapshot('kev', Path(argv[2]), opt('--url', ''), root=Path(argv[1]))
+        return
     if argv[:1] == ['run'] and len(argv) >= 2:
         base = opt('--baseline', None)
         baseline = json.loads(Path(base).read_text(encoding='utf-8')) if base else None

@@ -1,9 +1,8 @@
 # Hướng dẫn cho người IT: đánh giá rủi ro cho doanh nghiệp vừa và nhỏ
 
-> **Phạm vi bản P2a:** 3 dịch vụ.
-> 1. Email và tài khoản SaaS.
-> 2. Thanh toán cho nhà cung cấp.
-> 3. Khôi phục dữ liệu.
+> **Phạm vi (bản P2b):** 12 tình huống thường gặp ở SME.
+> - Gồm: email, lừa chuyển tiền, sao lưu, ransomware, mất thiết bị, chia sẻ nhầm, dữ liệu kế toán, website, nhân viên nghỉ việc, nhà cung cấp IT, sự cố SaaS, xuất dữ liệu khách hàng.
+> - Tình huống không áp dụng (ví dụ không tự quản lý website) sẽ tự bị loại.
 >
 > **Đây là đánh giá có hỗ trợ, không phải chứng nhận tuân thủ.**
 
@@ -44,6 +43,21 @@
 **Lưu ý về bằng chứng:**
 - Không lưu mật khẩu hay dữ liệu khách hàng trong workspace.
 - Bằng chứng nên được che bớt thông tin nhạy cảm trước khi lưu.
+
+**Ngưỡng chịu đựng (TOL-01..03):**
+- Giám đốc đặt ba mức tổn thất một lần (đồng): hạn chế, nghiêm trọng, rất nặng. Ba mức phải tăng dần.
+- Các ước tính tổn thất (ví dụ PAY-04) được so với ba mức này.
+- Ghi số **không có dấu chấm**, ví dụ `100000000`.
+
+**Phần mềm tự quản lý (tùy chọn):**
+- Ghi các lỗ hổng CVE đã biết vào `findings.csv`, với `component_id` là `AS-WEB` hoặc tài sản tương ứng.
+- Nếu đã tải file KEV của CISA, lưu vào workspace bằng lệnh:
+
+  ```
+  run.bat import-kev "D:\Khach hang\Cong ty A" known_exploited_vulnerabilities.json
+  ```
+
+- Lỗ hổng nằm trong KEV sẽ thành việc gấp, có hạn 14 ngày nếu thành phần mở ra internet.
 
 ## 3. Chạy và đọc báo cáo
 

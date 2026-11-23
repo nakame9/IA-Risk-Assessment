@@ -2,3 +2,12 @@ template_id,asset_classes,scope,threat_profile_id,source_type,event,init_rule,ad
 TPL-SME-EMAIL,identity_service,asset,,adversarial,Kẻ gian chiếm tài khoản email/SaaS,G2-JUDG,DT,IMP-01
 TPL-SME-PAY,finance,asset,,adversarial,Lừa đổi tài khoản ngân hàng của nhà cung cấp để chiếm tiền thanh toán,G2-JUDG,DT,IMP-01
 TPL-SME-RECOVERY,pii_database,asset,,non_adversarial,Mất dữ liệu kinh doanh và không khôi phục được từ sao lưu,G3-01,DT,IMP-01
+TPL-SME-RANSOM,business_service,asset,,adversarial,Mã độc tống tiền (ransomware) làm ngừng hoạt động kinh doanh,G2-JUDG,DT,IMP-01
+TPL-SME-DEVICE,endpoint,asset,,non_adversarial,Mất laptop/điện thoại chưa mã hóa làm lộ dữ liệu,G3-01,DT,IMP-01
+TPL-SME-SHARE,document_store,asset,,non_adversarial,Vô tình chia sẻ công khai tài liệu mật,G3-01,DT,IMP-01
+TPL-SME-ERPDATA,pii_database,asset,,non_adversarial,Xóa nhầm hoặc làm hỏng dữ liệu kế toán/bán hàng,G3-01,DT,IMP-01
+TPL-SME-WEB,web_service,asset,,adversarial,Website hoặc plugin bị khai thác,G2-JUDG,DT,IMP-01
+TPL-SME-OFFBOARD,identity_service,asset,,adversarial,Nhân viên đã nghỉ vẫn dùng được tài khoản,G2-JUDG,DT,IMP-01
+TPL-SME-VENDOR,remote_access,asset,,adversarial,Truy cập từ xa của nhà cung cấp IT bị chiếm hoặc lạm dụng,G2-JUDG,DT,IMP-01
+TPL-SME-SAAS,saas,asset,,non_adversarial,Dịch vụ SaaS chính ngừng làm gián đoạn công việc,G3-01,DT,IMP-01
+TPL-SME-EXPORT,customer_database,asset,,adversarial,Nhân viên xuất trái phép dữ liệu khách hàng,G2-JUDG,DT,IMP-01

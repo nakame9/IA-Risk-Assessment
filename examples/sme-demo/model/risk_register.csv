@@ -2,3 +2,12 @@ risk_id,template_id,family_id,asset_id,vulnerability_condition,existing_controls
 R-EMAIL,TPL-SME-EMAIL,FAM-EMAIL,AS-EMAIL,,see controls.csv,P-AWARE;P-MFA,mitigate,P-AWARE;P-MFA,Giám đốc,2026-12-19,chưa quyết định (giám đốc),answers.csv,proposed,2026-12-05,2027-03-05
 R-PAY,TPL-SME-PAY,FAM-PAY,AS-PAY,,see controls.csv,P-AWARE;P-PAYVERIFY,mitigate,P-AWARE;P-PAYVERIFY,Giám đốc,2026-12-19,chưa quyết định (giám đốc),answers.csv,proposed,2026-12-05,2027-03-05
 R-RECOVERY,TPL-SME-RECOVERY,FAM-RECOVERY,AS-DATA,,see controls.csv,P-BACKUP;P-RESTORE-TEST,mitigate,P-BACKUP;P-RESTORE-TEST,Giám đốc,2027-01-04,chưa quyết định (giám đốc),answers.csv,proposed,2026-12-05,2027-03-05
+R-RANSOM,TPL-SME-RANSOM,FAM-RANSOM,AS-BUSINESS,,see controls.csv,P-ADMINSEP;P-BACKUP;P-EDR;P-MFA;P-PATCH;P-RESTORE-TEST,mitigate,P-ADMINSEP;P-BACKUP;P-EDR;P-MFA;P-PATCH;P-RESTORE-TEST,Giám đốc,2027-01-04,chưa quyết định (giám đốc),answers.csv,proposed,2026-12-05,2027-03-05
+R-DEVICE,TPL-SME-DEVICE,FAM-DEVICE,AS-DEVICE,,see controls.csv,P-DEVICE,mitigate,P-DEVICE,Giám đốc,2027-01-04,chưa quyết định (giám đốc),answers.csv,proposed,2026-12-05,2027-03-05
+R-SHARE,TPL-SME-SHARE,FAM-SHARE,AS-DOCS,,see controls.csv,P-SHARE,mitigate,P-SHARE,Giám đốc,2026-12-19,chưa quyết định (giám đốc),answers.csv,proposed,2026-12-05,2027-03-05
+R-ERPDATA,TPL-SME-ERPDATA,FAM-ERPDATA,AS-DATA,,see controls.csv,P-APPROLE;P-BACKUP,mitigate,P-APPROLE;P-BACKUP,Giám đốc,2027-01-04,chưa quyết định (giám đốc),answers.csv,proposed,2026-12-05,2027-03-05
+R-WEB,TPL-SME-WEB,FAM-WEB,AS-WEB,,see controls.csv,P-BACKUP;P-PATCH,mitigate,P-BACKUP;P-PATCH,Giám đốc,2027-01-04,chưa quyết định (giám đốc),answers.csv,proposed,2026-12-05,2027-03-05
+R-OFFBOARD,TPL-SME-OFFBOARD,FAM-OFFBOARD,AS-EMAIL,,see controls.csv,P-MFA;P-OFFBOARD,mitigate,P-MFA;P-OFFBOARD,Giám đốc,2026-12-19,chưa quyết định (giám đốc),answers.csv,proposed,2026-12-05,2027-03-05
+R-VENDOR,TPL-SME-VENDOR,FAM-RANSOM,AS-REMOTE,,see controls.csv,P-ADMINSEP;P-VENDOR,mitigate,P-ADMINSEP;P-VENDOR,Giám đốc,2026-12-19,chưa quyết định (giám đốc),answers.csv,proposed,2026-12-05,2027-03-05
+R-SAAS,TPL-SME-SAAS,FAM-SAAS,AS-SAAS,,see controls.csv,P-CONTINUITY,mitigate,P-CONTINUITY,Giám đốc,2026-12-19,chưa quyết định (giám đốc),answers.csv,proposed,2026-12-05,2027-03-05
+R-EXPORT,TPL-SME-EXPORT,FAM-EXPORT,AS-CUSTDATA,,see controls.csv,P-DATAACCESS,mitigate,P-DATAACCESS,Giám đốc,2026-12-19,chưa quyết định (giám đốc),answers.csv,proposed,2026-12-05,2027-03-05

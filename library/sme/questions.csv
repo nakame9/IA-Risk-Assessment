@@ -24,3 +24,35 @@ REC-04,recovery,Mỗi năm có khoảng bao nhiêu sự cố cần khôi phục 
 REC-05,recovery,Nếu KHÔNG có bản sao lưu dùng được thì mất bao lâu để làm việc lại bình thường?,h4=Vài giờ|d1=Khoảng 1 ngày|d3=Khoảng 3 ngày|w1=Khoảng 1 tuần|w2=Hai tuần trở lên|unknown=Không biết,
 REC-06,recovery,Công ty có giai đoạn cao điểm không được phép ngừng (cuối tháng/mùa vụ)?,yes=Có|no=Không|unknown=Không biết,
 REC-07,recovery,Nếu mất dữ liệu kế toán/bán hàng thì hậu quả là?,negligible=Không đáng kể|limited=Hạn chế|serious=Nghiêm trọng|severe=Rất nặng|unknown=Không biết,Giám đốc trả lời
+RAN-01,ransomware,Nhân viên có dùng tài khoản quản trị (admin) để làm việc hằng ngày không?,yes=Có|some=Một số người|no=Không|unknown=Không biết,Admin hằng ngày giúp mã độc lan nhanh
+RAN-02,ransomware,Máy tính và máy chủ được cập nhật bản vá thế nào?,auto=Tự động|manual=Thủ công khi nhớ|no=Không cập nhật|unknown=Không biết,
+RAN-03,ransomware,Máy tính có phần mềm chống mã độc được quản lý tập trung (cảnh báo về IT) không?,managed=Có quản lý tập trung|basic=Chỉ phần mềm mặc định|none=Không có|unknown=Không biết,
+RAN-04,ransomware,Nếu toàn bộ máy tính và file chung bị mã hóa thì công ty ngừng việc bao lâu?,h4=Vài giờ|d1=Khoảng 1 ngày|d3=Khoảng 3 ngày|w1=Khoảng 1 tuần|w2=Hai tuần trở lên|unknown=Không biết,Tính cả thời gian khôi phục
+DEV-01,device,Mỗi năm có khoảng bao nhiêu laptop/điện thoại công việc bị mất hoặc bị trộm?,rare=Dưới 1 lần|once=Khoảng 1 lần|few=Vài lần|monthly=Hằng tháng|unknown=Không biết,
+DEV-02,device,Laptop/điện thoại công việc đã mã hóa ổ đĩa và có mật khẩu khóa màn hình chưa?,all=Tất cả|some=Một số|none=Chưa|unknown=Không biết,Kiểm tra BitLocker/FileVault hoặc trang quản lý thiết bị
+DEV-03,device,Trên laptop/điện thoại có lưu dữ liệu khách hàng không?,sensitive=Có dữ liệu nhạy cảm (CCCD/tài khoản ngân hàng/sức khỏe)|nonpublic=Có thông tin liên hệ hoặc hợp đồng|none=Không có dữ liệu cá nhân|unknown=Không biết,
+DEV-04,device,Dữ liệu trên một máy liên quan khoảng bao nhiêu khách hàng?,lt10=Dưới 10|to1000=10 đến 1.000|gt1000=Trên 1.000|unknown=Không biết,
+SHR-01,sharing,Chia sẻ link công khai (ai có link cũng xem được) trên kho tài liệu có bị chặn hoặc giới hạn không?,blocked=Đã chặn|limited=Giới hạn (hết hạn/cần duyệt)|allowed=Cho phép tự do|unknown=Không biết,Kiểm tra trong cài đặt chia sẻ của OneDrive/Google Drive
+SHR-02,sharing,Mỗi năm phát hiện khoảng bao nhiêu lần tài liệu bị chia sẻ nhầm?,rare=Dưới 1 lần|once=Khoảng 1 lần|few=Vài lần|monthly=Hằng tháng|unknown=Không biết,
+SHR-03,sharing,Kho tài liệu chung có chứa dữ liệu cá nhân của khách hàng/nhân viên không?,sensitive=Có dữ liệu nhạy cảm (CCCD/tài khoản ngân hàng/sức khỏe)|nonpublic=Có thông tin liên hệ hoặc hợp đồng|none=Không có dữ liệu cá nhân|unknown=Không biết,
+SHR-04,sharing,Một tài liệu bị lộ có thể liên quan khoảng bao nhiêu người?,lt10=Dưới 10|to1000=10 đến 1.000|gt1000=Trên 1.000|unknown=Không biết,
+ERP-01,erp,Mỗi năm có khoảng bao nhiêu lần dữ liệu kế toán/bán hàng bị xóa nhầm hoặc nhập sai nghiêm trọng?,rare=Dưới 1 lần|once=Khoảng 1 lần|few=Vài lần|monthly=Hằng tháng|unknown=Không biết,
+ERP-02,erp,Phần mềm kế toán/bán hàng có phân quyền xóa/sửa chứng từ và lưu nhật ký thay đổi không?,both=Có phân quyền và có nhật ký|one=Chỉ có một trong hai|none=Không có|unknown=Không biết,
+WEB-01,website,"Công ty có tự quản lý website (ví dụ WordPress tự cài, máy chủ riêng) không?",yes=Có|no=Không (website do nền tảng quản lý hoặc không có)|unknown=Không biết,Nếu không thì bỏ qua các câu WEB khác
+WEB-02,website,Website và plugin được cập nhật thế nào?,auto=Tự động|monthly=Hằng tháng|rarely=Hiếm khi|unknown=Không biết,
+WEB-03,website,Website có thu dữ liệu khách hàng (form/đơn hàng/tài khoản) không?,sensitive=Có dữ liệu nhạy cảm (CCCD/tài khoản ngân hàng/sức khỏe)|nonpublic=Có thông tin liên hệ hoặc hợp đồng|none=Không có dữ liệu cá nhân|unknown=Không biết,
+WEB-04,website,Dữ liệu trên website liên quan khoảng bao nhiêu khách hàng?,lt10=Dưới 10|to1000=10 đến 1.000|gt1000=Trên 1.000|unknown=Không biết,
+WEB-05,website,Nếu website bị chiếm/ngừng thì hậu quả với công ty là?,negligible=Không đáng kể|limited=Hạn chế|serious=Nghiêm trọng|severe=Rất nặng|unknown=Không biết,Giám đốc trả lời
+OFF-01,offboarding,Khi nhân viên nghỉ việc thì tài khoản email/phần mềm được khóa khi nào?,sameday=Trong ngày nghỉ|week=Trong vòng 1 tuần|later=Lâu hơn|never_checked=Không có quy trình|unknown=Không biết,
+OFF-02,offboarding,Có rà soát định kỳ danh sách tài khoản đang hoạt động không?,quarterly=Hằng quý|yearly=Hằng năm|never=Không|unknown=Không biết,
+OFF-03,offboarding,Mỗi năm có khoảng bao nhiêu nhân viên nghỉ việc?,none=Gần như không|few=Vài người|many=Nhiều người|unknown=Không biết,
+VEN-01,vendor,Nhà cung cấp IT có truy cập từ xa vào máy tính/hệ thống của công ty không?,yes=Có|no=Không|unknown=Không biết,Ví dụ TeamViewer/AnyDesk/RDP
+VEN-02,vendor,Truy cập từ xa của nhà cung cấp được bảo vệ thế nào?,mfa_named_ondemand=Tài khoản riêng có MFA và chỉ bật khi cần|mfa=Có MFA|shared_password=Mật khẩu dùng chung hoặc luôn mở|unknown=Không biết,
+VEN-03,vendor,Hợp đồng với nhà cung cấp IT có điều khoản bảo mật và báo sự cố không?,yes=Có|no=Không|unknown=Không biết,Ghi nhận; dùng khi rà soát nhà cung cấp
+SAS-01,saas,Mỗi năm dịch vụ SaaS chính (email/kế toán/bán hàng online) ngừng hoạt động khoảng bao nhiêu lần?,rare=Dưới 1 lần|once=Khoảng 1 lần|few=Vài lần|monthly=Hằng tháng|unknown=Không biết,
+SAS-02,saas,Nếu dịch vụ SaaS chính ngừng 1 ngày thì công ty có phương án làm việc tạm không?,plan_tested=Có và đã thử|plan=Có nhưng chưa thử|none=Không có|unknown=Không biết,
+SAS-03,saas,Một lần ngừng dịch vụ SaaS thường kéo dài bao lâu?,h4=Vài giờ|d1=Khoảng 1 ngày|d3=Khoảng 3 ngày|w1=Khoảng 1 tuần|w2=Hai tuần trở lên|unknown=Không biết,
+EXP-01,export,Bao nhiêu nhân viên có thể xuất toàn bộ danh sách khách hàng?,few=Vài người được giao|many=Nhiều người|all=Tất cả|unknown=Không biết,
+EXP-02,export,Việc xuất dữ liệu khách hàng có được ghi nhật ký hoặc cảnh báo không?,yes=Có|no=Không|unknown=Không biết,
+EXP-03,export,Dữ liệu khách hàng có loại nhạy cảm không?,sensitive=Có dữ liệu nhạy cảm (CCCD/tài khoản ngân hàng/sức khỏe)|nonpublic=Có thông tin liên hệ hoặc hợp đồng|none=Không có dữ liệu cá nhân|unknown=Không biết,
+EXP-04,export,Danh sách khách hàng có khoảng bao nhiêu người?,lt10=Dưới 10|to1000=10 đến 1.000|gt1000=Trên 1.000|unknown=Không biết,

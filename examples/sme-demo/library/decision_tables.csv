@@ -17,3 +17,46 @@ DT-RECOVERY,2,REC-01=none,Very High
 DT-RECOVERY,3,REC-01=manual,High
 DT-RECOVERY,4,REC-02=isolated&REC-03=recent,Low
 DT-RECOVERY,5,*,Moderate
+DT-RANSOM,1,RAN-01=unknown,unknown
+DT-RANSOM,2,REC-01=none,Very High
+DT-RANSOM,3,"RAN-01=yes&RAN-02=manual,no",Very High
+DT-RANSOM,4,EML-02=all&RAN-01=no&RAN-02=auto&REC-02=isolated,Low
+DT-RANSOM,5,RAN-01=no&RAN-02=auto,Moderate
+DT-RANSOM,6,*,High
+DT-DEVICE,1,DEV-02=all,Low
+DT-DEVICE,2,DEV-02=some,High
+DT-DEVICE,3,DEV-02=none,Very High
+DT-DEVICE,4,*,unknown
+DT-SHARE,1,SHR-01=blocked,Low
+DT-SHARE,2,SHR-01=limited,Moderate
+DT-SHARE,3,SHR-01=allowed,High
+DT-SHARE,4,*,unknown
+DT-ERPDATA,1,REC-01=none,Very High
+DT-ERPDATA,2,ERP-02=both,Low
+DT-ERPDATA,3,ERP-02=one,Moderate
+DT-ERPDATA,4,ERP-02=none,High
+DT-ERPDATA,5,*,unknown
+DT-WEB,1,WEB-02=auto,Low
+DT-WEB,2,WEB-02=monthly,Moderate
+DT-WEB,3,WEB-02=rarely,High
+DT-WEB,4,*,unknown
+DT-OFFBOARD,1,OFF-01=unknown,unknown
+DT-OFFBOARD,2,"OFF-01=sameday&OFF-02=quarterly,yearly",Low
+DT-OFFBOARD,3,"OFF-01=sameday,week",Moderate
+DT-OFFBOARD,4,*,High
+DT-VENDOR,1,VEN-02=mfa_named_ondemand,Low
+DT-VENDOR,2,VEN-02=mfa,Moderate
+DT-VENDOR,3,VEN-02=shared_password,Very High
+DT-VENDOR,4,*,unknown
+DT-SAAS,1,SAS-02=plan_tested,Low
+DT-SAAS,2,SAS-02=plan,Moderate
+DT-SAAS,3,SAS-02=none,High
+DT-SAAS,4,*,unknown
+DT-EXPORT-INIT,1,EXP-01=unknown,unknown
+DT-EXPORT-INIT,2,"EXP-01=all,many",Moderate
+DT-EXPORT-INIT,3,*,Low
+DT-EXPORT,1,EXP-01=unknown,unknown
+DT-EXPORT,2,EXP-01=few&EXP-02=yes,Low
+DT-EXPORT,3,EXP-01=few,Moderate
+DT-EXPORT,4,EXP-02=yes,Moderate
+DT-EXPORT,5,*,High

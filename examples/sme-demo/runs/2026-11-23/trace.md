@@ -21,6 +21,38 @@ Each chain: inputs (with mode, confidence, evidence or rationale) -> rules -> G-
 - G-5 [High x High] -> High; I-2 [High x High] -> High; policy: treat or senior exception
 - residual: Moderate (effects P-AWARE;P-PAYVERIFY (SME-LIB default: bundle best of singles))
 
+## R-RANSOM (FAM-RANSOM)
+
+- F-2 (F2-01) of applicable packages: P-ADMINSEP: Moderate, P-BACKUP: Moderate, P-EDR: Moderate, P-MFA: Moderate, P-PATCH: Moderate, P-RESTORE-TEST: Very High
+- initiation_likelihood = High (judgment, confidence Medium; ANS-07 ANS-0.2: EML-04=often (attested, demo))
+- adverse_impact_likelihood = High (judgment, confidence Medium; DT-RANSOM ANS-0.2: RAN-01=some (attested, demo); RAN-02=manual (attested, demo); EML-02=some (attested, demo); REC-01=auto (attested, demo); REC-02=same (attested, demo))
+- info_class = public (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- records_disclosed = 0 (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- integrity_consequence = serious (judgment, confidence Medium; ANS-07 ANS-0.2: REC-07=serious (attested, demo))
+- corrected_before_use = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- outage_hours = 168 (judgment, confidence Medium; ANS-07 ANS-0.2: RAN-04=w1 (attested, demo))
+- in_critical_window = yes (judgment, confidence Medium; ANS-07 ANS-0.2: REC-06=yes (attested, demo))
+- multiple_severe_documented = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- C-01 -> Very Low; I-01 -> Moderate; A-01 -> High; IMP-01 v2.0 -> impact High
+- G-5 [High x High] -> High; I-2 [High x High] -> High; policy: treat or senior exception
+- residual: Moderate (effects P-ADMINSEP;P-BACKUP;P-EDR;P-MFA;P-PATCH;P-RESTORE-TEST (SME-LIB default: bundle adv=L,impact-1))
+
+## R-VENDOR (FAM-RANSOM)
+
+- F-2 (F2-01) of applicable packages: P-ADMINSEP: Moderate, P-VENDOR: Very High
+- initiation_likelihood = Moderate (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- adverse_impact_likelihood = Very High (judgment, confidence Medium; DT-VENDOR ANS-0.2: VEN-02=shared_password (attested, demo))
+- info_class = public (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- records_disclosed = 0 (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- integrity_consequence = negligible (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- corrected_before_use = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- outage_hours = 168 (judgment, confidence Medium; ANS-13 ANS-0.2: RAN-04=w1 (attested, demo))
+- in_critical_window = yes (judgment, confidence Medium; ANS-13 ANS-0.2: REC-06=yes (attested, demo))
+- multiple_severe_documented = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- C-01 -> Very Low; I-01 -> Very Low; A-01 -> High; IMP-01 v2.0 -> impact High
+- G-5 [Moderate x Very High] -> High; I-2 [High x High] -> High; policy: treat or senior exception
+- residual: Low (effects P-ADMINSEP;P-VENDOR (SME-LIB default: bundle best of singles))
+
 ## R-RECOVERY (FAM-RECOVERY)
 
 - F-2 (F2-01) of applicable packages: P-BACKUP: Moderate, P-RESTORE-TEST: Very High
@@ -54,3 +86,120 @@ Each chain: inputs (with mode, confidence, evidence or rationale) -> rules -> G-
 - C-01 -> Moderate; I-01 -> Very Low; A-01 -> Very Low; IMP-01 v2.0 -> impact Moderate
 - G-5 [High x High] -> High; I-2 [High x Moderate] -> Moderate; policy: treat or delegated acceptance
 - residual: Moderate (effects P-AWARE;P-MFA (SME-LIB default: bundle best of singles))
+
+## R-DEVICE (FAM-DEVICE)
+
+- F-2 (F2-01) of applicable packages: P-DEVICE: Moderate
+- annual_frequency = 1 (judgment, confidence Medium; ANS-08 ANS-0.2: DEV-01=once (attested, demo))
+- adverse_impact_likelihood = High (judgment, confidence Medium; DT-DEVICE ANS-0.2: DEV-02=some (attested, demo))
+- info_class = nonpublic (judgment, confidence Medium; ANS-08 ANS-0.2: DEV-03=nonpublic (attested, demo))
+- records_disclosed = 500 (judgment, confidence Medium; ANS-08 ANS-0.2: DEV-04=to1000 (attested, demo))
+- integrity_consequence = negligible (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- corrected_before_use = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- outage_hours = 0 (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- in_critical_window = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- multiple_severe_documented = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- G3-01 v1.0: annual_frequency 1.0 -> initiation Moderate
+- C-01 -> Moderate; I-01 -> Very Low; A-01 -> Very Low; IMP-01 v2.0 -> impact Moderate
+- G-5 [Moderate x High] -> Moderate; I-2 [Moderate x Moderate] -> Moderate; policy: treat or delegated acceptance
+- residual: Low (effects P-DEVICE (SME-LIB default: adv=L))
+
+## R-ERPDATA (FAM-ERPDATA)
+
+- F-2 (F2-01) of applicable packages: P-APPROLE: Moderate, P-BACKUP: Moderate
+- annual_frequency = 1 (judgment, confidence Medium; ANS-10 ANS-0.2: ERP-01=once (attested, demo))
+- adverse_impact_likelihood = Moderate (judgment, confidence Medium; DT-ERPDATA ANS-0.2: ERP-02=one (attested, demo); REC-01=auto (attested, demo))
+- info_class = public (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- records_disclosed = 0 (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- integrity_consequence = serious (judgment, confidence Medium; ANS-10 ANS-0.2: REC-07=serious (attested, demo))
+- corrected_before_use = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- outage_hours = 0 (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- in_critical_window = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- multiple_severe_documented = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- G3-01 v1.0: annual_frequency 1.0 -> initiation Moderate
+- C-01 -> Very Low; I-01 -> Moderate; A-01 -> Very Low; IMP-01 v2.0 -> impact Moderate
+- G-5 [Moderate x Moderate] -> Moderate; I-2 [Moderate x Moderate] -> Moderate; policy: treat or delegated acceptance
+- residual: Low (effects P-APPROLE;P-BACKUP (SME-LIB default: bundle adv=L))
+
+## R-EXPORT (FAM-EXPORT)
+
+- F-2 (F2-01) of applicable packages: P-DATAACCESS: Very High
+- initiation_likelihood = Moderate (judgment, confidence Medium; DT-EXPORT-INIT ANS-0.2: EXP-01=many (attested, demo))
+- adverse_impact_likelihood = High (judgment, confidence Medium; DT-EXPORT ANS-0.2: EXP-01=many (attested, demo); EXP-02=no (attested, demo))
+- info_class = nonpublic (judgment, confidence Medium; ANS-15 ANS-0.2: EXP-03=nonpublic (attested, demo))
+- records_disclosed = 500 (judgment, confidence Medium; ANS-15 ANS-0.2: EXP-04=to1000 (attested, demo))
+- integrity_consequence = negligible (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- corrected_before_use = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- outage_hours = 0 (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- in_critical_window = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- multiple_severe_documented = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- C-01 -> Moderate; I-01 -> Very Low; A-01 -> Very Low; IMP-01 v2.0 -> impact Moderate
+- G-5 [Moderate x High] -> Moderate; I-2 [Moderate x Moderate] -> Moderate; policy: treat or delegated acceptance
+- residual: Low (effects P-DATAACCESS (SME-LIB default: adv=L))
+
+## R-OFFBOARD (FAM-OFFBOARD)
+
+- F-2 (F2-01) of applicable packages: P-MFA: Moderate, P-OFFBOARD: Moderate
+- initiation_likelihood = Moderate (judgment, confidence Medium; ANS-12 ANS-0.2: OFF-03=few (attested, demo))
+- adverse_impact_likelihood = Moderate (judgment, confidence Medium; DT-OFFBOARD ANS-0.2: OFF-01=week (attested, demo); OFF-02=never (attested, demo))
+- info_class = nonpublic (judgment, confidence Medium; ANS-12 ANS-0.2: EML-05=nonpublic (attested, demo))
+- records_disclosed = 500 (judgment, confidence Medium; ANS-12 ANS-0.2: EML-06=to1000 (attested, demo))
+- integrity_consequence = negligible (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- corrected_before_use = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- outage_hours = 0 (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- in_critical_window = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- multiple_severe_documented = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- C-01 -> Moderate; I-01 -> Very Low; A-01 -> Very Low; IMP-01 v2.0 -> impact Moderate
+- G-5 [Moderate x Moderate] -> Moderate; I-2 [Moderate x Moderate] -> Moderate; policy: treat or delegated acceptance
+- residual: Low (effects P-MFA;P-OFFBOARD (SME-LIB default: bundle best of singles))
+
+## R-SAAS (FAM-SAAS)
+
+- F-2 (F2-01) of applicable packages: P-CONTINUITY: Very High
+- annual_frequency = 1 (judgment, confidence Medium; ANS-14 ANS-0.2: SAS-01=once (attested, demo))
+- adverse_impact_likelihood = High (judgment, confidence Medium; DT-SAAS ANS-0.2: SAS-02=none (attested, demo))
+- info_class = public (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- records_disclosed = 0 (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- integrity_consequence = negligible (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- corrected_before_use = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- outage_hours = 4 (judgment, confidence Medium; ANS-14 ANS-0.2: SAS-03=h4 (attested, demo))
+- in_critical_window = yes (judgment, confidence Medium; ANS-14 ANS-0.2: REC-06=yes (attested, demo))
+- multiple_severe_documented = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- G3-01 v1.0: annual_frequency 1.0 -> initiation Moderate
+- C-01 -> Very Low; I-01 -> Very Low; A-01 -> Moderate; IMP-01 v2.0 -> impact Moderate
+- G-5 [Moderate x High] -> Moderate; I-2 [Moderate x Moderate] -> Moderate; policy: treat or delegated acceptance
+- residual: Low (effects P-CONTINUITY (SME-LIB default: adv=L))
+
+## R-SHARE (FAM-SHARE)
+
+- F-2 (F2-01) of applicable packages: P-SHARE: Very High
+- annual_frequency = 1 (judgment, confidence Medium; ANS-09 ANS-0.2: SHR-02=once (attested, demo))
+- adverse_impact_likelihood = High (judgment, confidence Medium; DT-SHARE ANS-0.2: SHR-01=allowed (attested, demo))
+- info_class = nonpublic (judgment, confidence Medium; ANS-09 ANS-0.2: SHR-03=nonpublic (attested, demo))
+- records_disclosed = 500 (judgment, confidence Medium; ANS-09 ANS-0.2: SHR-04=to1000 (attested, demo))
+- integrity_consequence = negligible (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- corrected_before_use = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- outage_hours = 0 (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- in_critical_window = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- multiple_severe_documented = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- G3-01 v1.0: annual_frequency 1.0 -> initiation Moderate
+- C-01 -> Moderate; I-01 -> Very Low; A-01 -> Very Low; IMP-01 v2.0 -> impact Moderate
+- G-5 [Moderate x High] -> Moderate; I-2 [Moderate x Moderate] -> Moderate; policy: treat or delegated acceptance
+- residual: Low (effects P-SHARE (SME-LIB default: adv=L))
+
+## R-WEB (FAM-WEB)
+
+- F-2 (F2-01) of applicable packages: P-BACKUP: Moderate, P-PATCH: Moderate
+- initiation_likelihood = High (judgment, confidence Medium; ANS-11 ANS-0.2: WEB-01=yes (attested, demo))
+- adverse_impact_likelihood = Moderate (judgment, confidence Medium; DT-WEB ANS-0.2: WEB-02=monthly (attested, demo))
+- info_class = nonpublic (judgment, confidence Medium; ANS-11 ANS-0.2: WEB-03=nonpublic (attested, demo))
+- records_disclosed = 500 (judgment, confidence Medium; ANS-11 ANS-0.2: WEB-04=to1000 (attested, demo))
+- integrity_consequence = negligible (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- corrected_before_use = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- outage_hours = 0 (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- in_critical_window = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- multiple_severe_documented = no (judgment, confidence Medium; SME-LIB default ANS-0.2: library default)
+- business_consequence = limited (judgment, confidence Medium; ANS-11 ANS-0.2: WEB-05=limited (attested, demo))
+- C-01 -> Moderate; I-01 -> Very Low; A-01 -> Very Low; IMP-01 v2.0 -> impact Moderate
+- G-5 [High x Moderate] -> Moderate; I-2 [Moderate x Moderate] -> Moderate; policy: treat or delegated acceptance
+- residual: Moderate (effects P-BACKUP;P-PATCH (SME-LIB default: bundle best of singles))

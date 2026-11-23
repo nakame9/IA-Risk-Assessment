@@ -1,4 +1,14 @@
 risk_id,package_ids,initiation,adverse,impact,basis_ref,basis_hash
+R-RANSOM,P-ADMINSEP,High,Moderate,High,SME-LIB default: adv-1,27bf992f1e2521a3
+R-RANSOM,P-BACKUP,High,High,Moderate,SME-LIB default: impact-1,27bf992f1e2521a3
+R-RANSOM,P-EDR,High,Moderate,High,SME-LIB default: adv-1,27bf992f1e2521a3
+R-RANSOM,P-MFA,High,Moderate,High,SME-LIB default: adv-1,27bf992f1e2521a3
+R-RANSOM,P-PATCH,High,Moderate,High,SME-LIB default: adv-1,27bf992f1e2521a3
+R-RANSOM,P-RESTORE-TEST,High,High,High,SME-LIB default: none,27bf992f1e2521a3
+R-RANSOM,P-ADMINSEP;P-BACKUP;P-EDR;P-MFA;P-PATCH;P-RESTORE-TEST,High,Low,Moderate,"SME-LIB default: bundle adv=L,impact-1",27bf992f1e2521a3
+R-VENDOR,P-ADMINSEP,Moderate,High,High,SME-LIB default: adv-1,b27519d20f690789
+R-VENDOR,P-VENDOR,Moderate,Low,High,SME-LIB default: adv=L,b27519d20f690789
+R-VENDOR,P-ADMINSEP;P-VENDOR,Moderate,Low,High,SME-LIB default: bundle best of singles,b27519d20f690789
 R-PAY,P-AWARE,High,Low,High,SME-LIB default: none,062c1e2c98ca45b7
 R-PAY,P-PAYVERIFY,High,Low,High,SME-LIB default: adv=L,062c1e2c98ca45b7
 R-PAY,P-AWARE;P-PAYVERIFY,High,Low,High,SME-LIB default: bundle best of singles,062c1e2c98ca45b7
@@ -8,3 +18,16 @@ R-RECOVERY,P-BACKUP;P-RESTORE-TEST,Moderate,Low,High,SME-LIB default: bundle adv
 R-EMAIL,P-AWARE,High,High,Moderate,SME-LIB default: none,13caa3f66233528b
 R-EMAIL,P-MFA,High,Low,Moderate,SME-LIB default: adv=L,13caa3f66233528b
 R-EMAIL,P-AWARE;P-MFA,High,Low,Moderate,SME-LIB default: bundle best of singles,13caa3f66233528b
+R-DEVICE,P-DEVICE,Moderate,Low,Moderate,SME-LIB default: adv=L,dc853c036571d76c
+R-ERPDATA,P-APPROLE,Moderate,Low,Moderate,SME-LIB default: adv-1,5ea7373238ade068
+R-ERPDATA,P-BACKUP,Moderate,Moderate,Moderate,SME-LIB default: adv<=M,5ea7373238ade068
+R-ERPDATA,P-APPROLE;P-BACKUP,Moderate,Low,Moderate,SME-LIB default: bundle adv=L,5ea7373238ade068
+R-EXPORT,P-DATAACCESS,Moderate,Low,Moderate,SME-LIB default: adv=L,6b8df487a0dbcbb2
+R-OFFBOARD,P-MFA,Moderate,Moderate,Moderate,SME-LIB default: none,7446e7ae39fa043a
+R-OFFBOARD,P-OFFBOARD,Moderate,Low,Moderate,SME-LIB default: adv=L,7446e7ae39fa043a
+R-OFFBOARD,P-MFA;P-OFFBOARD,Moderate,Low,Moderate,SME-LIB default: bundle best of singles,7446e7ae39fa043a
+R-SAAS,P-CONTINUITY,Moderate,Low,Moderate,SME-LIB default: adv=L,7a6031630008ea74
+R-SHARE,P-SHARE,Moderate,Low,Moderate,SME-LIB default: adv=L,18c99cd603a44169
+R-WEB,P-BACKUP,High,Moderate,Moderate,SME-LIB default: none,c04c182b8283561d
+R-WEB,P-PATCH,High,Low,Moderate,SME-LIB default: adv=L,c04c182b8283561d
+R-WEB,P-BACKUP;P-PATCH,High,Low,Moderate,SME-LIB default: bundle best of singles,c04c182b8283561d

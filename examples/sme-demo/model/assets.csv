@@ -2,3 +2,10 @@ asset_id,name,kind,component_ids,owner,confidentiality,integrity,availability,ra
 AS-EMAIL,Email và tài khoản SaaS,service,,Giám đốc,unknown,unknown,unknown,SME scope,identity_service,SYS-SME,,,,internet
 AS-PAY,Thanh toán cho nhà cung cấp,service,,Giám đốc,unknown,unknown,unknown,SME scope,finance,SYS-SME,,,,internal
 AS-DATA,Dữ liệu kế toán/bán hàng và bản sao lưu,service,,Giám đốc,unknown,unknown,unknown,SME scope,pii_database,SYS-SME,,,,internal
+AS-BUSINESS,"Máy tính, máy chủ và file chung",service,,Giám đốc,unknown,unknown,unknown,SME scope,business_service,SYS-SME,,,,internal
+AS-DEVICE,Laptop và điện thoại công việc,service,,Giám đốc,unknown,unknown,unknown,SME scope,endpoint,SYS-SME,,,,internal
+AS-DOCS,Kho tài liệu chung,service,,Giám đốc,unknown,unknown,unknown,SME scope,document_store,SYS-SME,,,,internet
+AS-WEB,Website công ty,service,,Giám đốc,unknown,unknown,unknown,SME scope,web_service,SYS-SME,,,,internet
+AS-REMOTE,Truy cập từ xa của nhà cung cấp IT,service,,Giám đốc,unknown,unknown,unknown,SME scope,remote_access,SYS-SME,,,,internet
+AS-SAAS,Dịch vụ SaaS chính,service,,Giám đốc,unknown,unknown,unknown,SME scope,saas,SYS-SME,,,,internet
+AS-CUSTDATA,Dữ liệu khách hàng (CRM/bán hàng),service,,Giám đốc,unknown,unknown,unknown,SME scope,customer_database,SYS-SME,,,,internal
