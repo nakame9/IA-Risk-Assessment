@@ -1,0 +1,4 @@
+risk_id,template_id,family_id,asset_id,vulnerability_condition,existing_controls,applicable_packages,treatment_option,treatment_packages,risk_owner,due_date,decision_ref,evidence_ref,status,last_reviewed,next_review
+R-EMAIL,TPL-SME-EMAIL,FAM-EMAIL,AS-EMAIL,,see controls.csv,P-AWARE;P-MFA,mitigate,P-AWARE;P-MFA,Giám đốc,2026-12-19,chưa quyết định (giám đốc),answers.csv,proposed,2026-12-05,2027-03-05
+R-PAY,TPL-SME-PAY,FAM-PAY,AS-PAY,,see controls.csv,P-AWARE;P-PAYVERIFY,mitigate,P-AWARE;P-PAYVERIFY,Giám đốc,2026-12-19,chưa quyết định (giám đốc),answers.csv,proposed,2026-12-05,2027-03-05
+R-RECOVERY,TPL-SME-RECOVERY,FAM-RECOVERY,AS-DATA,,see controls.csv,P-BACKUP;P-RESTORE-TEST,mitigate,P-BACKUP;P-RESTORE-TEST,Giám đốc,2027-01-04,chưa quyết định (giám đốc),answers.csv,proposed,2026-12-05,2027-03-05

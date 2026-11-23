@@ -1,0 +1,4 @@
+template_id,asset_classes,scope,threat_profile_id,source_type,event,init_rule,adverse_rule,impact_rule
+TPL-SME-EMAIL,identity_service,asset,,adversarial,Kẻ gian chiếm tài khoản email/SaaS,G2-JUDG,DT,IMP-01
+TPL-SME-PAY,finance,asset,,adversarial,Lừa đổi tài khoản ngân hàng của nhà cung cấp để chiếm tiền thanh toán,G2-JUDG,DT,IMP-01
+TPL-SME-RECOVERY,pii_database,asset,,non_adversarial,Mất dữ liệu kinh doanh và không khôi phục được từ sao lưu,G3-01,DT,IMP-01

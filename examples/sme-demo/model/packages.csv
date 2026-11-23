@@ -1,0 +1,6 @@
+package_id,name,control_ids,effort_tier,requires,owner,due_date,status,verification_ref
+P-MFA,Bật xác thực hai lớp (MFA) cho mọi tài khoản email/SaaS và chặn đăng nhập kiểu cũ,unverified (CIS Control 6; safeguard ID to be checked against the CIS v8.1 document),Low,,it,,proposed,Ảnh chụp/báo cáo từ trang quản trị cho thấy 100% tài khoản đã bật MFA và đăng nhập kiểu cũ bị chặn
+P-PAYVERIFY,Quy trình đổi tài khoản ngân hàng nhà cung cấp: gọi lại số đã biết và người thứ hai duyệt,not in CIS Controls; SME addition for payment-instruction fraud,Low,,finance,,proposed,Quy trình viết thành văn bản; biên bản một lần thử (giả lập yêu cầu đổi tài khoản) cho thấy nhân viên làm đúng
+P-AWARE,Hướng dẫn nhân viên nhận biết email lừa đảo và yêu cầu chuyển tiền bất thường,unverified (CIS Control 14; safeguard ID to be checked),Low,,it,,proposed,Danh sách người đã tham gia và ngày hướng dẫn
+P-BACKUP,Sao lưu tự động hằng ngày và có một bản tách biệt (offline hoặc không thể xóa),unverified (CIS Control 11; safeguard IDs to be checked),Medium,,it,,proposed,Cấu hình sao lưu và bằng chứng bản tách biệt không bị xóa bằng tài khoản thường
+P-RESTORE-TEST,Thử khôi phục dữ liệu từ bản sao lưu ít nhất 6 tháng một lần,unverified (CIS Control 11; may be outside IG1; to be checked),Low,,it,,proposed,Biên bản thử khôi phục: ngày giờ dữ liệu nào thời gian khôi phục kết quả

@@ -1,0 +1,10 @@
+risk_id,package_ids,initiation,adverse,impact,basis_ref,basis_hash
+R-PAY,P-AWARE,High,Low,High,SME-LIB default: none,11da446a029965fe
+R-PAY,P-PAYVERIFY,High,Low,High,SME-LIB default: adv=L,11da446a029965fe
+R-PAY,P-AWARE;P-PAYVERIFY,High,Low,High,SME-LIB default: bundle,11da446a029965fe
+R-RECOVERY,P-BACKUP,Moderate,Moderate,High,SME-LIB default: adv<=M,7f6d250cd200cab3
+R-RECOVERY,P-RESTORE-TEST,Moderate,Moderate,High,SME-LIB default: none,7f6d250cd200cab3
+R-RECOVERY,P-BACKUP;P-RESTORE-TEST,Moderate,Low,High,SME-LIB default: bundle,7f6d250cd200cab3
+R-EMAIL,P-AWARE,High,High,Moderate,SME-LIB default: none,31d9d14247b38e15
+R-EMAIL,P-MFA,High,Low,Moderate,SME-LIB default: adv=L,31d9d14247b38e15
+R-EMAIL,P-AWARE;P-MFA,High,Low,Moderate,SME-LIB default: bundle,31d9d14247b38e15

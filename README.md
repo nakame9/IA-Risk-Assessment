@@ -6,6 +6,12 @@
 - đánh giá tác động đến tài sản thông tin,
 - ra quyết định xử lý rủi ro.
 
+**Dùng cho doanh nghiệp vừa và nhỏ (bản P2a):** xem [ONBOARDING.vi.md](ONBOARDING.vi.md).
+- `run.bat init "<thư mục công ty>" --company "Tên"` tạo workspace.
+- Điền `answers.csv`.
+- `run.bat run "<thư mục công ty>"` sinh `runs\<ngày>\bao_cao.html`.
+- Ví dụ hư cấu: [examples/sme-demo/](examples/sme-demo/).
+
 **Tài liệu:**
 
 - [PLAN.md](PLAN.md): kế hoạch, phương pháp, các bảng tra G-5/I-2 và kết quả kiểm chứng nguồn.

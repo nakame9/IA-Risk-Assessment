@@ -1,0 +1,6 @@
+scope_id,package_id,status,evidence_ref,verified_on
+SYS-SME,P-MFA,partial,answers.csv,
+SYS-SME,P-PAYVERIFY,implemented_assessed_effective,evidence/thu-quy-trinh-doi-tai-khoan-2026-12-01.pdf (giả định),2026-12-01
+SYS-SME,P-AWARE,absent_unplanned,answers.csv,
+SYS-SME,P-BACKUP,partial,answers.csv,
+SYS-SME,P-RESTORE-TEST,absent_unplanned,answers.csv,

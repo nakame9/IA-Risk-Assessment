@@ -413,3 +413,63 @@ Chưa có finding nào nằm ngoài KEV, và chưa có snapshot EPSS. Vì vậy 
   - **Kết quả của case portal:** nghĩa vụ, nhóm Pareto, bundle của family ransomware, và các mục trong hàng đợi điều tra.
 - Phần kiểm tra hợp lệ đã được thử với dữ liệu cố ý làm sai: thuộc tính không khai báo, subject không tồn tại, giá trị âm, thiếu `evidence_ref`, gói biện pháp không áp dụng được. Tất cả đều bị từ chối.
 - Một đầu vào `unknown` làm mức rủi ro thành `unknown` và kịch bản được đưa vào hàng đợi điều tra, không bị coi là 0.
+
+## 8. Thư viện SME và quy tắc trả lời (P2a, `SME-LIB-0.1`, `ANS-0.1`)
+
+### 8.1 Phạm vi
+
+Bản P2a có 3 kịch bản:
+
+| Mã | Kịch bản | Loại nguồn | Khả năng khởi phát |
+|---|---|---|---|
+| R-EMAIL | Chiếm tài khoản email/SaaS | Có chủ đích | Phán đoán (G-2) |
+| R-PAY | Lừa đổi tài khoản ngân hàng của nhà cung cấp | Có chủ đích | Phán đoán (G-2) |
+| R-RECOVERY | Mất dữ liệu và không khôi phục được | Không chủ đích | Theo quy tắc G3-01 |
+
+**Bộ câu hỏi:** `library/sme/questions.csv` có 22 câu.
+
+**Gói biện pháp** (`library/sme/packages.csv`): P-MFA, P-PAYVERIFY, P-AWARE, P-BACKUP, P-RESTORE-TEST.
+- Cột `cis_ref` ghi **"unverified"**. Danh sách safeguard và IG của CIS chỉ có trong bản tải về cần đăng ký, nên chưa được đối chiếu.
+- P-PAYVERIFY là bổ sung riêng cho SME, không có trong CIS Controls.
+
+### 8.2 Quy tắc trả lời (ANS)
+
+- **Nguồn của câu trả lời:**
+  - `observed` kèm `evidence_ref` thì thành **bằng chứng**, confidence High.
+  - `attested` là phán đoán, confidence Medium.
+  - `forecast` hoặc `unknown` là phán đoán, confidence Low.
+- **Câu trả lời trống** được coi là `unknown`. Rating liên quan cũng là `unknown`, và câu hỏi đó hiện trong mục "Những điều chưa biết" của báo cáo.
+- **Ánh xạ câu trả lời sang đầu vào:**
+  - ANS-01: EML-04 → khả năng khởi phát của R-EMAIL.
+  - ANS-02: EML-05/06/07 → impact của R-EMAIL.
+  - ANS-03: PAY-03/PAY-01 → khả năng khởi phát của R-PAY.
+  - ANS-04: PAY-04 → impact của R-PAY.
+  - ANS-05: REC-04 → tần suất của R-RECOVERY.
+  - ANS-06: REC-05/06/07 → impact của R-RECOVERY.
+- **Giá trị mặc định:** các thuộc tính impact còn lại lấy mặc định của thư viện, được ghi là phán đoán.
+
+### 8.3 Bảng quyết định G-4 (DT, luôn là phán đoán của mô hình)
+
+| Bảng | Đầu vào | Quy tắc |
+|---|---|---|
+| DT-EMAIL | EML-02, EML-03 | MFA cho tất cả và đã chặn đăng nhập kiểu cũ → L. MFA cho tất cả nhưng chưa chặn → M. Không có MFA → VH. Một phần hoặc phần lớn → H. Không biết → `unknown` |
+| DT-PAY | PAY-02 | Gọi lại và người thứ hai duyệt → L. Chỉ một trong hai → M. Không kiểm tra → H |
+| DT-RECOVERY | REC-01, REC-02, REC-03 | Không sao lưu → VH. Sao lưu thủ công → H. Tự động, tách biệt và đã thử trong 6 tháng → L. Tự động nhưng thiếu một trong hai điều kiện trên → M |
+
+### 8.4 Effects mặc định của thư viện
+
+- P-MFA, P-PAYVERIFY → G-4 = L.
+- P-BACKUP → G-4 tối đa là M.
+- Bộ P-BACKUP + P-RESTORE-TEST → G-4 = L.
+- P-AWARE và P-RESTORE-TEST khi đứng một mình → không thay đổi.
+
+Effects được tính lại ở **mỗi lần chạy** từ rating hiện tại, rồi ghi dấu vân tay theo EFF-03. Đây là **phán đoán có điều kiện của thư viện**, không phải lời hứa giảm rủi ro.
+
+### 8.5 Chọn 3 việc cần làm [DA]
+
+1. Nghĩa vụ KEV.
+2. Gói có lợi ích vượt ngưỡng được hỗ trợ. Bỏ qua tổ hợp chứa một gói đã được chọn mà không vượt thêm ngưỡng nào.
+3. Biện pháp nền tảng chưa kiểm chứng. Ưu tiên gói có effect cải thiện được rating, rồi theo mức rủi ro, rồi theo effort.
+4. Câu hỏi chưa có câu trả lời.
+
+**Hạn đề xuất:** 14 / 30 / 60 ngày, theo effort Low / Medium / High.

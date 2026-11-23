@@ -1,0 +1,104 @@
+{
+ "as_of": "2026-12-05",
+ "bundles": [
+  "P-BACKUP + P-RESTORE-TEST"
+ ],
+ "controls": {
+  "P-AWARE@SYS-SME": "absent_unplanned",
+  "P-BACKUP@SYS-SME": "partial",
+  "P-MFA@SYS-SME": "partial",
+  "P-PAYVERIFY@SYS-SME": "implemented_assessed_effective",
+  "P-RESTORE-TEST@SYS-SME": "absent_unplanned"
+ },
+ "feeds": {},
+ "findings": {},
+ "front": [],
+ "incomplete": [],
+ "obligations": {},
+ "queue": [
+  "R-RECOVERY: annual_frequency = 1.0 (confidence Medium)"
+ ],
+ "risks": {
+  "R-EMAIL": {
+   "adverse": "High",
+   "decision_class": "delegated",
+   "impact": "Moderate",
+   "initiation": "High",
+   "inputs": {
+    "adverse_impact_likelihood": "High",
+    "corrected_before_use": "no",
+    "in_critical_window": "no",
+    "info_class": "nonpublic",
+    "initiation_likelihood": "High",
+    "integrity_consequence": "serious",
+    "multiple_severe_documented": "no",
+    "outage_hours": "0",
+    "records_disclosed": "500"
+   },
+   "residual": "Moderate",
+   "residual_status": "projected",
+   "risk": "Moderate",
+   "status": "proposed",
+   "treatment_option": "mitigate"
+  },
+  "R-PAY": {
+   "adverse": "Low",
+   "decision_class": "delegated",
+   "impact": "High",
+   "initiation": "High",
+   "inputs": {
+    "adverse_impact_likelihood": "Low",
+    "corrected_before_use": "no",
+    "in_critical_window": "no",
+    "info_class": "public",
+    "initiation_likelihood": "High",
+    "integrity_consequence": "severe",
+    "multiple_severe_documented": "no",
+    "outage_hours": "0",
+    "records_disclosed": "0"
+   },
+   "residual": "Moderate",
+   "residual_status": "projected",
+   "risk": "Moderate",
+   "status": "proposed",
+   "treatment_option": "mitigate"
+  },
+  "R-RECOVERY": {
+   "adverse": "Moderate",
+   "decision_class": "delegated",
+   "impact": "High",
+   "initiation": "Moderate",
+   "inputs": {
+    "adverse_impact_likelihood": "Moderate",
+    "annual_frequency": "1",
+    "corrected_before_use": "no",
+    "in_critical_window": "yes",
+    "info_class": "public",
+    "integrity_consequence": "serious",
+    "multiple_severe_documented": "no",
+    "outage_hours": "72",
+    "records_disclosed": "0"
+   },
+   "residual": "Low",
+   "residual_status": "projected",
+   "risk": "Moderate",
+   "status": "proposed",
+   "treatment_option": "mitigate"
+  }
+ },
+ "rules": {
+  "A-01": "1.0",
+  "C-01": "1.0",
+  "CVE-APP-01": "1.0",
+  "EFF-01": "1.0",
+  "EFF-02": "1.0",
+  "EPSS-ORDER-01": "1.0",
+  "F2-01": "1.0",
+  "G3-01": "1.0",
+  "I-01": "1.0",
+  "IMP-01": "1.0",
+  "KEV-POL-01": "1.0",
+  "VOI-01": "1.0"
+ },
+ "spec": "SPEC-2.1.0"
+}

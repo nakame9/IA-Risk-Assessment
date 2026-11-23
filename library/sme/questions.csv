@@ -1,0 +1,23 @@
+﻿question_id,path,text_vi,options,help_vi
+PRO-01,profile,Tên người/đơn vị phụ trách IT (nội bộ hoặc thuê ngoài),text,Người sẽ làm các việc kỹ thuật
+PRO-02,profile,Tên người phụ trách tài chính/kế toán,text,Người duyệt chuyển tiền cho nhà cung cấp
+PRO-03,profile,Tên giám đốc (người ra quyết định),text,Người chấp nhận hoặc từ chối rủi ro
+EML-01,email,Công ty dùng dịch vụ email nào?,m365=Microsoft 365|google=Google Workspace|other=Khác|unknown=Không biết,Chỉ để ghi nhận
+EML-02,email,Bao nhiêu tài khoản email/SaaS của nhân viên đã bật xác thực hai lớp (MFA)?,all=Tất cả|most=Phần lớn|some=Một số|none=Không tài khoản nào|unknown=Không biết,Nên kiểm tra trong trang quản trị và ghi nguồn là observed
+EML-03,email,Đăng nhập kiểu cũ (không hỗ trợ MFA như app password/basic auth) đã bị chặn chưa?,blocked=Đã chặn|allowed=Vẫn cho phép|unknown=Không biết,Kiểm tra trong cấu hình bảo mật của dịch vụ email
+EML-04,email,Trong 12 tháng qua công ty có nhận email lừa đảo hoặc cảnh báo đăng nhập lạ không?,often=Thường xuyên|sometimes=Thỉnh thoảng|rarely=Hiếm khi hoặc chưa thấy|unknown=Không biết,Chưa thấy không có nghĩa là không có
+EML-05,email,Hộp thư nhân viên có chứa dữ liệu cá nhân của khách hàng không?,sensitive=Có dữ liệu nhạy cảm (CCCD/tài khoản ngân hàng/sức khỏe)|nonpublic=Có thông tin liên hệ hoặc hợp đồng|none=Không|unknown=Không biết,Dùng cho tác động bảo mật
+EML-06,email,Khoảng bao nhiêu khách hàng có dữ liệu trong hộp thư?,lt10=Dưới 10|to1000=10 đến 1.000|gt1000=Trên 1.000|unknown=Không biết,Ước lượng là được (ghi nguồn forecast)
+EML-07,email,Nếu kẻ gian dùng email công ty gửi thư lừa khách hàng/đối tác thì hậu quả với công ty là?,negligible=Không đáng kể|limited=Hạn chế|serious=Nghiêm trọng|severe=Rất nặng|unknown=Không biết,Giám đốc trả lời
+PAY-01,payment,Nhà cung cấp có thường gửi yêu cầu đổi tài khoản ngân hàng qua email không?,yes=Có|no=Không|unknown=Không biết,Đây là kênh lừa đảo phổ biến
+PAY-02,payment,Khi nhà cung cấp đổi số tài khoản ngân hàng công ty kiểm tra thế nào?,both=Gọi lại số điện thoại đã biết VÀ người thứ hai duyệt|callback=Chỉ gọi lại số đã biết|approver=Chỉ có người thứ hai duyệt|none=Không kiểm tra thêm|unknown=Không biết,Số điện thoại phải lấy từ hồ sơ cũ không lấy từ email yêu cầu
+PAY-03,payment,Công ty đã từng gặp yêu cầu chuyển tiền/đổi tài khoản đáng ngờ chưa?,recent=Có trong 12 tháng qua|past=Có nhưng lâu rồi|never=Chưa thấy|unknown=Không biết,Dùng cho khả năng bị nhắm tới
+PAY-04,payment,Nếu một khoản thanh toán lớn nhất bị chuyển nhầm cho kẻ gian thì hậu quả là?,negligible=Không đáng kể|limited=Hạn chế|serious=Nghiêm trọng (ảnh hưởng dòng tiền)|severe=Rất nặng (đe dọa hoạt động)|unknown=Không biết,Giám đốc trả lời theo ngưỡng chịu đựng của công ty
+PAY-05,payment,Nhân viên kế toán đã được hướng dẫn nhận biết lừa đảo chuyển tiền trong 12 tháng qua chưa?,yes=Đã hướng dẫn|no=Chưa|unknown=Không biết,
+REC-01,recovery,Dữ liệu kế toán/bán hàng/tài liệu được sao lưu thế nào?,auto=Tự động hằng ngày ra nơi khác hoặc lên cloud|manual=Sao lưu thủ công|none=Không sao lưu|unknown=Không biết,
+REC-02,recovery,Bản sao lưu có được tách biệt để mã độc hoặc người dùng thường không xóa được không?,isolated=Có (offline hoặc không thể xóa/sửa)|same=Không (cùng máy/cùng tài khoản)|unknown=Không biết,
+REC-03,recovery,Lần gần nhất thử khôi phục dữ liệu từ bản sao lưu là khi nào?,recent=Trong 6 tháng qua|older=Hơn 6 tháng trước|never=Chưa bao giờ|unknown=Không biết,Nếu observed hãy ghi biên bản thử khôi phục vào evidence_ref
+REC-04,recovery,Mỗi năm có khoảng bao nhiêu sự cố cần khôi phục dữ liệu (xóa nhầm/hỏng máy/mã độc)?,rare=Dưới 1 lần|once=Khoảng 1 lần|few=Vài lần|monthly=Hằng tháng|unknown=Không biết,
+REC-05,recovery,Nếu KHÔNG có bản sao lưu dùng được thì mất bao lâu để làm việc lại bình thường?,h4=Vài giờ|d1=Khoảng 1 ngày|d3=Khoảng 3 ngày|w1=Khoảng 1 tuần|w2=Hai tuần trở lên|unknown=Không biết,
+REC-06,recovery,Công ty có giai đoạn cao điểm không được phép ngừng (cuối tháng/mùa vụ)?,yes=Có|no=Không|unknown=Không biết,
+REC-07,recovery,Nếu mất dữ liệu kế toán/bán hàng thì hậu quả là?,negligible=Không đáng kể|limited=Hạn chế|serious=Nghiêm trọng|severe=Rất nặng|unknown=Không biết,Giám đốc trả lời
