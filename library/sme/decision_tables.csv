@@ -1,0 +1,19 @@
+﻿dt_id,order,when,result
+DT-EMAIL,1,EML-02=unknown,unknown
+DT-EMAIL,2,EML-02=all&EML-03=blocked,Low
+DT-EMAIL,3,EML-02=all,Moderate
+DT-EMAIL,4,EML-02=none,Very High
+DT-EMAIL,5,*,High
+DT-PAY-INIT,1,PAY-03=unknown,unknown
+DT-PAY-INIT,2,PAY-03=recent,High
+DT-PAY-INIT,3,PAY-01=yes,High
+DT-PAY-INIT,4,*,Moderate
+DT-PAY,1,PAY-02=both,Low
+DT-PAY,2,"PAY-02=callback,approver",Moderate
+DT-PAY,3,PAY-02=none,High
+DT-PAY,4,*,unknown
+DT-RECOVERY,1,REC-01=unknown,unknown
+DT-RECOVERY,2,REC-01=none,Very High
+DT-RECOVERY,3,REC-01=manual,High
+DT-RECOVERY,4,REC-02=isolated&REC-03=recent,Low
+DT-RECOVERY,5,*,Moderate

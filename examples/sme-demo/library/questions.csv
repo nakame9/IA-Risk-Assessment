@@ -2,6 +2,9 @@
 PRO-01,profile,Tên người/đơn vị phụ trách IT (nội bộ hoặc thuê ngoài),text,Người sẽ làm các việc kỹ thuật
 PRO-02,profile,Tên người phụ trách tài chính/kế toán,text,Người duyệt chuyển tiền cho nhà cung cấp
 PRO-03,profile,Tên giám đốc (người ra quyết định),text,Người chấp nhận hoặc từ chối rủi ro
+TOL-01,tolerance,Tổn thất một lần từ bao nhiêu đồng thì công ty coi là hạn chế (bắt đầu đáng kể)?,number,Giám đốc đặt ngưỡng; dùng cho mọi tình huống tổn thất tiền
+TOL-02,tolerance,Tổn thất một lần từ bao nhiêu đồng thì coi là nghiêm trọng (ảnh hưởng dòng tiền)?,number,Phải lớn hơn TOL-01
+TOL-03,tolerance,Tổn thất một lần từ bao nhiêu đồng thì coi là rất nặng (đe dọa hoạt động)?,number,Phải lớn hơn TOL-02
 EML-01,email,Công ty dùng dịch vụ email nào?,m365=Microsoft 365|google=Google Workspace|other=Khác|unknown=Không biết,Chỉ để ghi nhận
 EML-02,email,Bao nhiêu tài khoản email/SaaS của nhân viên đã bật xác thực hai lớp (MFA)?,all=Tất cả|most=Phần lớn|some=Một số|none=Không tài khoản nào|unknown=Không biết,Nên kiểm tra trong trang quản trị và ghi nguồn là observed
 EML-03,email,Đăng nhập kiểu cũ (không hỗ trợ MFA như app password/basic auth) đã bị chặn chưa?,blocked=Đã chặn|allowed=Vẫn cho phép|unknown=Không biết,Kiểm tra trong cấu hình bảo mật của dịch vụ email
@@ -12,7 +15,7 @@ EML-07,email,Nếu kẻ gian dùng email công ty gửi thư lừa khách hàng/
 PAY-01,payment,Nhà cung cấp có thường gửi yêu cầu đổi tài khoản ngân hàng qua email không?,yes=Có|no=Không|unknown=Không biết,Đây là kênh lừa đảo phổ biến
 PAY-02,payment,Khi nhà cung cấp đổi số tài khoản ngân hàng công ty kiểm tra thế nào?,both=Gọi lại số điện thoại đã biết VÀ người thứ hai duyệt|callback=Chỉ gọi lại số đã biết|approver=Chỉ có người thứ hai duyệt|none=Không kiểm tra thêm|unknown=Không biết,Số điện thoại phải lấy từ hồ sơ cũ không lấy từ email yêu cầu
 PAY-03,payment,Công ty đã từng gặp yêu cầu chuyển tiền/đổi tài khoản đáng ngờ chưa?,recent=Có trong 12 tháng qua|past=Có nhưng lâu rồi|never=Chưa thấy|unknown=Không biết,Dùng cho khả năng bị nhắm tới
-PAY-04,payment,Nếu một khoản thanh toán lớn nhất bị chuyển nhầm cho kẻ gian thì hậu quả là?,negligible=Không đáng kể|limited=Hạn chế|serious=Nghiêm trọng (ảnh hưởng dòng tiền)|severe=Rất nặng (đe dọa hoạt động)|unknown=Không biết,Giám đốc trả lời theo ngưỡng chịu đựng của công ty
+PAY-04,payment,Ước tính khoản thanh toán lớn nhất có thể bị chuyển nhầm cho kẻ gian (đồng)?,number,Ghi số tiền không dấu chấm; ước tính thì ghi nguồn forecast
 PAY-05,payment,Nhân viên kế toán đã được hướng dẫn nhận biết lừa đảo chuyển tiền trong 12 tháng qua chưa?,yes=Đã hướng dẫn|no=Chưa|unknown=Không biết,
 REC-01,recovery,Dữ liệu kế toán/bán hàng/tài liệu được sao lưu thế nào?,auto=Tự động hằng ngày ra nơi khác hoặc lên cloud|manual=Sao lưu thủ công|none=Không sao lưu|unknown=Không biết,
 REC-02,recovery,Bản sao lưu có được tách biệt để mã độc hoặc người dùng thường không xóa được không?,isolated=Có (offline hoặc không thể xóa/sửa)|same=Không (cùng máy/cùng tài khoản)|unknown=Không biết,

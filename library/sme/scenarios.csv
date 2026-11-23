@@ -1,0 +1,4 @@
+﻿risk_id,template_id,name_vi,asset_id,asset_name_vi,asset_class,exposure,source_type,init_rule,packages,applies_if,family_id
+R-EMAIL,TPL-SME-EMAIL,Kẻ gian chiếm tài khoản email/SaaS,AS-EMAIL,Email và tài khoản SaaS,identity_service,internet,adversarial,G2-JUDG,P-AWARE;P-MFA,*,FAM-EMAIL
+R-PAY,TPL-SME-PAY,Lừa đổi tài khoản ngân hàng của nhà cung cấp để chiếm tiền thanh toán,AS-PAY,Thanh toán cho nhà cung cấp,finance,internal,adversarial,G2-JUDG,P-AWARE;P-PAYVERIFY,*,FAM-PAY
+R-RECOVERY,TPL-SME-RECOVERY,Mất dữ liệu kinh doanh và không khôi phục được từ sao lưu,AS-DATA,Dữ liệu kế toán/bán hàng và bản sao lưu,pii_database,internal,non_adversarial,G3-01,P-BACKUP;P-RESTORE-TEST,*,FAM-RECOVERY

@@ -1,28 +1,30 @@
 subject_id,attribute,value,mode,evidence_ref,rationale,confidence,assessor,observed_on
-R-EMAIL,initiation_likelihood,High,judgment,,"ANS-01 ANS-0.1: EML-04=often (attested, demo)",Medium,sme.py,2026-12-05
-R-EMAIL,adverse_impact_likelihood,High,judgment,,"DT-EMAIL ANS-0.1: EML-02=some (attested, demo); EML-03=unknown (attested, demo)",Medium,sme.py,2026-12-05
-R-EMAIL,info_class,nonpublic,judgment,,"ANS-02 ANS-0.1: EML-05=nonpublic (attested, demo)",Medium,sme.py,2026-12-05
-R-EMAIL,records_disclosed,500,judgment,,"ANS-02 ANS-0.1: EML-06=to1000 (attested, demo)",Medium,sme.py,2026-12-05
-R-EMAIL,integrity_consequence,serious,judgment,,"ANS-02 ANS-0.1: EML-07=serious (attested, demo)",Medium,sme.py,2026-12-05
-R-PAY,initiation_likelihood,High,judgment,,"ANS-03 ANS-0.1: PAY-03=recent (attested, demo); PAY-01=yes (attested, demo)",Medium,sme.py,2026-12-05
-R-PAY,adverse_impact_likelihood,Low,judgment,,"DT-PAY ANS-0.1: PAY-02=both (observed, demo)",High,sme.py,2026-12-01
-R-PAY,integrity_consequence,severe,judgment,,"ANS-04 ANS-0.1: PAY-04=severe (attested, demo)",Medium,sme.py,2026-12-05
-R-RECOVERY,annual_frequency,1,judgment,,"ANS-05 ANS-0.1: REC-04=once (attested, demo)",Medium,sme.py,2026-12-05
-R-RECOVERY,adverse_impact_likelihood,Moderate,judgment,,"DT-RECOVERY ANS-0.1: REC-01=auto (attested, demo); REC-02=same (attested, demo); REC-03=never (attested, demo)",Medium,sme.py,2026-12-05
-R-RECOVERY,outage_hours,72,judgment,,"ANS-06 ANS-0.1: REC-05=d3 (attested, demo)",Medium,sme.py,2026-12-05
-R-RECOVERY,in_critical_window,yes,judgment,,"ANS-06 ANS-0.1: REC-06=yes (attested, demo)",Medium,sme.py,2026-12-05
-R-RECOVERY,integrity_consequence,serious,judgment,,"ANS-06 ANS-0.1: REC-07=serious (attested, demo)",Medium,sme.py,2026-12-05
-R-EMAIL,corrected_before_use,no,judgment,,SME-LIB default ANS-0.1: library default,Medium,sme.py,2026-12-05
-R-EMAIL,outage_hours,0,judgment,,SME-LIB default ANS-0.1: library default,Medium,sme.py,2026-12-05
-R-EMAIL,in_critical_window,no,judgment,,SME-LIB default ANS-0.1: library default,Medium,sme.py,2026-12-05
-R-EMAIL,multiple_severe_documented,no,judgment,,SME-LIB default ANS-0.1: library default,Medium,sme.py,2026-12-05
-R-PAY,info_class,public,judgment,,SME-LIB default ANS-0.1: library default,Medium,sme.py,2026-12-05
-R-PAY,records_disclosed,0,judgment,,SME-LIB default ANS-0.1: library default,Medium,sme.py,2026-12-05
-R-PAY,corrected_before_use,no,judgment,,SME-LIB default ANS-0.1: library default,Medium,sme.py,2026-12-05
-R-PAY,outage_hours,0,judgment,,SME-LIB default ANS-0.1: library default,Medium,sme.py,2026-12-05
-R-PAY,in_critical_window,no,judgment,,SME-LIB default ANS-0.1: library default,Medium,sme.py,2026-12-05
-R-PAY,multiple_severe_documented,no,judgment,,SME-LIB default ANS-0.1: library default,Medium,sme.py,2026-12-05
-R-RECOVERY,info_class,public,judgment,,SME-LIB default ANS-0.1: library default,Medium,sme.py,2026-12-05
-R-RECOVERY,records_disclosed,0,judgment,,SME-LIB default ANS-0.1: library default,Medium,sme.py,2026-12-05
-R-RECOVERY,corrected_before_use,no,judgment,,SME-LIB default ANS-0.1: library default,Medium,sme.py,2026-12-05
-R-RECOVERY,multiple_severe_documented,no,judgment,,SME-LIB default ANS-0.1: library default,Medium,sme.py,2026-12-05
+R-EMAIL,initiation_likelihood,High,judgment,,"ANS-01 ANS-0.2: EML-04=often (attested, demo)",Medium,sme.py,2026-12-05
+R-EMAIL,adverse_impact_likelihood,High,judgment,,"DT-EMAIL ANS-0.2: EML-02=some (attested, demo); EML-03=unknown (attested, demo)",Medium,sme.py,2026-12-05
+R-EMAIL,info_class,nonpublic,judgment,,"ANS-02 ANS-0.2: EML-05=nonpublic (attested, demo)",Medium,sme.py,2026-12-05
+R-EMAIL,records_disclosed,500,judgment,,"ANS-02 ANS-0.2: EML-06=to1000 (attested, demo)",Medium,sme.py,2026-12-05
+R-EMAIL,business_consequence,serious,judgment,,"ANS-02 ANS-0.2: EML-07=serious (attested, demo)",Medium,sme.py,2026-12-05
+R-PAY,initiation_likelihood,High,judgment,,"ANS-03 ANS-0.2: PAY-03=recent (attested, demo); PAY-01=yes (attested, demo)",Medium,sme.py,2026-12-05
+R-PAY,adverse_impact_likelihood,Low,judgment,,"DT-PAY ANS-0.2: PAY-02=both (observed, demo)",High,sme.py,2026-12-01
+R-PAY,business_consequence,severe,judgment,,"BUS-TOL ANS-0.2: PAY-04=800000000 (attested, demo); TOL-01=10000000 (attested, demo); TOL-02=100000000 (attested, demo); TOL-03=500000000 (attested, demo)",Medium,sme.py,2026-12-05
+R-RECOVERY,annual_frequency,1,judgment,,"ANS-05 ANS-0.2: REC-04=once (attested, demo)",Medium,sme.py,2026-12-05
+R-RECOVERY,adverse_impact_likelihood,Moderate,judgment,,"DT-RECOVERY ANS-0.2: REC-01=auto (attested, demo); REC-02=same (attested, demo); REC-03=never (attested, demo)",Medium,sme.py,2026-12-05
+R-RECOVERY,outage_hours,72,judgment,,"ANS-06 ANS-0.2: REC-05=d3 (attested, demo)",Medium,sme.py,2026-12-05
+R-RECOVERY,in_critical_window,yes,judgment,,"ANS-06 ANS-0.2: REC-06=yes (attested, demo)",Medium,sme.py,2026-12-05
+R-RECOVERY,integrity_consequence,serious,judgment,,"ANS-06 ANS-0.2: REC-07=serious (attested, demo)",Medium,sme.py,2026-12-05
+R-EMAIL,integrity_consequence,negligible,judgment,,SME-LIB default ANS-0.2: library default,Medium,sme.py,2026-12-05
+R-EMAIL,corrected_before_use,no,judgment,,SME-LIB default ANS-0.2: library default,Medium,sme.py,2026-12-05
+R-EMAIL,outage_hours,0,judgment,,SME-LIB default ANS-0.2: library default,Medium,sme.py,2026-12-05
+R-EMAIL,in_critical_window,no,judgment,,SME-LIB default ANS-0.2: library default,Medium,sme.py,2026-12-05
+R-EMAIL,multiple_severe_documented,no,judgment,,SME-LIB default ANS-0.2: library default,Medium,sme.py,2026-12-05
+R-PAY,info_class,public,judgment,,SME-LIB default ANS-0.2: library default,Medium,sme.py,2026-12-05
+R-PAY,records_disclosed,0,judgment,,SME-LIB default ANS-0.2: library default,Medium,sme.py,2026-12-05
+R-PAY,integrity_consequence,negligible,judgment,,SME-LIB default ANS-0.2: library default,Medium,sme.py,2026-12-05
+R-PAY,corrected_before_use,no,judgment,,SME-LIB default ANS-0.2: library default,Medium,sme.py,2026-12-05
+R-PAY,outage_hours,0,judgment,,SME-LIB default ANS-0.2: library default,Medium,sme.py,2026-12-05
+R-PAY,in_critical_window,no,judgment,,SME-LIB default ANS-0.2: library default,Medium,sme.py,2026-12-05
+R-PAY,multiple_severe_documented,no,judgment,,SME-LIB default ANS-0.2: library default,Medium,sme.py,2026-12-05
+R-RECOVERY,info_class,public,judgment,,SME-LIB default ANS-0.2: library default,Medium,sme.py,2026-12-05
+R-RECOVERY,records_disclosed,0,judgment,,SME-LIB default ANS-0.2: library default,Medium,sme.py,2026-12-05
+R-RECOVERY,corrected_before_use,no,judgment,,SME-LIB default ANS-0.2: library default,Medium,sme.py,2026-12-05
+R-RECOVERY,multiple_severe_documented,no,judgment,,SME-LIB default ANS-0.2: library default,Medium,sme.py,2026-12-05

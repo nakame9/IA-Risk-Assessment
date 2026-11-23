@@ -1,4 +1,4 @@
 asset_id,name,kind,component_ids,owner,confidentiality,integrity,availability,rationale,asset_class,system_id,vendor,product,version,exposure
-AS-EMAIL,Email và tài khoản SaaS,service,,Giám đốc,unknown,unknown,unknown,P2a scope,identity_service,SYS-SME,,,,internet
-AS-PAY,Thanh toán cho nhà cung cấp,service,,Giám đốc,unknown,unknown,unknown,P2a scope,finance,SYS-SME,,,,internal
-AS-DATA,Dữ liệu kế toán/bán hàng và bản sao lưu,service,,Giám đốc,unknown,unknown,unknown,P2a scope,pii_database,SYS-SME,,,,internal
+AS-EMAIL,Email và tài khoản SaaS,service,,Giám đốc,unknown,unknown,unknown,SME scope,identity_service,SYS-SME,,,,internet
+AS-PAY,Thanh toán cho nhà cung cấp,service,,Giám đốc,unknown,unknown,unknown,SME scope,finance,SYS-SME,,,,internal
+AS-DATA,Dữ liệu kế toán/bán hàng và bản sao lưu,service,,Giám đốc,unknown,unknown,unknown,SME scope,pii_database,SYS-SME,,,,internal
