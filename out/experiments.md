@@ -7,8 +7,8 @@
 
 | Data set | Assets | Scenarios | Inputs | Effects | Findings | Run time | Same state twice | State SHA-256 |
 |---|---|---|---|---|---|---|---|---|
-| portal case | 10 | 13 | 131 | 35 | 3 | 0.02 s | yes | 887036d36ce6… |
-| synthetic | 200 | 210 | 1985 | 439 | 20 | 0.08 s | yes | 605dcc8b9de2… |
+| portal case | 10 | 13 | 131 | 35 | 3 | 0.01 s | yes | 957c1af1488d… |
+| synthetic | 200 | 210 | 1985 | 439 | 20 | 0.07 s | yes | 3cd36cb7fa3d… |
 
 Synthetic generation took 0.12 s; generating twice with seed 20261122 gave identical files (SHA-256 of each CSV at the end).
 
@@ -60,7 +60,7 @@ Risks without a chain have an unknown rating and are listed in the investigation
 
 - `assets.csv` 460059d52f1bad02fef7eb7a60c603f09fa22fd8d4b435122660f0fe01777e71
 - `controls.csv` e0238d3a6973127a12cd9f3c40c8c190fecfc124ef25dbb732db2d78e88526e9
-- `effects.csv` a7788f8f8fe7467ca72db6470b5914293cf2b9f4ce7bebd32a739af9c1fd1f9d
+- `effects.csv` 1bfa59f15610e98cd9b0676b3f61646afc6a55b6a98193268619c1e27df96508
 - `inputs.csv` 2aced217daec5b55105818ce1f80df7444a2b2eedcab775eee10ef053c3044d0
 - `packages.csv` 27d8a15f641c010db03193732aa31a7db30dedc53727dd5506f923ad0ed58743
 - `risk_register.csv` 3f53b12b2851edb9606fa05b11bba96cf620ce81e5d2a9ed0aa68cb9d807ef43

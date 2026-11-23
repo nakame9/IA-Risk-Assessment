@@ -1,36 +1,36 @@
 risk_id,package_ids,initiation,adverse,impact,basis_ref,basis_hash
-R-01,T-01;T-02;T-03;T-08;T-12;T-13,Moderate,Low,High,"bundle: MFA + dedicated admin workstations = a fully implemented barrier (G-4 L); restorable backups remove destruction (impact H, disclosure remains)",0499c495cb81498e
-R-01,T-01,Moderate,Moderate,Very High,MFA blocks the credential-phishing route only; malware route remains (G-4 M),0499c495cb81498e
-R-01,T-02,Moderate,High,High,backups restorable (impact VH->H); intrusion path unchanged,0499c495cb81498e
-R-01,T-03,Moderate,Moderate,Very High,no shared admin account: attacker must compromise an individual admin (G-4 M),0499c495cb81498e
-R-01,T-08,Moderate,Moderate,Very High,admin workstations isolated from email/web (G-4 M),0499c495cb81498e
-R-01,T-12,Moderate,High,Very High,training is not a fully implemented barrier: no change,0499c495cb81498e
-R-01,T-13,Moderate,High,Very High,incident procedure neither prevents nor recovers: no change,0499c495cb81498e
-R-02,T-01;T-06,Very High,Low,Moderate,bundle: MFA fully implemented (G-4 L); VL only after testing (EFF-01),55320c7e179b7087
-R-02,T-01,Very High,Low,Moderate,MFA fully implemented (G-4 L),55320c7e179b7087
-R-02,T-06,Very High,Moderate,Moderate,alerts detect after access: no change,55320c7e179b7087
-R-03,T-04;T-05,High,Low,Low,bundle: server-side authorization (G-4 L); reconciliation corrects before use (I-01 cap L),4adf0824aca781d3
-R-03,T-04,High,Moderate,Low,reconciliation corrects before use (I-01 cap L),4adf0824aca781d3
-R-03,T-05,High,Low,High,server-side authorization (G-4 L); no reconciliation,4adf0824aca781d3
-R-04,T-03;T-04;T-06,Low,Low,Low,bundle: dual authorization (G-4 L); reconciliation corrects before use (impact L),42d84a4979014f89
-R-04,T-03,Low,High,High,insider keeps legitimate rights: no change,42d84a4979014f89
-R-04,T-04,Low,Low,Low,dual authorization (G-4 L); reconciliation corrects before use (impact L),42d84a4979014f89
-R-04,T-06,Low,High,High,weekly review detects after the change: no change,42d84a4979014f89
-R-05,T-07,Moderate,Low,High,severity-based patching + WAF (G-4 L); whole database still exposed if exploited,6f22abc8ee8643e2
-R-06,T-11,Low,Low,Moderate,rate limiting (G-4 L); package deferred,adaf4ecbedd11bda
-R-07,T-09,Very Low,Very High,High,"baseline + deny by default lower misconfiguration frequency (G3-01 VL, f=0.05/yr); once exposed still no barrier",a7e1888d993451a2
-R-08,T-02;T-03,Low,Low,Low,"bundle: tested restore (G-4 L); restore within a day, at most one day of changes lost (A-01 L, I-01 L)",ce7307c95d9f920b
-R-08,T-02,Low,Low,Low,tested restore (G-4 L); restore within a day (impact L),ce7307c95d9f920b
-R-08,T-03,Low,Moderate,High,individual accounts do not prevent an accidental deletion: no change,ce7307c95d9f920b
-R-08,T-13,Low,Moderate,High,incident procedure does not restore data: no change,ce7307c95d9f920b
-R-09,T-02,Low,Low,Moderate,"cross-region backup protects data, not processing: no change",582cb6f5f07f68b9
-R-10,T-04,High,Low,Low,reconciliation already reflected in the current rating: no change,99c21bff978f2da5
-R-11,T-01;T-03;T-08;T-12,High,Low,High,bundle: dedicated admin workstation + MFA (G-4 L); stolen credentials still reach the database (impact H),c4e44a8200b32245
-R-11,T-01,High,Moderate,High,"MFA: stolen passwords insufficient, session theft remains (G-4 M)",c4e44a8200b32245
-R-11,T-03,High,High,High,individual admin accounts do not stop credential theft on the workstation: no change,c4e44a8200b32245
-R-11,T-08,High,Low,High,admin workstation no longer reads email or browses (G-4 L),c4e44a8200b32245
-R-11,T-12,High,High,High,training is not a fully implemented barrier: no change,c4e44a8200b32245
-R-12,T-06;T-10,Low,Moderate,Moderate,"bundle: export limit + alerts, partial barrier against small batches (G-4 M); disclosure below 1,000 records (C-01 M)",b7f4998a4106db4b
-R-12,T-06,Low,High,High,alerts on large exports (G-4 H),b7f4998a4106db4b
-R-12,T-10,Low,Moderate,Moderate,"export limit (G-4 M); disclosure below 1,000 records (C-01 M)",b7f4998a4106db4b
-R-08,T-02;T-03;T-13,Low,Low,Low,"bundle: as T-02;T-03, the incident procedure adds no change for an accidental deletion",ce7307c95d9f920b
+R-01,T-01;T-02;T-03;T-08;T-12;T-13,Moderate,Low,High,"bundle: MFA + dedicated admin workstations = a fully implemented barrier (G-4 L); restorable backups remove destruction (impact H, disclosure remains)",ab19735a6f3d7b22
+R-01,T-01,Moderate,Moderate,Very High,MFA blocks the credential-phishing route only; malware route remains (G-4 M),ab19735a6f3d7b22
+R-01,T-02,Moderate,High,High,backups restorable (impact VH->H); intrusion path unchanged,ab19735a6f3d7b22
+R-01,T-03,Moderate,Moderate,Very High,no shared admin account: attacker must compromise an individual admin (G-4 M),ab19735a6f3d7b22
+R-01,T-08,Moderate,Moderate,Very High,admin workstations isolated from email/web (G-4 M),ab19735a6f3d7b22
+R-01,T-12,Moderate,High,Very High,training is not a fully implemented barrier: no change,ab19735a6f3d7b22
+R-01,T-13,Moderate,High,Very High,incident procedure neither prevents nor recovers: no change,ab19735a6f3d7b22
+R-02,T-01;T-06,Very High,Low,Moderate,bundle: MFA fully implemented (G-4 L); VL only after testing (EFF-01),4893c1219e1922fb
+R-02,T-01,Very High,Low,Moderate,MFA fully implemented (G-4 L),4893c1219e1922fb
+R-02,T-06,Very High,Moderate,Moderate,alerts detect after access: no change,4893c1219e1922fb
+R-03,T-04;T-05,High,Low,Low,bundle: server-side authorization (G-4 L); reconciliation corrects before use (I-01 cap L),98b536ece8093785
+R-03,T-04,High,Moderate,Low,reconciliation corrects before use (I-01 cap L),98b536ece8093785
+R-03,T-05,High,Low,High,server-side authorization (G-4 L); no reconciliation,98b536ece8093785
+R-04,T-03;T-04;T-06,Low,Low,Low,bundle: dual authorization (G-4 L); reconciliation corrects before use (impact L),da069bd36225fc1b
+R-04,T-03,Low,High,High,insider keeps legitimate rights: no change,da069bd36225fc1b
+R-04,T-04,Low,Low,Low,dual authorization (G-4 L); reconciliation corrects before use (impact L),da069bd36225fc1b
+R-04,T-06,Low,High,High,weekly review detects after the change: no change,da069bd36225fc1b
+R-05,T-07,Moderate,Low,High,severity-based patching + WAF (G-4 L); whole database still exposed if exploited,2b72f4698c8c1218
+R-06,T-11,Low,Low,Moderate,rate limiting (G-4 L); package deferred,11432a065b52f472
+R-07,T-09,Very Low,Very High,High,"baseline + deny by default lower misconfiguration frequency (G3-01 VL, f=0.05/yr); once exposed still no barrier",83fadffca94ff7c8
+R-08,T-02;T-03,Low,Low,Low,"bundle: tested restore (G-4 L); restore within a day, at most one day of changes lost (A-01 L, I-01 L)",9915c782be1a6df6
+R-08,T-02,Low,Low,Low,tested restore (G-4 L); restore within a day (impact L),9915c782be1a6df6
+R-08,T-03,Low,Moderate,High,individual accounts do not prevent an accidental deletion: no change,9915c782be1a6df6
+R-08,T-13,Low,Moderate,High,incident procedure does not restore data: no change,9915c782be1a6df6
+R-09,T-02,Low,Low,Moderate,"cross-region backup protects data, not processing: no change",d675093982c8a736
+R-10,T-04,High,Low,Low,reconciliation already reflected in the current rating: no change,b5577dc5493e3229
+R-11,T-01;T-03;T-08;T-12,High,Low,High,bundle: dedicated admin workstation + MFA (G-4 L); stolen credentials still reach the database (impact H),42dde0d750300b60
+R-11,T-01,High,Moderate,High,"MFA: stolen passwords insufficient, session theft remains (G-4 M)",42dde0d750300b60
+R-11,T-03,High,High,High,individual admin accounts do not stop credential theft on the workstation: no change,42dde0d750300b60
+R-11,T-08,High,Low,High,admin workstation no longer reads email or browses (G-4 L),42dde0d750300b60
+R-11,T-12,High,High,High,training is not a fully implemented barrier: no change,42dde0d750300b60
+R-12,T-06;T-10,Low,Moderate,Moderate,"bundle: export limit + alerts, partial barrier against small batches (G-4 M); disclosure below 1,000 records (C-01 M)",b41e139a94a02b1e
+R-12,T-06,Low,High,High,alerts on large exports (G-4 H),b41e139a94a02b1e
+R-12,T-10,Low,Moderate,Moderate,"export limit (G-4 M); disclosure below 1,000 records (C-01 M)",b41e139a94a02b1e
+R-08,T-02;T-03;T-13,Low,Low,Low,"bundle: as T-02;T-03, the incident procedure adds no change for an accidental deletion",9915c782be1a6df6

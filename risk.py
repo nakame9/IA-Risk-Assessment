@@ -48,6 +48,7 @@ ATTRS = {
     'outage_hours': ('R', 'float', None),
     'in_critical_window': ('R', 'enum', YESNO),
     'multiple_severe_documented': ('R', 'enum', YESNO),
+    'business_consequence': ('R', 'enum', {'negligible', 'limited', 'serious', 'severe'}),
     # findings (SPEC 6.2.1)
     'cve_id': ('F', 'cve', None),
     'component_id': ('F', 'text', None),
@@ -62,7 +63,7 @@ ATTRS = {
 FINDING_REQUIRED = ['cve_id', 'component_id', 'applicability', 'remediation_state']
 IMPACT_ATTRS = ['info_class', 'records_disclosed', 'integrity_consequence', 'corrected_before_use',
                 'outage_hours', 'in_critical_window', 'multiple_severe_documented']
-RULES = {'F2-01': '1.0', 'G3-01': '1.0', 'C-01': '1.0', 'I-01': '1.0', 'A-01': '1.0', 'IMP-01': '1.0',
+RULES = {'F2-01': '1.0', 'G3-01': '1.0', 'C-01': '1.0', 'I-01': '1.0', 'A-01': '1.0', 'IMP-01': '2.0', 'BUS-01': '1.0',
          'CVE-APP-01': '1.0', 'KEV-POL-01': '1.0', 'EPSS-ORDER-01': '1.0', 'VOI-01': '1.0', 'EFF-01': '1.0', 'EFF-02': '1.0'}
 FEED_MAX_AGE_DAYS = 7          # SPEC 5, evidence type "feed" [DA]
 EVIDENCE_MAX_AGE = {'inventory': 180, 'config': 90, 'test': 365, 'scan': 30, 'feed': 7, 'incident': 365,
@@ -143,10 +144,18 @@ def a_01(hours, window):
     return VL if hours < 1 else L if hours < 24 else M if hours <= 168 else H
 
 
-def imp_01(c, i, a, multiple):
-    if UNK in (c, i, a, multiple):
+def bus_01(consequence):
+    """BUS-01: business consequence agreed with the owner (e.g. financial loss against tolerance)."""
+    if consequence == UNK:
         return UNK
-    top = max((c, i, a), key=LEVELS.index)
+    return {'negligible': VL, 'limited': L, 'serious': M, 'severe': H}[consequence]
+
+
+def imp_01(c, i, a, multiple, bus=VL):
+    """IMP-01 v2: highest of C, I, A and the business consequence (each consequence recorded once)."""
+    if UNK in (c, i, a, multiple, bus):
+        return UNK
+    top = max((c, i, a, bus), key=LEVELS.index)
     return VH if top == H and multiple == 'yes' else top
 
 
@@ -170,7 +179,7 @@ def decision_class(risk, impact):
     return {VL: 'owner', L: 'owner', M: 'delegated', H: 'senior', VH: 'senior'}[risk] + ('+escalate' if impact == VH else '')
 
 
-RATING_RULES = ('F2-01', 'G3-01', 'C-01', 'I-01', 'A-01', 'IMP-01')
+RATING_RULES = ('F2-01', 'G3-01', 'C-01', 'I-01', 'A-01', 'IMP-01', 'BUS-01')
 
 
 def control_status(status, system_of, asset_ids, package):
@@ -196,7 +205,8 @@ def rate(tpl, v):
     c = c_01(v['info_class'], v['records_disclosed'])
     i = i_01(v['integrity_consequence'], v['corrected_before_use'])
     a = a_01(v['outage_hours'], v['in_critical_window'])
-    return initiation, v['adverse_impact_likelihood'], imp_01(c, i, a, v['multiple_severe_documented']), (c, i, a)
+    b = bus_01(v['business_consequence']) if 'business_consequence' in v else VL     # optional; absent = not used
+    return initiation, v['adverse_impact_likelihood'], imp_01(c, i, a, v['multiple_severe_documented'], b), (c, i, a)
 
 
 # ---------------------------------------------------------------- feed snapshots (SPEC 6.5, A-08)
@@ -509,7 +519,8 @@ def evaluate(d):
             return v
 
         names = (['annual_frequency'] if tpl['init_rule'] == 'G3-01' else ['initiation_likelihood']) \
-            + ['adverse_impact_likelihood'] + IMPACT_ATTRS
+            + ['adverse_impact_likelihood'] + IMPACT_ATTRS \
+            + (['business_consequence'] if 'business_consequence' in got else [])
         values = {n: val(n) for n in names}
         initiation, adverse, impact, (c, i, a) = rate(tpl, values)
         if tpl['init_rule'] == 'G3-01':
@@ -1017,6 +1028,8 @@ def check():
     assert [a_01(h, 'no') for h in (0, 0.5, 1, 23.9, 24, 168, 168.1)] == [VL, VL, L, L, M, M, H]
     assert [a_01(h, 'yes') for h in (1, 23.9, 24)] == [M, M, H]
     assert imp_01(H, L, M, 'yes') == VH and imp_01(M, L, M, 'yes') == M and imp_01(H, L, UNK, 'no') == UNK
+    assert imp_01(L, L, L, 'no', bus_01('serious')) == M and imp_01(L, L, L, 'no', bus_01(UNK)) == UNK
+    assert imp_01(L, L, L, 'yes', bus_01('severe')) == VH and bus_01('negligible') == VL
     assert f2_01('implemented_assessed_effective') == VL and f2_01('absent_unplanned') == VH
     # 3. Worked examples (report.md 3.1 / 3.2) and escalation.
     assert risk_level(overall_likelihood(M, H), VH) == H and risk_level(overall_likelihood(H, L), L) == L
