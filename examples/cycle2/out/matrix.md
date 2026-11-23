@@ -20,8 +20,8 @@ Risk levels: Very Low 0, Low 6, Moderate 6, High 1, Very High 0
 |---|---|---|---|---|---|
 | **Very High** |  |  |  |  |  |
 | **High** |  |  |  |  |  |
-| **Moderate** |  | R-03, R-10 |  | R-11 |  |
-| **Low** |  | R-04, R-08 | R-12, R-06, R-02, R-09, R-13 | R-01, R-05, R-07 |  |
+| **Moderate** |  | R-03, R-10 |  |  |  |
+| **Low** |  | R-08 | R-06, R-02, R-09, R-13 | R-05, R-07 |  |
 | **Very Low** |  |  |  |  |  |
 
-Risk levels: Very Low 0, Low 12, Moderate 1, High 0, Very High 0
+Risk levels: Very Low 0, Low 9, Moderate 0, High 0, Very High 0

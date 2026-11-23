@@ -4,13 +4,13 @@
 
 | # | Risk | Family | Assets | Overall likelihood | Impact | Risk | Policy flags | Confidence | Option | Residual risk |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | R-01 | FAM-RANSOM | AS-01, AS-02, AS-05 | Moderate | Very High | **High** | treat or senior exception; ESCALATE | Low | mitigate | Low |
+| 1 | R-01 | FAM-RANSOM | AS-01, AS-02, AS-05 | Moderate | Very High | **High** | treat or senior exception; ESCALATE | Low | mitigate | - |
 | 2 | R-03 | FAM-03 | AS-02 | Moderate | High | **Moderate** | treat or delegated acceptance | Low | mitigate | Low |
-| 3 | R-04 | FAM-04 | AS-03, AS-10 | Moderate | High | **Moderate** | treat or delegated acceptance | Low | mitigate | Low |
+| 3 | R-04 | FAM-04 | AS-03, AS-10 | Moderate | High | **Moderate** | treat or delegated acceptance | Low | mitigate | - |
 | 4 | R-05 | FAM-05 | AS-01, AS-06 | Moderate | High | **Moderate** | treat or delegated acceptance | Low | mitigate | Low |
-| 5 | R-12 | FAM-12 | AS-01 | Moderate | High | **Moderate** | treat or delegated acceptance | Low | mitigate | Low |
+| 5 | R-12 | FAM-12 | AS-01 | Moderate | High | **Moderate** | treat or delegated acceptance | Low | mitigate | - |
 | 6 | R-07 | FAM-07 | AS-01, AS-05, AS-08 | Moderate | High | **Moderate** | treat or delegated acceptance | Medium | mitigate | Low |
-| 7 | R-11 | FAM-RANSOM | AS-09, AS-04 | Moderate | High | **Moderate** | treat or delegated acceptance | Medium | mitigate | Moderate |
+| 7 | R-11 | FAM-RANSOM | AS-09, AS-04 | Moderate | High | **Moderate** | treat or delegated acceptance | Medium | mitigate | - |
 | 8 | R-08 | FAM-08 | AS-02, AS-05 | Low | High | **Low** | owner may accept | Medium | mitigate | Low |
 | 9 | R-06 | FAM-06 | AS-06 | Low | Moderate | **Low** | owner may accept | Low | accept | Low |
 | 10 | R-02 | FAM-02 | AS-01, AS-04 | Low | Moderate | **Low** | owner may accept | Medium | mitigate | Low |
@@ -28,5 +28,10 @@
 
 ## Warnings
 
+- R-01: effects assessed against different inputs/controls/rules need review (T-01, T-01;T-02;T-03;T-08;T-12;T-13, T-02, T-03, T-08, T-12, T-13); excluded from supported benefits until re-stamped
+- R-02: effects assessed against different inputs/controls/rules need review (T-01, T-01;T-06, T-06); excluded from supported benefits until re-stamped
+- R-04: effects assessed against different inputs/controls/rules need review (T-03, T-03;T-04;T-06, T-04, T-06); excluded from supported benefits until re-stamped
+- R-11: effects assessed against different inputs/controls/rules need review (T-01, T-01;T-03;T-08;T-12, T-03, T-08, T-12); excluded from supported benefits until re-stamped
+- R-12: effects assessed against different inputs/controls/rules need review (T-06, T-06;T-10, T-10); excluded from supported benefits until re-stamped
 - kev: snapshot is stale (13 days old > 7)
 - epss: no snapshot imported; feed evidence unavailable

@@ -197,6 +197,11 @@ def generate(out_dir, n_assets=200, seed=SEED):
     for name, rows in (('assets', assets), ('templates', tpl_rows), ('inputs', inputs), ('controls', controls),
                        ('packages', packages), ('effects', effects), ('risk_register', register)):
         _write(out_dir / f'{name}.csv', rows)
+    # a workspace must be complete (no fallback to data/): copy the KEV snapshot, then record the basis the
+    # generated effects were derived from (they were computed from exactly these inputs and controls)
+    if (risk.DATA / 'snapshots' / 'manifest.csv').exists():
+        shutil.copytree(risk.DATA / 'snapshots', out_dir / 'snapshots', ignore=shutil.ignore_patterns('epss'))
+    risk.stamp_effects(out_dir)
     return out_dir
 
 
@@ -251,6 +256,11 @@ def sensitivity(d, sample=None, seed=SEED):
     for idx, value in perts:
         dd = {**d, 'inputs': list(d['inputs'])}
         dd['inputs'][idx] = {**d['inputs'][idx], 'value': value}
+        # E3 asks "would the recommendation change if this judgment were different?" with the projections kept as
+        # assessed, so re-stamp the perturbed risk's effects instead of letting staleness exclude them
+        rid = d['inputs'][idx]['subject_id']
+        new_basis = next(r['basis'] for r in risk.evaluate(dd)[0] if r['risk_id'] == rid)
+        dd['effects'] = [{**e, 'basis_hash': new_basis} if e['risk_id'] == rid else e for e in d['effects']]
         rows2, _ = risk.evaluate(dd)
         n = sum(r['risk'] != base_levels[r['risk_id']] for r in rows2)
         changed += n

@@ -41,7 +41,8 @@ python risk.py           # kiểm tra data/, sinh out/action_report.md (báo cá
 python risk.py --check   # self-check: bảng G-5/I-2, ranh giới quy tắc, kiểm tra hợp lệ, khớp CVE, snapshot, kết quả case portal
 python risk.py import kev known_exploited_vulnerabilities.json --url <nguồn>   # lưu file feed đã tải về làm snapshot
 python risk.py --as-of 2026-11-22   # chạy với ngày đánh giá cố định, để kết quả tái lập được
-python risk.py --data examples/cycle2 --as-of 2026-12-05 --baseline out/state.json --out examples/cycle2/out
+python risk.py --data examples/cycle2 --overlay --as-of 2026-12-05 --baseline out/state.json --out examples/cycle2/out
+python risk.py stamp-effects [--data DIR] [--risk R-xx]   # chỉ chạy SAU KHI đã rà soát lại các dự báo trong effects.csv
                                     # chu kỳ cập nhật (mô phỏng): báo cáo mục 2 liệt kê thay đổi và nguyên nhân
 python synth.py                     # sinh 200 tài sản tổng hợp (seed cố định), chạy thực nghiệm E1–E6, ghi out/experiments.md
 ```

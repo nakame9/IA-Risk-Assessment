@@ -1,11 +1,6 @@
 {
  "as_of": "2026-12-05",
- "bundles": [
-  "T-01 + T-02 + T-03 + T-08 + T-12 + T-13",
-  "T-04 + T-05",
-  "T-03 + T-04 + T-06",
-  "T-06 + T-10"
- ],
+ "bundles": [],
  "controls": {
   "T-01@SYS-PORTAL": "implemented_assessed_effective",
   "T-02@SYS-PORTAL": "absent_unplanned",
@@ -51,15 +46,26 @@
   }
  },
  "front": [
-  "T-02",
-  "T-04",
-  "T-09",
-  "T-10"
+  "T-09"
  ],
  "incomplete": [
+  "T-04",
+  "T-04 + T-05",
+  "T-03 + T-04 + T-06",
+  "T-01",
+  "T-02",
+  "T-08",
+  "T-10",
+  "T-12",
+  "T-13",
+  "T-03",
+  "T-06",
   "T-02 + T-03",
+  "T-06 + T-10",
   "T-02 + T-03 + T-13",
-  "T-01 + T-03 + T-08 + T-12"
+  "T-01 + T-03 + T-08 + T-12",
+  "T-01 + T-02 + T-03 + T-08 + T-12 + T-13",
+  "T-01 + T-06"
  ],
  "obligations": {
   "F-001": {
@@ -107,8 +113,8 @@
     "outage_hours": "720",
     "records_disclosed": "12000"
    },
-   "residual": "Low",
-   "residual_status": "projected",
+   "residual": "",
+   "residual_status": "needs_review",
    "risk": "High",
    "status": "treatment_planned",
    "treatment_option": "mitigate"
@@ -173,8 +179,8 @@
     "outage_hours": "0",
     "records_disclosed": "0"
    },
-   "residual": "Low",
-   "residual_status": "projected",
+   "residual": "",
+   "residual_status": "needs_review",
    "risk": "Moderate",
    "status": "treatment_planned",
    "treatment_option": "mitigate"
@@ -327,8 +333,8 @@
     "outage_hours": "0",
     "records_disclosed": "12000"
    },
-   "residual": "Moderate",
-   "residual_status": "projected",
+   "residual": "",
+   "residual_status": "needs_review",
    "risk": "Moderate",
    "status": "treatment_planned",
    "treatment_option": "mitigate"
@@ -349,8 +355,8 @@
     "outage_hours": "0",
     "records_disclosed": "12000"
    },
-   "residual": "Low",
-   "residual_status": "projected",
+   "residual": "",
+   "residual_status": "needs_review",
    "risk": "Moderate",
    "status": "treatment_planned",
    "treatment_option": "mitigate"

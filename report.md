@@ -238,7 +238,7 @@ Mục 2 của báo cáo chu kỳ 2 tự liệt kê các thay đổi, kèm nguyê
 - **R-11** giảm từ High xuống Moderate. Nguyên nhân: G-4 giảm từ High xuống Moderate.
 - **Nghĩa vụ KEV:** F-001 đóng lại. F-002 mới mở, hạn 2026-12-16.
 - **Snapshot KEV** bị cảnh báo là đã cũ.
-- **T-02 vào nhóm Pareto.** Khi R-11 đã xuống Moderate, riêng T-02 đủ kéo family ransomware xuống dưới High.
+- ~~T-02 vào nhóm Pareto~~. **Đính chính (ngày 2026-11-23, P1 của v3):** nhận định này dựa trên các dự báo được đánh giá với đầu vào cũ. Từ quy tắc EFF-03, các dự báo đó được đánh dấu *needs review* và không còn được tính. Kết luận đúng là: sau khi kiểm chứng MFA, **cần rà soát lại các effects** thì mới biết T-02 có đủ kéo family ransomware xuống hay không. Vì vậy ý 3 ở mục VI chỉ là một hướng đi cần kiểm chứng.
 
 ## V. Thảo luận
 

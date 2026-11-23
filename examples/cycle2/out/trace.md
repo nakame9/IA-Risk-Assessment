@@ -18,7 +18,7 @@ Each chain: inputs (with mode, confidence, evidence or rationale) -> rules -> G-
 - multiple_severe_documented = yes (judgment, confidence Low; Encryption of C-03 plus deletion of C-05: disclosure, loss of integrity and >7 days outage together)
 - C-01 -> High; I-01 -> High; A-01 -> High; IMP-01 v1.0 -> impact Very High
 - G-5 [Moderate x Moderate] -> Moderate; I-2 [Moderate x Very High] -> High; policy: treat or senior exception; ESCALATE
-- residual: Low (effects T-01;T-02;T-03;T-08;T-12;T-13 (bundle: MFA + dedicated admin workstations = a fully implemented barrier (G-4 L); restorable backups remove destruction (impact H, disclosure remains)))
+- residual: unknown (projection needs review: assessed against different inputs, controls or rules)
 
 ## R-03 (FAM-03)
 
@@ -50,7 +50,7 @@ Each chain: inputs (with mode, confidence, evidence or rationale) -> rules -> G-
 - multiple_severe_documented = no (judgment, confidence Low; Altered graduation status may lead to a wrongly issued degree (A-03))
 - C-01 -> Very Low; I-01 -> High; A-01 -> Very Low; IMP-01 v1.0 -> impact High
 - G-5 [Low x High] -> Moderate; I-2 [Moderate x High] -> Moderate; policy: treat or delegated acceptance
-- residual: Low (effects T-03;T-04;T-06 (bundle: dual authorization (G-4 L); reconciliation corrects before use (impact L)))
+- residual: unknown (projection needs review: assessed against different inputs, controls or rules)
 
 ## R-05 (FAM-05)
 
@@ -82,7 +82,7 @@ Each chain: inputs (with mode, confidence, evidence or rationale) -> rules -> G-
 - multiple_severe_documented = no (judgment, confidence Low; Bulk export of all student records leaked)
 - C-01 -> High; I-01 -> Very Low; A-01 -> Very Low; IMP-01 v1.0 -> impact High
 - G-5 [Low x Very High] -> Moderate; I-2 [Moderate x High] -> Moderate; policy: treat or delegated acceptance
-- residual: Low (effects T-06;T-10 (bundle: export limit + alerts, partial barrier against small batches (G-4 M); disclosure below 1,000 records (C-01 M)))
+- residual: unknown (projection needs review: assessed against different inputs, controls or rules)
 
 ## R-07 (FAM-07)
 
@@ -115,7 +115,7 @@ Each chain: inputs (with mode, confidence, evidence or rationale) -> rules -> G-
 - multiple_severe_documented = no (judgment, confidence Medium; Stolen admin credentials give access to the whole database)
 - C-01 -> High; I-01 -> Very Low; A-01 -> Very Low; IMP-01 v1.0 -> impact High
 - G-5 [High x Moderate] -> Moderate; I-2 [Moderate x High] -> Moderate; policy: treat or delegated acceptance
-- residual: Moderate (effects T-01;T-03;T-08;T-12 (bundle: dedicated admin workstation + MFA (G-4 L); stolen credentials still reach the database (impact H)))
+- residual: unknown (projection needs review: assessed against different inputs, controls or rules)
 
 ## R-08 (FAM-08)
 

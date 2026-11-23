@@ -84,6 +84,8 @@ Các đầu vào còn lại là **phán đoán**, phải có `rationale` và `co
 | EFF-02 | 1.0 | Một tập gói lớn hơn không được cho kết quả tệ hơn bất kỳ tập con nào của nó, xét trên từng thành phần: initiation, adverse, impact |
 | Hiệu ứng thưa | 1.1 | Hiệu ứng của ứng viên S lên kịch bản r là dòng trong `effects.csv` có **đúng** tập `S ∩ applicable(r)`. Không có dòng đó thì hiệu ứng là `unknown`. Không bao giờ ghép các factor từ nhiều dòng khác nhau. **Thay đổi ở bản 1.1 (bước 6):** ứng viên chỉ bị gắn nhãn *incomplete* khi family chưa biết hiệu ứng **còn có thể vượt ngưỡng**, tức mức nặng nhất ≥ Moderate. Ứng viên incomplete được xếp ở một danh sách riêng, ghi lợi ích là cận dưới (≥), và ứng viên có ít family chưa biết hơn được xếp trước. Lý do thay đổi: ở quy mô 200 tài sản, bản 1.0 loại hết mọi ứng viên (§7.5) |
 | Xếp hạng | 1.0 | Lợi ích = các family có rủi ro nặng nhất vượt xuống dưới High, và các family vượt xuống dưới Moderate. Gói đơn được lọc Pareto theo (hai con số lợi ích) so với effort, rồi xếp theo thứ tự: số family xuống dưới High, số family xuống dưới Moderate, effort. Bundle được liệt kê riêng, với effort ghi là "not assessed", tức **không cộng** các effort tier. Nghĩa vụ KEV đứng trên mọi thứ hạng |
+| EFF-03 | 1.0 | *(P1)* Mỗi dòng của `effects.csv` có cột `basis_hash`, là dấu vân tay của những gì effect đó được đánh giá dựa trên: giá trị đầu vào của kịch bản, trạng thái các gói áp dụng được, và phiên bản các quy tắc rating. Khi dấu vân tay hiện tại khác `basis_hash`, effect bị đánh dấu **needs review**. Effect đó **bị loại khỏi lợi ích được tính**, và residual của rủi ro đó cũng ở trạng thái `needs_review`. Chỉ được chạy `python risk.py stamp-effects [--risk R-xx]` **sau khi** đã rà soát lại các dự báo |
+| SCOPE-01 | 1.0 | *(P1)* Trạng thái của một gói đối với một kịch bản: nếu có bản ghi ở cấp tài sản thì dùng bản ghi đó, nếu không thì dùng cấp hệ thống. Khi có nhiều bản ghi thì lấy trạng thái **tệ nhất**. Vì vậy chỉ cần một tài sản chưa được kiểm chứng là gói đó vẫn chưa được kiểm chứng |
 | VOI-01 (thông số) | 1.0 | **[DA]** Với `initiation_likelihood` và `adverse_impact_likelihood` có confidence Low, thử mức liền kề ±1. Với các thuộc tính số có confidence khác High, thử ×0,5 và ×2. Đầu vào sẽ được đưa vào hàng đợi điều tra nếu thay đổi đó làm đổi thẩm quyền quyết định (owner, delegated, senior) hoặc đổi escalation |
 | Cửa sổ "sắp tới hạn" | 1.0 | **[DA]** 30 ngày, dùng cho mục 1 của báo cáo hành động |
 
@@ -163,6 +165,8 @@ Mỗi bằng chứng có một `evidence_ref` duy nhất và được ghi kèm: 
 | `first_confirmed_on` | Ngày |
 | `obligation_triggered_on` | Ngày. Script sinh ra lần đầu, sau đó **không được ghi đè** |
 | `obligation_policy_version` | Ví dụ `KEV-POL-1.0` |
+| `exception_approved_by` | *(P1)* Bắt buộc khi `remediation_state = exception` |
+| `exception_expires_on` | *(P1)* Ngày, bắt buộc khi `remediation_state = exception`. Quá ngày này thì nghĩa vụ chuyển thành `overdue (exception expired …)` |
 
 **Khóa:** mỗi cặp (`component_id`, `cve_id`) chỉ có một F-xxx.
 
@@ -271,6 +275,33 @@ Các rating suy ra được (overall likelihood, mức rủi ro, residual) giờ
 - **R-08** giờ ở mức Low, nên owner được phép chấp nhận. Quyết định mitigate vẫn được giữ, vì gói T-02 vốn cần cho R-01.
 - Độ nhạy: R-08 nằm đúng ranh giới. Nếu G-4 quay lại H thì R-08 thành Moderate. Đây là ứng viên cho hàng đợi điều tra (VOI-01): bằng chứng cần thu thập là biên bản thử khôi phục.
 
+### 7.6 P1 của v3: độ tin cậy (ngày 2026-11-23)
+
+Bốn sửa đổi theo [PLAN.md](PLAN.md) §10.4:
+
+1. **Effects cũ (EFF-03):**
+   - Thêm cột `basis_hash` và lệnh `stamp-effects`.
+   - 35 effects hiện có đã được ghi dấu vân tay. Chúng vốn được đánh giá ở bước 4 với đúng đầu vào và control hiện tại, nên kết quả trong `out/` không đổi.
+   - `synth.py` cũng ghi dấu vân tay cho effects mà nó sinh ra.
+   - Riêng E3 giữ nguyên các dự báo khi tạo nhiễu, vì E3 đo độ nhạy chứ không đo việc effects cần rà soát lại. Nhờ vậy số liệu E1–E6 không đổi.
+2. **Báo lỗi gộp:** khi finding thiếu trường bắt buộc, các kiểm tra trên những trường còn lại vẫn chạy.
+3. **Workspace cô lập:**
+   - Nếu workspace thiếu file thì script dừng và liệt kê đúng các file còn thiếu.
+   - Chỉ có `--overlay` (dành cho ví dụ, như `examples/cycle2`) mới được mượn file từ `data/`.
+   - Workspace không có snapshot thì chạy không có KEV, và không mượn snapshot của demo.
+4. **Phạm vi và hạn:**
+   - Áp dụng SCOPE-01.
+   - Ngoại lệ phải có người duyệt và hạn.
+   - Rủi ro được chấp nhận phải có `risk_owner` và `next_review` hợp lệ. Quá hạn thì báo cáo ghi **expired**.
+
+**Kiểm tra hồi quy** (self-check, mục 13):
+- Một đầu vào đổi thì effect bị loại khỏi lợi ích, và residual thành `needs_review`.
+- Mọi lỗi của một finding được báo đủ.
+- Bản ghi cấp tài sản có độ ưu tiên đúng so với cấp hệ thống.
+- Ngoại lệ có hiệu lực, và quá hạn thì thành `overdue`.
+- Rủi ro được chấp nhận mà thiếu ngày rà soát thì bị báo lỗi.
+- Workspace thiếu file bị từ chối (mục 11).
+
 ### 7.5 Bước 6: thực nghiệm E1–E6 (ngày 2026-11-22)
 
 **Cách chạy:** `python synth.py`.
@@ -335,7 +366,7 @@ Các rating suy ra được (overall likelihood, mức rủi ro, residual) giờ
 | T-01 (MFA) và T-06 (alert) được kiểm thử. R-02 G-4 chấm lại thành VL theo anchor "hai rào chắn đã kiểm thử" | R-02: Moderate → **Low**, residual `projected` → `verified`, thẩm quyền chuyển từ delegated sang owner |
 | MFA đã kiểm chứng làm G-4 của R-01 và R-11 giảm từ H xuống M | R-11: High → **Moderate**. R-01 không đổi mức (impact Very High), nhưng giờ vào hàng đợi điều tra |
 | F-001 được vá và kiểm chứng. F-002 được xác nhận áp dụng | Nghĩa vụ F-001 đóng lại. Nghĩa vụ F-002 mới mở, hạn 2026-12-16 |
-| (Không đổi gì về dữ liệu xếp hạng) | **Nhóm Pareto thêm T-02**. Khi R-11 đã xuống Moderate, chỉ còn R-01 giữ family ransomware ở mức High, và riêng T-02 đủ kéo R-01 xuống dưới High |
+| (Không đổi gì về dữ liệu xếp hạng) | ~~Nhóm Pareto thêm T-02~~. **Đã sửa ở P1 (§7.6):** nhận định này dựa trên các dự báo được đánh giá với đầu vào cũ. Từ EFF-03, effects của R-01, R-02, R-04, R-11, R-12 bị đánh dấu *needs review*. Lý do: đầu vào đã đổi (R-01, R-02, R-11), hoặc trạng thái T-01/T-06 đã đổi (R-04, R-12). Muốn biết T-02 có đủ hay không, người phụ trách mô hình phải rà soát lại các dự báo đó |
 | Snapshot KEV vẫn là bản lấy ngày 2026-11-22 | Cảnh báo snapshot đã cũ (13 ngày, quá giới hạn 7 ngày) |
 
 Mọi bằng chứng của chu kỳ 2 đều được gắn nhãn `[simulated cycle 2]`.

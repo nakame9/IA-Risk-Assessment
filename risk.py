@@ -4,6 +4,8 @@
                                                     # validate data, write action_report.md, register.md, matrix.md,
                                                     # trace.md, state.json; --baseline adds "changes since" (Task 4-1/4-2)
     python risk.py import kev|epss FILE [--url URL]  # store a downloaded feed file as a snapshot (SPEC 6.5)
+    python risk.py stamp-effects [--data DIR] [--risk R-xx]   # after re-reviewing projections: record their basis
+    (--overlay: let an incomplete example data set borrow missing files from data/; never for company workspaces)
     python risk.py --check                          # self-check
 
 Ratings come from versioned rules (SPEC 3.1) or from recorded judgments with rationale.
@@ -54,6 +56,8 @@ ATTRS = {
     'first_confirmed_on': ('F', 'date', None),
     'obligation_triggered_on': ('F', 'date', None),
     'obligation_policy_version': ('F', 'text', None),
+    'exception_approved_by': ('F', 'text', None),
+    'exception_expires_on': ('F', 'date', None),
 }
 FINDING_REQUIRED = ['cve_id', 'component_id', 'applicability', 'remediation_state']
 IMPACT_ATTRS = ['info_class', 'records_disclosed', 'integrity_consequence', 'corrected_before_use',
@@ -164,6 +168,26 @@ def policy_flags(risk, impact):
 def decision_class(risk, impact):
     """Required decision authority (report.md 1.6) plus escalation; used by VOI-01."""
     return {VL: 'owner', L: 'owner', M: 'delegated', H: 'senior', VH: 'senior'}[risk] + ('+escalate' if impact == VH else '')
+
+
+RATING_RULES = ('F2-01', 'G3-01', 'C-01', 'I-01', 'A-01', 'IMP-01')
+
+
+def control_status(status, system_of, asset_ids, package):
+    """Status of a package for a scenario, scope-aware: asset-level records win over system-level ones;
+    with several records the WORST applies, so one unverified asset keeps the package unverified."""
+    entries = [status[(a, package)] for a in asset_ids if (a, package) in status] or \
+              [status[(s, package)] for s in sorted({system_of[a] for a in asset_ids}) if (s, package) in status]
+    order = CONTROL_STATUS + [UNK]
+    return max(entries, key=order.index) if entries else UNK
+
+
+def effect_basis(inputs, statuses):
+    """Fingerprint of what an effect was assessed against: the scenario's input values, the status of its
+    applicable packages and the rating-rule versions. A different fingerprint means 'needs review'."""
+    payload = {'inputs': sorted((a, row['value']) for a, row in inputs.items()),
+               'controls': sorted(statuses.items()), 'rules': {k: RULES[k] for k in RATING_RULES}}
+    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode('utf-8')).hexdigest()[:16]
 
 
 def rate(tpl, v):
@@ -287,10 +311,39 @@ def load(name, root=DATA):
         return list(csv.DictReader(f))
 
 
-def load_all(root=DATA):
-    """Load the data set from root; files absent from root are read from data/ (overlay, used by examples)."""
-    names = ['assets', 'templates', 'inputs', 'controls', 'packages', 'effects', 'risk_register']
-    return {n: load(n + '.csv', root if (Path(root) / (n + '.csv')).exists() else DATA) for n in names}
+DATA_FILES = ['assets', 'templates', 'inputs', 'controls', 'packages', 'effects', 'risk_register']
+
+
+def load_all(root=DATA, overlay=False):
+    """Load a complete data set from root. A company workspace must contain every file; only with
+    overlay=True (examples) are absent files read from data/."""
+    root = Path(root)
+    missing = [n + '.csv' for n in DATA_FILES if not (root / (n + '.csv')).exists()]
+    if missing and not overlay:
+        raise SystemExit(f'workspace {root} is incomplete, missing: {", ".join(missing)} '
+                         '(use --overlay only for examples built on data/)')
+    return {n: load(n + '.csv', root if (root / (n + '.csv')).exists() else DATA) for n in DATA_FILES}
+
+
+def stamp_effects(root=DATA, risk_id=None):
+    """Record in effects.csv what each effect was assessed against (basis_hash). Run ONLY after a reviewer has
+    re-assessed the projections for the current inputs, controls and rules."""
+    d = load_all(root)
+    errors = validate(d)
+    if errors:
+        raise SystemExit('invalid data:\n  ' + '\n  '.join(errors))
+    basis = {r['risk_id']: r['basis'] for r in evaluate(d)[0]}
+    n = 0
+    for e in d['effects']:
+        if risk_id in (None, e['risk_id']):
+            e['basis_hash'] = basis[e['risk_id']]
+            n += 1
+    fields = [k for k in d['effects'][0] if k != 'basis_hash'] + ['basis_hash']
+    with open(Path(root) / 'effects.csv', 'w', encoding='utf-8', newline='') as f:
+        w = csv.DictWriter(f, fieldnames=fields, lineterminator='\n')
+        w.writeheader()
+        w.writerows({k: e.get(k, '') for k in fields} for e in d['effects'])
+    print(f'stamped {n} effect rows in {Path(root) / "effects.csv"}')
 
 
 def findings(d):
@@ -353,23 +406,25 @@ def validate(d):
     for fid, f in findings(d).items():
         where = f'finding {fid}'
         missing = [a for a in FINDING_REQUIRED if a not in f]
-        if missing:
+        if missing:                      # report it, but keep checking every field that is present
             err.append(f'{where}: missing {", ".join(missing)}')
-            continue
         v = {a: f[a]['value'] for a in f}
-        if v['component_id'] not in assets:
+        if 'component_id' in v and v['component_id'] not in assets:
             err.append(f"{where}: component_id {v['component_id']!r} is not an asset")
-        key = (v['component_id'], v['cve_id'])
-        if key in pairs:
-            err.append(f'{where}: duplicate of {pairs[key]} for {key}')
-        pairs[key] = fid
-        if v['applicability'] == 'confirmed':
+        if 'component_id' in v and 'cve_id' in v:
+            key = (v['component_id'], v['cve_id'])
+            if key in pairs:
+                err.append(f'{where}: duplicate of {pairs[key]} for {key}')
+            pairs[key] = fid
+        if v.get('applicability') == 'confirmed':
             if f['applicability']['mode'] != 'evidence':
                 err.append(f'{where}: confirmed applicability needs evidence (CVE-APP-01)')
             if 'first_confirmed_on' not in f:
                 err.append(f'{where}: confirmed applicability needs first_confirmed_on')
-        if v['remediation_state'] == 'remediated_verified' and f['remediation_state']['mode'] != 'evidence':
+        if v.get('remediation_state') == 'remediated_verified' and f['remediation_state']['mode'] != 'evidence':
             err.append(f'{where}: remediated_verified needs evidence')
+        if v.get('remediation_state') == 'exception' and not {'exception_approved_by', 'exception_expires_on'} <= set(v):
+            err.append(f'{where}: exception needs exception_approved_by and exception_expires_on')
         try:
             if 'obligation_triggered_on' in v and 'first_confirmed_on' in v and \
                     parse('obligation_triggered_on', v['obligation_triggered_on']) < parse('first_confirmed_on', v['first_confirmed_on']):
@@ -416,6 +471,13 @@ def validate(d):
             err.append(f'{where}: treatment packages must be known and applicable')
         if r['treatment_option'] not in {'mitigate', 'accept', 'transfer', 'avoid'}:
             err.append(f"{where}: treatment_option={r['treatment_option']!r}")
+        if r['treatment_option'] == 'accept':          # an acceptance needs an owner and an expiry (review date)
+            if not r['risk_owner']:
+                err.append(f'{where}: accepted risk needs risk_owner')
+            try:
+                datetime.date.fromisoformat(r['next_review'])
+            except ValueError:
+                err.append(f"{where}: accepted risk needs a valid next_review date, got {r['next_review']!r}")
     return err
 
 
@@ -453,14 +515,21 @@ def evaluate(d):
         if tpl['init_rule'] == 'G3-01':
             trace.append(f"G3-01 v{RULES['G3-01']}: annual_frequency {values['annual_frequency']} -> initiation {initiation}")
         trace.append(f'C-01 -> {c}; I-01 -> {i}; A-01 -> {a}; IMP-01 v{RULES["IMP-01"]} -> impact {impact}')
-        sys_ids = {system_of[x] for x in r['asset_id'].split(';')}
-        f2 = {p: f2_01(next((status[(s, p)] for s in sys_ids if (s, p) in status), UNK))
-              for p in filter(None, r['applicable_packages'].split(';'))}
+        asset_ids = r['asset_id'].split(';')
+        statuses = {p: control_status(status, system_of, asset_ids, p)
+                    for p in filter(None, r['applicable_packages'].split(';'))}
+        f2 = {p: f2_01(s) for p, s in statuses.items()}
+        basis = effect_basis(got, statuses)
+        stale = sorted(e['package_ids'] for (rid2, _), e in effects.items() if rid2 == rid and e.get('basis_hash', '') != basis)
+        if stale:
+            warnings.append(f"{rid}: effects assessed against different inputs/controls/rules need review "
+                            f"({', '.join(stale)}); excluded from supported benefits until re-stamped")
         conf = min((x['confidence'] for x in got.values() if x['mode'] == 'judgment'),
                    key=conf_rank.get, default='High')
         row = {**r, 'initiation': initiation, 'adverse': adverse, 'impact': impact, 'confidence': conf,
                'f2': f2, 'trace': trace, 'overall': UNK, 'risk': UNK, 'flags': '', 'res_risk': '', 'res_overall': '',
-               'res_impact': '', 'res_basis': '', 'values': values, 'tpl': tpl, 'input_rows': got, 'missing': missing}
+               'res_impact': '', 'res_basis': '', 'values': values, 'tpl': tpl, 'input_rows': got, 'missing': missing,
+               'basis': basis, 'stale_effects': stale}
         if UNK in (initiation, adverse, impact):
             warnings.append(f'{rid}: rating unknown (missing or unknown: {", ".join(missing)}); added to investigation queue')
             out.append(row)
@@ -471,7 +540,7 @@ def evaluate(d):
         trace.append(f"G-5 [{initiation} x {adverse}] -> {row['overall']}; "
                      f"I-2 [{row['overall']} x {impact}] -> {row['risk']}; policy: {row['flags']}")
         chosen = frozenset(filter(None, r['treatment_packages'].split(';')))
-        pkg_status = {p: next((status[(s, p)] for s in sys_ids if (s, p) in status), UNK) for p in chosen}
+        pkg_status = {p: control_status(status, system_of, asset_ids, p) for p in chosen}
         row['res_status'] = 'projected'
         if r['treatment_option'] == 'accept':
             row.update(res_overall=row['overall'], res_risk=row['risk'], res_impact=impact, res_basis='accepted: residual = current',
@@ -483,6 +552,9 @@ def evaluate(d):
             e = effects.get((rid, chosen))
             if e and LEVELS.index(row['risk']) > LEVELS.index(risk_level(overall_likelihood(e['initiation'], e['adverse']), e['impact'])):
                 warnings.append(f'{rid}: verified treatment did not achieve the projected residual; review effects.csv')
+        elif (rid, chosen) in effects and effects[(rid, chosen)].get('basis_hash', '') != basis:
+            row.update(res_status='needs_review',
+                       res_basis='projection needs review: assessed against different inputs, controls or rules')
         elif chosen in {k[1] for k in effects if k[0] == rid}:
             e = effects[(rid, chosen)]
             row['res_overall'] = overall_likelihood(e['initiation'], e['adverse'])
@@ -535,8 +607,14 @@ def obligations(d, feeds, as_of):
                 notes.append(f'{fid}: recorded obligation_triggered_on {recorded} kept (derived {trigger})')
             trigger = recorded
         due = trigger + datetime.timedelta(days=KEV_DUE_DAYS[exposure[v['component_id']]])
-        state = {'remediated_verified': 'closed', 'exception': 'exception (needs approved, time-limited exception)'}.get(
-            v['remediation_state'], 'overdue' if as_of > due else 'open')
+        if v['remediation_state'] == 'remediated_verified':
+            state = 'closed'
+        elif v['remediation_state'] == 'exception':
+            expires = parse('exception_expires_on', v['exception_expires_on'])
+            state = (f"exception until {expires} (approved by {v['exception_approved_by']})" if as_of <= expires
+                     else f'overdue (exception expired {expires})')
+        else:
+            state = 'overdue' if as_of > due else 'open'
         out.append({'finding_id': fid, 'cve_id': v['cve_id'], 'component_id': v['component_id'],
                     'exposure': exposure[v['component_id']], 'triggered_on': trigger, 'due': due, 'state': state,
                     'remediation_state': v['remediation_state'], 'ransomware': k['ransomware'],
@@ -570,7 +648,7 @@ def candidate_effects(rows, d):
                     lv.append(UNK)
                 elif not K:
                     lv.append(by_risk[rid]['risk'])
-                elif (rid, K) in eff:
+                elif (rid, K) in eff and eff[(rid, K)].get('basis_hash', '') == by_risk[rid]['basis']:
                     e = eff[(rid, K)]
                     lv.append(risk_level(overall_likelihood(e['initiation'], e['adverse']), e['impact']))
                 else:
@@ -730,8 +808,8 @@ def diff_states(prev, cur):
             continue
         moved = [f"{k} {a['inputs'].get(k, '-')} -> {b['inputs'].get(k, '-')}"
                  for k in sorted(set(a['inputs']) | set(b['inputs'])) if a['inputs'].get(k) != b['inputs'].get(k)]
-        parts = [f"{k} {a[k]} -> {b[k]}" for k in ('risk', 'residual', 'residual_status', 'decision_class', 'treatment_option', 'status')
-                 if a[k] != b[k]]
+        parts = [f"{k} {a[k] or '-'} -> {b[k] or '-'}"
+                 for k in ('risk', 'residual', 'residual_status', 'decision_class', 'treatment_option', 'status') if a[k] != b[k]]
         if parts or moved:
             cause = ('because ' + '; '.join(moved)) if moved else 'no input changed: caused by rules, effects or controls'
             out.append(f"Risk {rid}: {', '.join(parts) or 'inputs changed, level unchanged'} ({cause})")
@@ -756,7 +834,7 @@ def render_action(res, as_of):
     # 1
     out += ['## 1. Time-sensitive actions', '', '| Item | Required action | Owner / authority | Due |', '|---|---|---|---|']
     for o in res['obligations']:
-        if o['state'] in ('open', 'overdue') and o['due'] <= soon or o['state'] == 'overdue':
+        if o['state'] == 'open' and o['due'] <= soon or o['state'].startswith('overdue'):
             out.append(f"| {o['finding_id']} {o['cve_id']} on {o['component_id']} ({o['exposure']}) — **{o['state']}** | "
                        f"remediate (KEV-POL-01{', known ransomware use: review FAM-RANSOM' if o['ransomware'] == 'Known' else ''}) "
                        f"| IT Lead | {o['due']} |")
@@ -766,7 +844,9 @@ def render_action(res, as_of):
                        f"{r['flags']} | Risk executive | decision before treatment due {r['due_date'] or '-'} |")
     for r in d['risk_register']:
         if r['treatment_option'] == 'accept' and datetime.date.fromisoformat(r['next_review']) <= soon:
-            out.append(f"| {r['risk_id']} acceptance review | re-assess and re-approve | {r['risk_owner']} | {r['next_review']} |")
+            expired = datetime.date.fromisoformat(r['next_review']) < as_of
+            out.append(f"| {r['risk_id']} acceptance {'**expired**' if expired else 'review'} | re-assess and re-approve "
+                       f"| {r['risk_owner']} | {r['next_review']} |")
     # 2
     out += ['', '## 2. Changes since the previous assessment', '']
     if res.get('baseline') is None:
@@ -895,14 +975,15 @@ def render(rows, warnings, feeds, fstatus, as_of):
     return '\n'.join(reg) + '\n', '\n'.join(mat), '\n'.join(tr)
 
 
-def run(as_of, root=DATA, baseline=None):
+def run(as_of, root=DATA, baseline=None, overlay=False):
     root = Path(root)
-    d = load_all(root)
+    d = load_all(root, overlay)
     errors = validate(d)
     if errors:
         raise SystemExit('invalid data:\n  ' + '\n  '.join(errors))
     rows, warnings = evaluate(d)
-    feeds, feed_warnings = load_snapshots(as_of, root if (root / 'snapshots' / 'manifest.csv').exists() else DATA)
+    has_snap = (root / 'snapshots' / 'manifest.csv').exists()
+    feeds, feed_warnings = load_snapshots(as_of, root if has_snap or not overlay else DATA)
     fstatus = finding_status(d, feeds)
     obl, notes = obligations(d, feeds, as_of)
     res = {'data': d, 'rows': rows, 'warnings': warnings + feed_warnings, 'feeds': feeds, 'findings': fstatus,
@@ -1043,14 +1124,19 @@ def check():
     assert render_action(again, datetime.date(2026, 11, 22)) == render_action(res, datetime.date(2026, 11, 22))
     # 11. Maintain (Task 4-1/4-2): simulated cycle 2 against this baseline; changes attributed to inputs.
     if (ROOT / 'examples' / 'cycle2').exists() and 'kev' in res['feeds']:
-        c2 = run(datetime.date(2026, 12, 5), ROOT / 'examples' / 'cycle2', res['state'])
+        c2 = run(datetime.date(2026, 12, 5), ROOT / 'examples' / 'cycle2', res['state'], overlay=True)
         text = '\n'.join(c2['changes'])
         for frag in ('Risk R-02: risk Moderate -> Low', 'residual_status projected -> verified',
                      'because adverse_impact_likelihood Moderate -> Very Low', 'Risk R-11: risk High -> Moderate',
                      'KEV obligation F-001: open (due 2026-12-02) -> closed', 'KEV obligation F-002: none -> open (due 2026-12-16)',
                      'Control T-01@SYS-PORTAL: planned_compensated -> implemented_assessed_effective',
-                     'Pareto front: T-04, T-09, T-10 -> T-02, T-04, T-09, T-10'):
+                     'Risk R-04: residual Low -> -, residual_status projected -> needs_review (no input changed'):
             assert frag in text, (frag, text)
+        try:
+            run(datetime.date(2026, 12, 5), ROOT / 'examples' / 'cycle2')      # incomplete workspace, no overlay
+            raise AssertionError('incomplete workspace accepted')
+        except SystemExit as e:
+            assert 'is incomplete' in str(e)
         assert any('kev: snapshot is stale' in w for w in c2['warnings'])
     # 12. Verified treatment that misses its projection is flagged; rule changes are reported.
     dv = load_all()
@@ -1061,6 +1147,41 @@ def check():
     assert any(w.startswith('R-03: verified treatment did not achieve') for w in warns), warns
     changed = {**res['state'], 'rules': {**res['state']['rules'], 'G3-01': '2.0'}}
     assert diff_states(res['state'], changed)[0].startswith('**Rules/specification changed**')
+    # 13. P1 regressions (PLAN 10.4).
+    #   a) stale projections never supply supported benefit: change one R-05 input -> T-07 effect needs review
+    ds = load_all()
+    ds['inputs'] = [{**i, 'value': 'High'} if (i['subject_id'], i['attribute']) == ('R-05', 'adverse_impact_likelihood') else i
+                    for i in ds['inputs']]
+    rows_s, warns_s = evaluate(ds)
+    assert any(w.startswith('R-05: effects assessed against different') for w in warns_s)
+    r05 = next(r for r in rows_s if r['risk_id'] == 'R-05')
+    assert r05['res_status'] == 'needs_review' and r05['res_risk'] == ''
+    t07 = next(c for c in candidate_effects(rows_s, ds) if c['packages'] == ['T-07'])
+    assert t07['below_moderate'] == [] and t07['incomplete'] == ['FAM-05'], t07
+    #   b) every error of a finding is reported, even when a required field is missing
+    errors = validate({**d, 'inputs': d['inputs'] + [f('F-905', 'cve_id', 'CVE-2024-0009'), f('F-905', 'component_id', 'AS-99'),
+                                                     f('F-905', 'applicability', 'confirmed', mode='judgment'),
+                                                     f('F-906', 'cve_id', 'CVE-2024-0010'), f('F-906', 'component_id', 'AS-06'),
+                                                     f('F-906', 'applicability', 'suspected', mode='judgment'),
+                                                     f('F-906', 'remediation_state', 'exception')]})
+    for frag in ('F-905: missing remediation_state', "F-905: component_id 'AS-99' is not an asset",
+                 'F-905: confirmed applicability needs evidence', 'F-906: exception needs exception_approved_by'):
+        _expect_error(errors, frag)
+    #   c) scope: an asset-level record that is not verified overrides a verified system-level record
+    st = {('SYS-PORTAL', 'T-01'): 'implemented_assessed_effective', ('AS-06', 'T-01'): 'partial'}
+    so = {'AS-06': 'SYS-PORTAL', 'AS-01': 'SYS-PORTAL'}
+    assert control_status(st, so, ['AS-06'], 'T-01') == 'partial'
+    assert control_status(st, so, ['AS-01'], 'T-01') == 'implemented_assessed_effective'
+    assert control_status(st, so, ['AS-01'], 'T-99') == UNK
+    #   d) exceptions expire; expired acceptances are flagged
+    exc = dd['inputs'] + [f('F-901', 'exception_approved_by', 'Risk executive'), f('F-901', 'exception_expires_on', '2026-11-30')]
+    exc = [{**i, 'value': 'exception'} if (i['subject_id'], i['attribute']) == ('F-901', 'remediation_state') else i for i in exc]
+    de = {**d, 'inputs': exc}
+    assert validate(de) == []
+    assert obligations(de, {'kev': kev}, datetime.date(2026, 11, 22))[0][-1]['state'].startswith('exception until 2026-11-30')
+    assert obligations(de, {'kev': kev}, datetime.date(2026, 12, 1))[0][-1]['state'] == 'overdue (exception expired 2026-11-30)'
+    bad_acc = [{**r, 'next_review': ''} if r['risk_id'] == 'R-06' else r for r in d['risk_register']]
+    _expect_error(validate({**d, 'risk_register': bad_acc}), 'R-06: accepted risk needs a valid next_review')
     print('self-check passed')
 
 
@@ -1074,11 +1195,13 @@ def main(argv):
         import_snapshot(argv[1], argv[2], url)
         return
     opt = lambda name, default: argv[argv.index(name) + 1] if name in argv else default
+    if argv[:1] == ['stamp-effects']:
+        return stamp_effects(Path(opt('--data', DATA)), opt('--risk', None))
     as_of = datetime.date.fromisoformat(opt('--as-of', datetime.date.today().isoformat()))
     data_dir, out_dir = Path(opt('--data', DATA)), Path(opt('--out', ROOT / 'out'))
     base_path = opt('--baseline', None)           # explicit only, so the same inputs always give the same outputs
     baseline = json.loads(Path(base_path).read_text(encoding='utf-8')) if base_path else None
-    res = run(as_of, data_dir, baseline)
+    res = run(as_of, data_dir, baseline, overlay='--overlay' in argv)
     reg, mat, tr = render(res['rows'], res['warnings'], res['feeds'], res['findings'], as_of)
     out_dir.mkdir(parents=True, exist_ok=True)
     for name, text in (('action_report.md', render_action(res, as_of)), ('register.md', reg), ('matrix.md', mat),
