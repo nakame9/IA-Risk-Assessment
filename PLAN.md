@@ -1,7 +1,7 @@
 # Plan chung: IA Risk Assessment
 
 > Kết quả thảo luận Claude ↔ Codex (mỗi bên 3 lượt), ngày 2026-11-21.
-> **Trạng thái: v1 đã hoàn thành cả 5 giai đoạn (2026-11-22), xem mục 8. Kế hoạch cải thiện v2 nằm ở mục 9. Mục 9.10 (v2.1) được ưu tiên khi mâu thuẫn với các mục khác. Cả 7 bước của v2.1 đã hoàn thành ngày 2026-11-22 (§9.10.5).**
+> **Trạng thái: v1 đã hoàn thành cả 5 giai đoạn (2026-11-22), xem mục 8. Kế hoạch cải thiện v2 nằm ở mục 9. Mục 9.10 (v2.1) được ưu tiên khi mâu thuẫn với các mục khác. Cả 7 bước của v2.1 đã hoàn thành ngày 2026-11-22 (§9.10.5). Kế hoạch v3 cho doanh nghiệp vừa và nhỏ (chưa triển khai) nằm ở §10.**
 > Đã kiểm chứng lại ngày 2026-11-21 (xem mục 7): Claude tự trích xuất text từ PDF của SP 800-30 Rev.1 và FIPS 199, đồng thời mở trang web của các nguồn còn lại.
 
 ## 1. Mục tiêu và phạm vi
