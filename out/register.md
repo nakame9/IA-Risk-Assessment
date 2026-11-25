@@ -28,4 +28,4 @@
 
 ## Warnings
 
-- epss: no snapshot imported; feed evidence unavailable
+- epss: no snapshot imported on or before 2026-11-22; feed evidence unavailable

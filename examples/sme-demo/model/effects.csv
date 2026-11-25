@@ -10,7 +10,7 @@ R-VENDOR,P-ADMINSEP,Moderate,High,High,SME-LIB default: adv-1,b27519d20f690789
 R-VENDOR,P-VENDOR,Moderate,Low,High,SME-LIB default: adv=L,b27519d20f690789
 R-VENDOR,P-ADMINSEP;P-VENDOR,Moderate,Low,High,SME-LIB default: bundle best of singles,b27519d20f690789
 R-PAY,P-AWARE,High,Low,High,SME-LIB default: none,062c1e2c98ca45b7
-R-PAY,P-PAYVERIFY,High,Low,High,SME-LIB default: adv=L,062c1e2c98ca45b7
+R-PAY,P-PAYVERIFY,High,Low,High,SME-LIB default: none (already implemented: no further projected effect),062c1e2c98ca45b7
 R-PAY,P-AWARE;P-PAYVERIFY,High,Low,High,SME-LIB default: bundle best of singles,062c1e2c98ca45b7
 R-RECOVERY,P-BACKUP,Moderate,Moderate,High,SME-LIB default: adv<=M,231ca3e548ba4616
 R-RECOVERY,P-RESTORE-TEST,Moderate,Moderate,High,SME-LIB default: none,231ca3e548ba4616

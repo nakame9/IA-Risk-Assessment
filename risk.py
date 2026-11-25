@@ -17,6 +17,7 @@ import datetime
 import gzip
 import hashlib
 import json
+import math
 import re
 import shutil
 import sys
@@ -81,9 +82,11 @@ def parse(attr, raw):
     """Typed value of a declared attribute, or UNK. Raises ValueError on anything invalid."""
     if attr not in ATTRS:
         raise ValueError(f'undeclared attribute {attr!r}')
-    if raw == UNK:
-        return UNK
     _, kind, allowed = ATTRS[attr]
+    if raw == UNK:
+        if kind == 'date':                 # dates drive deadlines and comparisons: leave the row out instead
+            raise ValueError(f'{attr} cannot be {UNK!r}; omit the row when the date is not known')
+        return UNK
     if kind == 'enum':
         if raw not in allowed:
             raise ValueError(f'{attr}={raw!r} not in {sorted(allowed)}')
@@ -99,8 +102,8 @@ def parse(attr, raw):
     if kind == 'date':
         return datetime.date.fromisoformat(raw)
     value = float(raw) if kind == 'float' else int(raw)
-    if value < 0:
-        raise ValueError(f'{attr}={raw!r} is negative')
+    if not math.isfinite(value) or value < 0:
+        raise ValueError(f'{attr}={raw!r} is not a finite number >= 0')
     return value
 
 
@@ -183,12 +186,12 @@ RATING_RULES = ('F2-01', 'G3-01', 'C-01', 'I-01', 'A-01', 'IMP-01', 'BUS-01')
 
 
 def control_status(status, system_of, asset_ids, package):
-    """Status of a package for a scenario, scope-aware: asset-level records win over system-level ones;
-    with several records the WORST applies, so one unverified asset keeps the package unverified."""
-    entries = [status[(a, package)] for a in asset_ids if (a, package) in status] or \
-              [status[(s, package)] for s in sorted({system_of[a] for a in asset_ids}) if (s, package) in status]
+    """Status of a package for a scenario, scope-aware (SCOPE-01): for EACH asset its own record wins over its
+    system's record, and an asset with neither is unknown; the WORST status over the assets applies, so one
+    unverified asset keeps the package unverified."""
     order = CONTROL_STATUS + [UNK]
-    return max(entries, key=order.index) if entries else UNK
+    per_asset = [status.get((a, package), status.get((system_of[a], package), UNK)) for a in asset_ids]
+    return max(per_asset, key=order.index) if per_asset else UNK
 
 
 def effect_basis(inputs, statuses):
@@ -271,9 +274,10 @@ def import_snapshot(source, file, url='', today=None, root=DATA):
     """Store a locally downloaded feed file unchanged, with provenance. Returns the manifest row."""
     today = today or datetime.date.today().isoformat()
     file = Path(file)
+    if not file.is_file():                       # a usage error, not a failed refresh: record nothing
+        raise SystemExit(f'import failed ({source}): {file} is not a file')
     row = {'source': source, 'url': url, 'retrieved_on': today, 'published_on': '', 'version': '',
-           'sha256': sha256(file) if file.exists() else '', 'license_ref': LICENSE_REF[source],
-           'status': 'refresh_failed', 'path': ''}
+           'sha256': sha256(file), 'license_ref': LICENSE_REF[source], 'status': 'refresh_failed', 'path': ''}
     try:
         meta, _ = PARSERS[source](file)
     except Exception as e:                       # keep the last valid snapshot; record the failure
@@ -283,6 +287,8 @@ def import_snapshot(source, file, url='', today=None, root=DATA):
         print(f'{source}: unchanged (same SHA-256 as an existing snapshot)')
         return None
     dest = root / 'snapshots' / source / today / file.name
+    if dest.exists():                            # same day, same name, new content: keep the earlier file intact
+        dest = dest.parent / row['sha256'][:12] / file.name
     dest.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(file, dest)
     row.update(meta, status='ok', path=dest.relative_to(root).as_posix())
@@ -292,15 +298,18 @@ def import_snapshot(source, file, url='', today=None, root=DATA):
 
 
 def load_snapshots(as_of, root=DATA):
-    """Latest valid snapshot per source -> ({source: (manifest row, parsed data)}, warnings)."""
+    """Latest valid snapshot per source retrieved on or before as_of, so a run dated in the past never uses a
+    feed imported later -> ({source: (manifest row, parsed data)}, warnings)."""
     feeds, warnings = {}, []
-    rows = read_manifest(root)
+    day = as_of.isoformat()
+    rows = [r for r in read_manifest(root) if r['retrieved_on'] <= day]
     for source in PARSERS:
-        ok = [r for r in rows if r['source'] == source and r['status'] == 'ok']
+        # stable sort: among snapshots retrieved the same day the one imported last wins
+        ok = sorted((r for r in rows if r['source'] == source and r['status'] == 'ok'), key=lambda r: r['retrieved_on'])
         failed_after = [r for r in rows if r['source'] == source and r['status'] == 'refresh_failed'
                         and (not ok or r['retrieved_on'] >= ok[-1]['retrieved_on'])]
         if not ok:
-            warnings.append(f'{source}: no snapshot imported; feed evidence unavailable')
+            warnings.append(f'{source}: no snapshot imported on or before {day}; feed evidence unavailable')
             continue
         m = ok[-1]
         path = root / m['path']
@@ -411,6 +420,10 @@ def validate(d):
             err.append(f'{where}: evidence without evidence_ref')
         if i['mode'] == 'judgment' and not i['rationale']:
             err.append(f'{where}: judgment without rationale')
+        try:                                           # evidence ageing (stale_evidence) needs a real date
+            datetime.date.fromisoformat(i.get('observed_on', ''))
+        except ValueError:
+            err.append(f"{where}: observed_on {i.get('observed_on', '')!r} is not YYYY-MM-DD")
     # findings: CVE-APP-01 and SPEC 6.2.1
     pairs = {}
     for fid, f in findings(d).items():
@@ -618,6 +631,7 @@ def obligations(d, feeds, as_of):
                 notes.append(f'{fid}: recorded obligation_triggered_on {recorded} kept (derived {trigger})')
             trigger = recorded
         due = trigger + datetime.timedelta(days=KEV_DUE_DAYS[exposure[v['component_id']]])
+        expires = None
         if v['remediation_state'] == 'remediated_verified':
             state = 'closed'
         elif v['remediation_state'] == 'exception':
@@ -629,7 +643,8 @@ def obligations(d, feeds, as_of):
         out.append({'finding_id': fid, 'cve_id': v['cve_id'], 'component_id': v['component_id'],
                     'exposure': exposure[v['component_id']], 'triggered_on': trigger, 'due': due, 'state': state,
                     'remediation_state': v['remediation_state'], 'ransomware': k['ransomware'],
-                    'policy': v.get('obligation_policy_version', KEV_POLICY)})
+                    'policy': v.get('obligation_policy_version', KEV_POLICY), 'expires': expires,
+                    'approved_by': v.get('exception_approved_by', '')})
     return out, notes
 
 
@@ -849,6 +864,9 @@ def render_action(res, as_of):
             out.append(f"| {o['finding_id']} {o['cve_id']} on {o['component_id']} ({o['exposure']}) — **{o['state']}** | "
                        f"remediate (KEV-POL-01{', known ransomware use: review FAM-RANSOM' if o['ransomware'] == 'Known' else ''}) "
                        f"| IT Lead | {o['due']} |")
+        elif o['state'].startswith('exception') and o['expires'] <= soon:     # like an acceptance about to lapse
+            out.append(f"| {o['finding_id']} {o['cve_id']} on {o['component_id']} ({o['exposure']}) — KEV exception "
+                       f"expires | remediate or re-approve the exception (KEV-POL-01) | {o['approved_by']} | {o['expires']} |")
     for r in rows:
         if r['risk'] in (H, VH) or 'ESCALATE' in r['flags']:
             out.append(f"| {r['risk_id']} risk {r['risk']}{' (impact Very High)' if 'ESCALATE' in r['flags'] else ''} | "
@@ -888,7 +906,7 @@ def render_action(res, as_of):
             f"unknown effect on {len(c['incomplete'])} famil{'y' if len(c['incomplete']) == 1 else 'ies'} ({show(c['incomplete'])})"
             for c in incomplete] or ['- none']
     out += ['', f"No threshold crossing from: {', '.join(' + '.join(c['packages']) for c in none) or '-'}."]
-    if any(o['state'] in ('open', 'overdue') for o in res['obligations']):
+    if any(o['state'] == 'open' or o['state'].startswith('overdue') for o in res['obligations']):
         out += ['', 'Constraint: open KEV obligations (section 1) must be met regardless of this ranking.']
     # 4
     out += ['', '## 4. Patch backlog', '', '| Finding | CVE | Component | Exposure | In KEV | Obligation | EPSS | Percentile |',
@@ -1011,6 +1029,8 @@ def _expect_error(errors, fragment):
 
 
 def check():
+    if not __debug__:
+        raise SystemExit('the self-check is written with assert; run it without python -O')
     # 1. Lookup tables match the verbatim copies in PLAN.md.
     plan = (ROOT / 'PLAN.md').read_text(encoding='utf-8')
     abbr = {'VL': VL, 'L': L, 'M': M, 'H': H, 'VH': VH}
@@ -1195,7 +1215,73 @@ def check():
     assert obligations(de, {'kev': kev}, datetime.date(2026, 12, 1))[0][-1]['state'] == 'overdue (exception expired 2026-11-30)'
     bad_acc = [{**r, 'next_review': ''} if r['risk_id'] == 'R-06' else r for r in d['risk_register']]
     _expect_error(validate({**d, 'risk_register': bad_acc}), 'R-06: accepted risk needs a valid next_review')
+    # 14. Review fixes.
+    #   a) SCOPE-01 per asset: a verified asset-level record does not hide another asset's system-level status
+    st = {('AS-01', 'T-01'): 'implemented_assessed_effective', ('SYS-PORTAL', 'T-01'): 'partial'}
+    so = {'AS-01': 'SYS-PORTAL', 'AS-02': 'SYS-PORTAL', 'AS-03': 'SYS-OTHER'}
+    assert control_status(st, so, ['AS-01', 'AS-02'], 'T-01') == 'partial'
+    assert control_status(st, so, ['AS-01', 'AS-03'], 'T-01') == UNK           # AS-03 has no record at all
+    #   b) dates cannot be 'unknown' (they were compared with real dates and crashed)
+    for attr in ('first_confirmed_on', 'obligation_triggered_on', 'exception_expires_on'):
+        rows = [i for i in good if i['attribute'] != attr] + [f('F-901', attr, UNK)]
+        _expect_error(validate({**d, 'inputs': d['inputs'] + rows}), f"F-901/{attr}: {attr} cannot be 'unknown'")
+    #   c) numbers must be finite; observed_on must be a date
+    for raw in ('nan', 'inf', '-inf'):
+        try:
+            parse('annual_frequency', raw)
+            raise AssertionError(f'accepted annual_frequency={raw}')
+        except ValueError:
+            pass
+    _expect_error(validate({**d, 'inputs': d['inputs'] + [{**good[0], 'observed_on': ''}]}), "observed_on '' is not YYYY-MM-DD")
+    #   d) snapshots: chosen as of the assessment date; same-day re-import keeps the earlier file; bad path not recorded
+    with tempfile.TemporaryDirectory() as tmp:
+        root, src = Path(tmp) / 'data', Path(tmp) / 'src'
+        src.mkdir()
+        feed = lambda version: json.dumps({'catalogVersion': version, 'dateReleased': '2026-11-20T00:00:00Z', 'vulnerabilities': [
+            {'cveID': 'CVE-2024-0001', 'dateAdded': '2026-11-19', 'knownRansomwareCampaignUse': 'Known'}]})
+        (src / 'kev.json').write_text(feed('V1'), encoding='utf-8')
+        import_snapshot('kev', src / 'kev.json', today='2026-11-20', root=root)
+        (src / 'kev.json').write_text(feed('V2'), encoding='utf-8')
+        second = import_snapshot('kev', src / 'kev.json', today='2026-11-20', root=root)
+        (src / 'kev.json').write_text(feed('V3'), encoding='utf-8')
+        import_snapshot('kev', src / 'kev.json', today='2026-11-25', root=root)
+        assert second['path'] != 'snapshots/kev/2026-11-20/kev.json'
+        assert all(sha256(root / m['path']) == m['sha256'] for m in read_manifest(root))   # earlier file intact
+        assert load_snapshots(datetime.date(2026, 11, 22), root)[0]['kev'][0]['version'] == 'V2'
+        assert load_snapshots(datetime.date(2026, 11, 25), root)[0]['kev'][0]['version'] == 'V3'
+        feeds, warns = load_snapshots(datetime.date(2026, 11, 19), root)
+        assert 'kev' not in feeds and any('no snapshot imported on or before 2026-11-19' in w for w in warns)
+        n = len(read_manifest(root))
+        try:
+            import_snapshot('kev', src / 'missing.json', today='2026-11-26', root=root)
+            raise AssertionError('missing file accepted')
+        except SystemExit:
+            pass
+        assert len(read_manifest(root)) == n
+    #   e) action report: a KEV exception about to expire is time-sensitive; an expired one keeps the constraint note
+    soon = render_action({**res, 'obligations': obligations(de, {'kev': kev}, datetime.date(2026, 11, 22))[0]},
+                         datetime.date(2026, 11, 22))
+    assert 'KEV exception expires | remediate or re-approve' in soon.split('## 2.')[0], soon
+    lapsed = render_action({**res, 'obligations': obligations(de, {'kev': kev}, datetime.date(2026, 12, 1))[0]},
+                           datetime.date(2026, 12, 1))
+    assert 'Constraint: open KEV obligations' in lapsed
+    #   f) a flag without a value is a usage error, not an IndexError
+    try:
+        option(['--as-of'], '--as-of', None)
+        raise AssertionError('flag without value accepted')
+    except SystemExit:
+        pass
     print('self-check passed')
+
+
+def option(argv, name, default):
+    """Value following a command-line flag, or default when the flag is absent."""
+    if name not in argv:
+        return default
+    i = argv.index(name)
+    if i + 1 >= len(argv) or argv[i + 1].startswith('--'):
+        raise SystemExit(f'{name} needs a value')
+    return argv[i + 1]
 
 
 def main(argv):
@@ -1204,10 +1290,9 @@ def main(argv):
     if argv[:1] == ['import']:
         if len(argv) < 3 or argv[1] not in PARSERS:
             raise SystemExit('usage: python risk.py import kev|epss FILE [--url URL]')
-        url = argv[argv.index('--url') + 1] if '--url' in argv else ''
-        import_snapshot(argv[1], argv[2], url)
+        import_snapshot(argv[1], argv[2], option(argv, '--url', ''))
         return
-    opt = lambda name, default: argv[argv.index(name) + 1] if name in argv else default
+    opt = lambda name, default: option(argv, name, default)
     if argv[:1] == ['stamp-effects']:
         return stamp_effects(Path(opt('--data', DATA)), opt('--risk', None))
     as_of = datetime.date.fromisoformat(opt('--as-of', datetime.date.today().isoformat()))

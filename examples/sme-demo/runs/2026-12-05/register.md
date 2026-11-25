@@ -23,5 +23,5 @@ No CVE findings recorded in data/inputs.csv.
 
 ## Warnings
 
-- kev: no snapshot imported; feed evidence unavailable
-- epss: no snapshot imported; feed evidence unavailable
+- kev: no snapshot imported on or before 2026-12-05; feed evidence unavailable
+- epss: no snapshot imported on or before 2026-12-05; feed evidence unavailable

@@ -83,7 +83,7 @@ Inputs whose plausible alternatives would change the required decision authority
 
 - kev: version 2026.11.20, published 2026-11-20, retrieved 2026-11-22, SHA-256 12c9ca4c5350…, license: https://github.com/cisagov/kev-data/blob/develop/LICENSE (CC0 1.0)
 - epss: no snapshot
-- epss: no snapshot imported; feed evidence unavailable
+- epss: no snapshot imported on or before 2026-11-22; feed evidence unavailable
 - Scenario inputs: 5 evidence, 112 judgment.
 
 ## 7. Accepted risks and exceptions
