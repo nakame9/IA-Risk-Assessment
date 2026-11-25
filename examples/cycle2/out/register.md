@@ -34,4 +34,4 @@
 - R-11: effects assessed against different inputs/controls/rules need review (T-01, T-01;T-03;T-08;T-12, T-03, T-08, T-12); excluded from supported benefits until re-stamped
 - R-12: effects assessed against different inputs/controls/rules need review (T-06, T-06;T-10, T-10); excluded from supported benefits until re-stamped
 - kev: snapshot is stale (13 days old > 7)
-- epss: no snapshot imported; feed evidence unavailable
+- epss: no snapshot imported on or before 2026-12-05; feed evidence unavailable

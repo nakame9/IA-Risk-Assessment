@@ -74,8 +74,8 @@ Inputs whose plausible alternatives would change the required decision authority
 
 - kev: no snapshot
 - epss: no snapshot
-- kev: no snapshot imported; feed evidence unavailable
-- epss: no snapshot imported; feed evidence unavailable
+- kev: no snapshot imported on or before 2026-12-05; feed evidence unavailable
+- epss: no snapshot imported on or before 2026-12-05; feed evidence unavailable
 - KEV snapshot unavailable: KEV obligations cannot be determined
 - Scenario inputs: 0 evidence, 111 judgment.
 

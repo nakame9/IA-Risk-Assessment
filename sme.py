@@ -13,7 +13,9 @@ Ratings from self-reported answers stay judgments; the tool never accepts a risk
 import csv
 import datetime
 import html
+import io
 import json
+import math
 import shutil
 import sys
 import tempfile
@@ -52,10 +54,11 @@ def library_dir(ws):
 
 def read_csv(path):
     """Read a CSV saved by Excel: UTF-8 with or without BOM, comma or semicolon delimited."""
-    text = Path(path).read_text(encoding='utf-8-sig')
+    with open(path, encoding='utf-8-sig', newline='') as f:     # newline='' keeps line breaks inside quoted cells
+        text = f.read()
     first = text.splitlines()[0] if text else ''
     delim = ';' if first.count(';') > first.count(',') else ','
-    return list(csv.DictReader(text.splitlines(), delimiter=delim))
+    return list(csv.DictReader(io.StringIO(text, newline=''), delimiter=delim))
 
 
 def write_csv(path, rows, fields, bom=False):
@@ -111,7 +114,8 @@ def load_answers(ws, lib):
             errors.append(f"{qid}: answer {ans!r} is not one of {', '.join(opts)}")
         if q['options'] == 'number' and ans != UNK:
             try:
-                if float(ans.replace(' ', '')) < 0:
+                number = float(ans.replace(' ', ''))
+                if not math.isfinite(number) or number < 0:
                     raise ValueError
                 ans = ans.replace(' ', '')
             except ValueError:
@@ -133,14 +137,29 @@ def load_answers(ws, lib):
     return answers, errors
 
 
+def tolerance_error(answers, qids):
+    """Error text when the owner's thresholds (qids[1:4]) are known but do not increase, else None."""
+    vals = [answers[q]['value'] for q in qids[1:4]]
+    if UNK in vals:
+        return None
+    try:
+        t1, t2, t3 = (float(v) for v in vals)
+    except ValueError:
+        return None                                  # not a number: already reported by load_answers
+    if t1 < t2 < t3:
+        return None
+    return f'tolerances must increase: {qids[1]} < {qids[2]} < {qids[3]} (got {t1:g}, {t2:g}, {t3:g})'
+
+
 def tol_consequence(answers, qids):
     """BUS-TOL: estimated loss against the owner's thresholds TOL-01 < TOL-02 < TOL-03 -> consequence class."""
     vals = [answers[q]['value'] for q in qids]
     if UNK in vals:
         return UNK
+    problem = tolerance_error(answers, qids)
+    if problem:
+        raise SystemExit(problem)
     loss, t1, t2, t3 = (float(v) for v in vals)
-    if not t1 < t2 < t3:
-        raise SystemExit(f'tolerances must increase: {qids[1]} < {qids[2]} < {qids[3]} (got {t1:g}, {t2:g}, {t3:g})')
     return CONSEQUENCES[0] if loss < t1 else CONSEQUENCES[1] if loss < t2 else CONSEQUENCES[2] if loss < t3 else CONSEQUENCES[3]
 
 
@@ -148,6 +167,10 @@ def tol_consequence(answers, qids):
 def compile_model(ws, as_of, lib):
     """Answers -> complete model data set (SPEC 6) in ws/model; returns (answers, profile, applicable, excluded)."""
     answers, errors = load_answers(ws, lib)
+    # reported together with the other answer errors, once, instead of stopping at the first scenario that uses them
+    tol = {tolerance_error(answers, [q for q in m['questions'].split(';') if q])
+           for m in lib['mappings'] if m['map'] == 'TOL'}
+    errors += sorted(t for t in tol if t)
     if errors:
         raise SystemExit('answers.csv has errors:\n  ' + '\n  '.join(errors))
     A = lambda q: answers[q]['value'] if q in answers else UNK
@@ -282,10 +305,17 @@ def apply_effect(kind, ini, adv, imp):
     return ini, adv, imp
 
 
+IN_PLACE = {'implemented', 'implemented_assessed_effective'}
+
+
 def default_effects(d, lib):
-    """Library default effects for the current ratings, stamped with the current basis (SPEC 8.4)."""
+    """Library default effects for the current ratings, stamped with the current basis (SPEC 8.4).
+    A package that is already in place (implemented, verified or not) projects no further change: the answers
+    behind the current rating already describe it, so applying its library effect again would count it twice.
+    Its remaining work is verification, which never changes a projected rating."""
     rows, _ = risk.evaluate(d)
     kinds = {(e['risk_id'], frozenset(e['packages'].split(';'))): e['kind'] for e in lib['effects_lib']}
+    in_place = {c['package_id'] for c in d['controls'] if c['status'] in IN_PLACE}
     out = []
     for r in rows:
         if UNK in (r['initiation'], r['adverse'], r['impact']):
@@ -293,17 +323,24 @@ def default_effects(d, lib):
         pkgs = [p for p in r['applicable_packages'].split(';') if p]
         singles = []
         for p in pkgs:
-            kind = kinds.get((r['risk_id'], frozenset([p])), 'none')
+            kind = 'none' if p in in_place else kinds.get((r['risk_id'], frozenset([p])), 'none')
             s = apply_effect(kind, r['initiation'], r['adverse'], r['impact'])
             singles.append(s)
+            note = ' (already implemented: no further projected effect)' if p in in_place else ''
             out.append({'risk_id': r['risk_id'], 'package_ids': p, 'initiation': s[0], 'adverse': s[1], 'impact': s[2],
-                        'basis_ref': f'SME-LIB default: {kind}', 'basis_hash': r['basis']})
+                        'basis_ref': f'SME-LIB default: {kind}{note}', 'basis_hash': r['basis']})
         if len(pkgs) > 1:
+            # a bundle-level library effect cannot be split per package, so it is used only while no package of the
+            # bundle is in place; otherwise the bundle projects the best of its singles (conservative)
             full = kinds.get((r['risk_id'], frozenset(pkgs)))
+            if full and in_place & set(pkgs):
+                full, label = None, 'best of singles (some packages already implemented)'
+            else:
+                label = full or 'best of singles'
             best = (apply_effect(full, r['initiation'], r['adverse'], r['impact']) if full else
                     [min((s[k] for s in singles), key=risk.LEVELS.index) for k in range(3)])
             out.append({'risk_id': r['risk_id'], 'package_ids': ';'.join(sorted(pkgs)), 'initiation': best[0], 'adverse': best[1],
-                        'impact': best[2], 'basis_ref': f"SME-LIB default: bundle {full or 'best of singles'}", 'basis_hash': r['basis']})
+                        'impact': best[2], 'basis_ref': f'SME-LIB default: bundle {label}', 'basis_hash': r['basis']})
     return out
 
 
@@ -527,6 +564,8 @@ def fill(ws, values, day='2026-11-23'):
 
 
 def check():
+    if not __debug__:
+        raise SystemExit('the self-check is written with assert; run it without python -O')
     with tempfile.TemporaryDirectory() as tmp:
         ws = Path(tmp) / 'ws'
         init(ws, 'Công ty Thử nghiệm')
@@ -603,13 +642,40 @@ def check():
                                              'first_confirmed_on': '2026-11-20', 'evidence_ref': 'scan: test'}], FINDING_FIELDS, bom=True)
             res5, acts5, _ = run(ws, day)
             assert acts5[0]['title'].startswith('Khắc phục CVE-2025-24813') and acts5[0]['due'] == '2026-12-04', acts5[0]
+            write_csv(ws / 'findings.csv', [], FINDING_FIELDS, bom=True)
+        # review fixes: a package already in place projects no further change (it was counted twice)
+        fill(ws, {**DEMO, 'RAN-01': 'no', 'RAN-02': 'auto', 'WEB-02': 'auto'})
+        res6 = run(ws, day)[0]
+        r = next(x for x in res6['rows'] if x['risk_id'] == 'R-RANSOM')
+        eff6 = {e['package_ids']: e for e in res6['data']['effects'] if e['risk_id'] == 'R-RANSOM'}
+        for p in ('P-ADMINSEP', 'P-PATCH'):
+            assert (eff6[p]['initiation'], eff6[p]['adverse'], eff6[p]['impact']) == (r['initiation'], r['adverse'], r['impact']), eff6[p]
+            assert 'already implemented' in eff6[p]['basis_ref']
+        assert eff6['P-MFA']['adverse'] == L                                  # partial MFA still projects its effect
+        bundle = next(e for k, e in eff6.items() if ';' in k)
+        assert 'some packages already implemented' in bundle['basis_ref'] and bundle['adverse'] == L, bundle
+        # invalid tolerances are reported together with the other answer errors; non-finite numbers are rejected
+        fill(ws, {**DEMO, 'TOL-02': '600000000', 'EML-02': 'maybe', 'PAY-04': 'nan'})
+        try:
+            run(ws, day)
+            raise AssertionError('invalid answers accepted')
+        except SystemExit as e:
+            for frag in ('tolerances must increase', "EML-02: answer 'maybe'", "PAY-04: answer 'nan'"):
+                assert frag in str(e), e
+        # a line break inside a quoted Excel cell stays in that cell
+        fill(ws, DEMO)
+        rows = read_csv(ws / 'answers.csv')
+        rows[0]['note'] = 'dòng 1\ndòng 2'
+        write_csv(ws / 'answers.csv', rows, ANSWER_FIELDS, bom=True)
+        again = read_csv(ws / 'answers.csv')
+        assert len(again) == len(rows) and again[0]['note'] == 'dòng 1\ndòng 2'
     print('sme self-check passed')
 
 
 def main(argv):
     if '--check' in argv:
         return check()
-    opt = lambda name, default: argv[argv.index(name) + 1] if name in argv else default
+    opt = lambda name, default: risk.option(argv, name, default)
     if argv[:1] == ['init'] and len(argv) >= 2:
         return init(Path(argv[1]), opt('--company', Path(argv[1]).name))
     if argv[:1] == ['import-kev'] and len(argv) >= 3:      # store a downloaded CISA KEV JSON in the workspace

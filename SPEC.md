@@ -85,7 +85,7 @@ Các đầu vào còn lại là **phán đoán**, phải có `rationale` và `co
 | Hiệu ứng thưa | 1.1 | Hiệu ứng của ứng viên S lên kịch bản r là dòng trong `effects.csv` có **đúng** tập `S ∩ applicable(r)`. Không có dòng đó thì hiệu ứng là `unknown`. Không bao giờ ghép các factor từ nhiều dòng khác nhau. **Thay đổi ở bản 1.1 (bước 6):** ứng viên chỉ bị gắn nhãn *incomplete* khi family chưa biết hiệu ứng **còn có thể vượt ngưỡng**, tức mức nặng nhất ≥ Moderate. Ứng viên incomplete được xếp ở một danh sách riêng, ghi lợi ích là cận dưới (≥), và ứng viên có ít family chưa biết hơn được xếp trước. Lý do thay đổi: ở quy mô 200 tài sản, bản 1.0 loại hết mọi ứng viên (§7.5) |
 | Xếp hạng | 1.0 | Lợi ích = các family có rủi ro nặng nhất vượt xuống dưới High, và các family vượt xuống dưới Moderate. Gói đơn được lọc Pareto theo (hai con số lợi ích) so với effort, rồi xếp theo thứ tự: số family xuống dưới High, số family xuống dưới Moderate, effort. Bundle được liệt kê riêng, với effort ghi là "not assessed", tức **không cộng** các effort tier. Nghĩa vụ KEV đứng trên mọi thứ hạng |
 | EFF-03 | 1.0 | *(P1)* Mỗi dòng của `effects.csv` có cột `basis_hash`, là dấu vân tay của những gì effect đó được đánh giá dựa trên: giá trị đầu vào của kịch bản, trạng thái các gói áp dụng được, và phiên bản các quy tắc rating. Khi dấu vân tay hiện tại khác `basis_hash`, effect bị đánh dấu **needs review**. Effect đó **bị loại khỏi lợi ích được tính**, và residual của rủi ro đó cũng ở trạng thái `needs_review`. Chỉ được chạy `python risk.py stamp-effects [--risk R-xx]` **sau khi** đã rà soát lại các dự báo |
-| SCOPE-01 | 1.0 | *(P1)* Trạng thái của một gói đối với một kịch bản: nếu có bản ghi ở cấp tài sản thì dùng bản ghi đó, nếu không thì dùng cấp hệ thống. Khi có nhiều bản ghi thì lấy trạng thái **tệ nhất**. Vì vậy chỉ cần một tài sản chưa được kiểm chứng là gói đó vẫn chưa được kiểm chứng |
+| SCOPE-01 | 1.1 | *(P1)* Trạng thái của một gói đối với một kịch bản được xác định **cho từng tài sản**: nếu tài sản có bản ghi riêng thì dùng bản ghi đó, nếu không thì dùng bản ghi của hệ thống chứa nó, không có cả hai thì là `unknown`. Sau đó lấy trạng thái **tệ nhất** trên các tài sản. Vì vậy chỉ cần một tài sản chưa được kiểm chứng là gói đó vẫn chưa được kiểm chứng. *(1.1: bản 1.0 bỏ qua bản ghi cấp hệ thống của các tài sản khác khi một tài sản có bản ghi riêng)* |
 | VOI-01 (thông số) | 1.0 | **[DA]** Với `initiation_likelihood` và `adverse_impact_likelihood` có confidence Low, thử mức liền kề ±1. Với các thuộc tính số có confidence khác High, thử ×0,5 và ×2. Đầu vào sẽ được đưa vào hàng đợi điều tra nếu thay đổi đó làm đổi thẩm quyền quyết định (owner, delegated, senior) hoặc đổi escalation |
 | Cửa sổ "sắp tới hạn" | 1.0 | **[DA]** 30 ngày, dùng cho mục 1 của báo cáo hành động |
 
@@ -217,8 +217,10 @@ python risk.py import kev|epss FILE [--url URL]
   - **Định dạng EPSS chưa được đối chiếu** với file thật. Nếu sai định dạng thì lệnh import báo lỗi rõ ràng.
 - **Khi import:**
   - File có SHA-256 trùng một snapshot đã có thì không lưu thêm.
-  - File lỗi thì ghi một dòng `refresh_failed`, và giữ nguyên snapshot hợp lệ gần nhất.
+  - File lỗi thì ghi một dòng `refresh_failed`, và giữ nguyên snapshot hợp lệ gần nhất. Đường dẫn không tồn tại là lỗi dùng lệnh, không ghi vào manifest.
+  - Import lại trong cùng ngày một file cùng tên nhưng khác nội dung thì lưu vào thư mục con `<12 ký tự đầu SHA-256>/`, không ghi đè file cũ.
 - **Khi chạy đánh giá:**
+  - Chỉ dùng snapshot có `retrieved_on` ≤ `--as-of`. Vì vậy chạy lại một ngày trong quá khứ không dùng feed được import sau ngày đó.
   - Kiểm tra lại SHA-256 của snapshot. Nếu không khớp thì dừng.
   - Snapshot cũ hơn 7 ngày (tính theo `--as-of`) bị cảnh báo là cũ (stale).
 - **Snapshot EPSS không được commit** (`.gitignore`), vì điều khoản sử dụng dịch vụ của FIRST chưa được đọc. Manifest vẫn được commit, nên ai tải cùng file đó về đều kiểm chứng lại được bằng SHA-256.
@@ -464,6 +466,8 @@ Bản P2a có 3 kịch bản:
 - P-AWARE và P-RESTORE-TEST khi đứng một mình → không thay đổi.
 
 Effects được tính lại ở **mỗi lần chạy** từ rating hiện tại, rồi ghi dấu vân tay theo EFF-03. Đây là **phán đoán có điều kiện của thư viện**, không phải lời hứa giảm rủi ro.
+
+**Gói đã triển khai** (`implemented` hoặc `implemented_assessed_effective`) **không được tính thêm effect**. Lý do: câu trả lời tạo ra rating hiện tại đã mô tả gói đó, nên áp effect của thư viện lên nữa là tính hai lần. Việc còn lại của gói là kiểm chứng. Effect mặc định của một tổ hợp không tách được theo từng gói, nên chỉ được dùng khi chưa có gói nào trong tổ hợp đã triển khai. Nếu không thì tổ hợp lấy kết quả tốt nhất của các gói đơn (cách thận trọng).
 
 ### 8.5 Chọn 3 việc cần làm [DA]
 
